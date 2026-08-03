@@ -1,0 +1,165 @@
+/* §4 depth additions for the QAPI Board packet workspace — attendance/quorum,
+   infection oversight, finance/resource evidence hold, and the decision
+   composer. Extends the existing forest/ivory/bronze executive language.
+   Everything here is scoped under .v33-scope so it can never leak outside
+   the Governing Body portal. */
+
+.v33-scope .qd-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+
+.v33-scope .qd-panel-head { display: flex; gap: 10px; align-items: flex-start; color: var(--forest); }
+.v33-scope .qd-panel-head > div { display: flex; flex-direction: column; gap: 2px; }
+.v33-scope .qd-panel-head span { font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.v33-scope .qd-panel-head h3 { font-family: var(--font-editorial); font-size: 17px; color: var(--forest); margin: 0; }
+.v33-scope .qd-panel-head svg { flex-shrink: 0; margin-top: 2px; }
+
+/* ---- Roster / attendance ------------------------------------------------ */
+.v33-scope .qd-roster { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.v33-scope .qd-roster li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); }
+.v33-scope .qd-roster li.absent { opacity: .75; }
+.v33-scope .qd-roster-status { font-size: 10px; color: var(--success); }
+.v33-scope .qd-roster li.absent .qd-roster-status { color: var(--muted); }
+.v33-scope .qd-roster li > div:nth-child(2) { display: flex; flex-direction: column; }
+.v33-scope .qd-roster li strong { font-size: 13px; color: var(--ink); }
+.v33-scope .qd-roster li small { font-size: 11px; color: var(--muted); }
+.v33-scope .qd-roster-tags { display: flex; gap: 6px; margin-left: auto; }
+.v33-scope .qd-tag { font-style: normal; font-size: 10px; letter-spacing: .03em; padding: 2px 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); display: inline-flex; align-items: center; gap: 4px; }
+.v33-scope .qd-tag.vote { color: var(--forest); border-color: var(--forest); }
+.v33-scope .qd-tag.remote { color: #2c6f8f; }
+.v33-scope .qd-tag.excused { color: var(--bronze); }
+.v33-scope .qd-tag.unexcused { color: var(--oxblood); border-color: #edc9b8; background: var(--oxblood-soft); }
+.v33-scope .qd-tag.recused { color: var(--oxblood); border-color: #edc9b8; background: var(--oxblood-soft); }
+
+.v33-scope .qd-quorum-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.v33-scope .qd-quorum-grid article { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); }
+.v33-scope .qd-quorum-grid span { font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.v33-scope .qd-quorum-grid strong { font-size: 18px; color: var(--forest); font-family: var(--font-editorial); }
+.v33-scope .qd-quorum-grid small.qd-flag { color: var(--oxblood); font-style: normal; }
+.v33-scope .qd-quorum-statement { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+.v33-scope .qd-conflict-block h4 { font-size: 12.5px; color: var(--forest); margin: 0 0 4px; text-transform: uppercase; letter-spacing: .04em; }
+.v33-scope .qd-conflict-block { display: flex; flex-direction: column; gap: 10px; }
+
+.v33-scope .qd-motion-checks h4 { font-size: 12.5px; color: var(--forest); margin: 0 0 6px; text-transform: uppercase; letter-spacing: .04em; }
+.v33-scope .qd-motion-checks ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.v33-scope .qd-motion-checks li { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); font-size: 12.5px; }
+.v33-scope .qd-motion-checks li.qd-ok { color: var(--ink); }
+.v33-scope .qd-motion-checks li.qd-ok svg { color: var(--success); }
+.v33-scope .qd-motion-checks li.qd-warn { background: var(--oxblood-soft); border-color: #edc9b8; }
+.v33-scope .qd-motion-checks li.qd-warn svg { color: var(--oxblood); flex-shrink: 0; }
+.v33-scope .qd-motion-checks li strong { color: var(--forest); }
+.v33-scope .qd-motion-checks li small { display: block; color: var(--muted); margin-top: 2px; }
+
+.v33-scope .qd-result { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px; padding: 10px 14px; border-radius: 10px; margin: 0; }
+.v33-scope .qd-result.ok { color: var(--success); background: rgba(61,105,93,.1); }
+.v33-scope .qd-result.hold { color: var(--oxblood); background: var(--oxblood-soft); }
+
+/* ---- Pending / empty states ---------------------------------------------- */
+.v33-scope .qd-pending-card { text-align: center; padding: 26px 18px; color: var(--muted); border: 1px dashed var(--line-dark); border-radius: 12px; background: var(--surface-soft); }
+.v33-scope .qd-pending-card svg { color: var(--oxblood); margin-bottom: 8px; }
+.v33-scope .qd-pending-card h3 { font-family: var(--font-editorial); color: var(--forest); font-size: 16px; margin: 0 0 6px; }
+.v33-scope .qd-pending-card p { margin: 0; font-size: 12.5px; max-width: 52ch; margin-inline: auto; }
+.v33-scope .qd-empty { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.v33-scope .qd-flag-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--oxblood); background: var(--oxblood-soft); border-radius: 10px; padding: 8px 12px; margin: 0; }
+.v33-scope .qd-deident-note { font-size: 11.5px; color: var(--muted); display: flex; align-items: flex-start; gap: 6px; margin: 4px 0 0; }
+
+/* ---- Infection oversight -------------------------------------------------- */
+.v33-scope .qd-trend-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.v33-scope .qd-trend-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); }
+.v33-scope .qd-trend-cell span { font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.v33-scope .qd-trend-cell strong { font-size: 18px; color: var(--forest); font-family: var(--font-editorial); }
+.v33-scope .qd-trend-cell small { font-size: 10.5px; color: var(--muted); }
+.v33-scope .qd-trend-cell.pending { border-style: dashed; opacity: .8; }
+.v33-scope .qd-trend-cell.pending strong { color: var(--muted); }
+
+.v33-scope .qd-list { display: flex; flex-direction: column; gap: 12px; }
+.v33-scope .qd-infx-card { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; background: var(--surface-soft); display: flex; flex-direction: column; gap: 8px; }
+.v33-scope .qd-infx-card header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.v33-scope .qd-infx-card header span { font-size: 11px; color: var(--muted); }
+.v33-scope .qd-infx-card header strong { font-family: var(--font-editorial); color: var(--forest); font-size: 14px; }
+.v33-scope .qd-infx-card header i { margin-left: auto; font-style: normal; font-size: 10.5px; padding: 2px 8px; border-radius: 999px; }
+.v33-scope .qd-infx-card dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px 14px; margin: 0; }
+.v33-scope .qd-infx-card dt { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.v33-scope .qd-infx-card dd { margin: 0; font-size: 12.5px; color: var(--ink); }
+.v33-scope .qd-infx-links { border-top: 1px dashed var(--line); padding-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.v33-scope .qd-link-label { display: flex; align-items: center; gap: 5px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.v33-scope .qd-infx-links p, .v33-scope .qd-infx-links ul { margin: 0; font-size: 12.5px; }
+.v33-scope .qd-infx-links ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+.v33-scope .qd-infx-links i { font-style: normal; font-size: 10.5px; margin-left: 6px; }
+
+.v33-scope .qd-ok { color: var(--success); }
+.v33-scope .qd-hold { color: var(--oxblood); }
+
+/* ---- Finance / resource evidence hold ------------------------------------ */
+.v33-scope .qd-evidence-hold { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border-radius: 12px; background: var(--oxblood-soft); border: 1px solid #edc9b8; }
+.v33-scope .qd-evidence-hold svg { color: var(--oxblood); flex-shrink: 0; margin-top: 2px; }
+.v33-scope .qd-evidence-hold strong { display: block; color: var(--oxblood); font-size: 12.5px; letter-spacing: .04em; text-transform: uppercase; margin-bottom: 4px; }
+.v33-scope .qd-evidence-hold p { margin: 0; font-size: 12.5px; color: var(--ink); }
+.v33-scope .qd-resource-deps h4 { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--forest); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 8px; }
+.v33-scope .qd-resource-deps ul { list-style: none; margin: 0 0 8px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.v33-scope .qd-resource-deps li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-soft); font-size: 12.5px; }
+.v33-scope .qd-resource-deps li strong { color: var(--forest); }
+.v33-scope .qd-resource-deps li small { display: block; color: var(--muted); margin-top: 2px; }
+
+/* ---- Decision composer ---------------------------------------------------- */
+.v33-scope .qd-composer { border-color: var(--forest); box-shadow: var(--shadow-sm); }
+.v33-scope .qd-composer-notice { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--muted); background: var(--surface-soft); border-radius: 10px; padding: 10px 12px; margin: 0; }
+.v33-scope .qd-composer-notice svg { flex-shrink: 0; margin-top: 2px; color: var(--forest); }
+
+.v33-scope .qd-fieldset { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.v33-scope .qd-fieldset legend { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--forest); font-weight: 700; padding: 0 6px; }
+.v33-scope .qd-field { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); flex: 1; }
+.v33-scope .qd-field input, .v33-scope .qd-field textarea, .v33-scope .qd-field select,
+.v33-scope .qd-voter-row select, .v33-scope .qd-voter-row input {
+  font: inherit; font-size: 13px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px;
+}
+.v33-scope .qd-field input:focus-visible, .v33-scope .qd-field textarea:focus-visible, .v33-scope .qd-field select:focus-visible,
+.v33-scope .qd-voter-row select:focus-visible, .v33-scope .qd-voter-row input:focus-visible,
+.v33-scope .qd-primary:focus-visible, .v33-scope .qd-secondary:focus-visible {
+  outline: 2px solid var(--forest); outline-offset: 2px;
+}
+.v33-scope .qd-field-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.v33-scope .qd-field-row .qd-field { min-width: 180px; }
+
+.v33-scope .qd-voter-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.v33-scope .qd-voter-row { display: flex; gap: 8px; align-items: center; }
+.v33-scope .qd-voter-row input { flex: 1; }
+.v33-scope .qd-voter-row select { min-width: 190px; }
+
+.v33-scope .qd-tally-row { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--ink); font-weight: 600; }
+.v33-scope .qd-suggested { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); margin: 0; }
+
+.v33-scope .qd-secondary, .v33-scope .qd-primary {
+  align-self: flex-start; border-radius: 999px; font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 8px 16px; border: 1px solid var(--line);
+}
+.v33-scope .qd-secondary { background: var(--surface); color: var(--forest); }
+.v33-scope .qd-secondary:hover { border-color: var(--forest); }
+.v33-scope .qd-primary { background: var(--forest); color: #fff; border-color: var(--forest); display: inline-flex; align-items: center; gap: 6px; }
+.v33-scope .qd-primary:hover:not(:disabled) { background: var(--forest-2); }
+.v33-scope .qd-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+.v33-scope .qd-form-link { font-size: 12px; color: var(--forest); display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; }
+
+.v33-scope .qd-evidence-notice { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--oxblood); background: var(--oxblood-soft); border-radius: 10px; padding: 8px 12px; margin: 0; }
+.v33-scope .qd-recorded-summary { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; background: rgba(61,105,93,.1); border: 1px solid var(--forest); }
+.v33-scope .qd-recorded-summary svg { color: var(--success); flex-shrink: 0; margin-top: 2px; }
+.v33-scope .qd-recorded-summary strong { display: block; font-size: 12.5px; color: var(--forest); margin-bottom: 4px; }
+.v33-scope .qd-recorded-summary p { margin: 0 0 4px; font-size: 12.5px; color: var(--ink); }
+
+/* ---- Reduced motion / small viewport -------------------------------------- */
+@media (prefers-reduced-motion: reduce) { .v33-scope .qd-panel, .v33-scope .qd-primary, .v33-scope .qd-secondary { transition: none; } }
+
+@media (max-width: 480px) {
+  .v33-scope .qd-quorum-grid { grid-template-columns: repeat(2, 1fr); }
+  .v33-scope .qd-trend-row { grid-template-columns: repeat(2, 1fr); }
+  .v33-scope .qd-field-row { flex-direction: column; }
+  .v33-scope .qd-voter-row { flex-wrap: wrap; }
+}

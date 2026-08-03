@@ -1,0 +1,639 @@
+QAPI Q1 2026 — SYNTHETIC RAW MOCK DATASET
+
+Dataset ID: QAPI-Q1-DS-001 | Companion Cheat Sheet: QAPI-Q1-CS-001
+Agency: Sunrise Valley Home Health Agency (SVHHA) | NPI: 1234567890 (synthetic)
+Quarter: Q1 2026 (January 1 – March 31, 2026)
+Workflow: QA-WF-03 — Quarterly QAPI Committee Review
+QAPI Meeting Date: 2026-04-09
+Agenda Distribution Deadline: 2026-04-06 (3 business days prior)
+Feeder Audit Completion Deadline: 2026-04-02 (5 business days prior)
+Governing Body Package Deadline: 2026-04-02 (7 days prior to GB meeting 2026-04-09)
+Minutes Due: 2026-04-16 (7 days after meeting) — Assigned to: Clinical Manager
+Policy Basis: QA-PG-001, QA-PG-002, GV-GB-001
+Required Sign-offs: Administrator, Clinical Manager, QAPI Committee Chair
+Year Arc Note: Q1 is baseline quarter. Census grows from 105 active at Jan 1 to 120 at Mar 31. Clinician count: 28 staff. This is the first quarter of SVHHA's 2026 annual QAPI cycle.
+
+
+
+SECTION 1 — AGENCY MASTER RECORD
+
+fieldvalueagency_idSVHHA-001agency_nameSunrise Valley Home Health Agencyagency_typeMedicare-certified Skilled Home HealthNPI1234567890 (synthetic)Medicare_provider_number05A-MOCK-001stateCaliforniaservice_areasNorth, South, East, WestaccreditationACHC (active, expires 2027-06-30)administratorMOCK-CLIN-0028 (Maria L. Santos, RN, MSN)clinical_managerMOCK-CLIN-0027 (James T. Reeves, RN)qapi_chairMOCK-CLIN-0026 (Patricia G. Holden, PT)compliance_officerMOCK-CLIN-0025 (David R. Kim, JD)
+
+
+
+SECTION 2 — PATIENT CENSUS (MOCK-PT-0001 through MOCK-PT-0120)
+
+2.1 Census Summary — Q1 2026
+
+metricvalueActive at Jan 1 (carry-forward)105 patientsNew SOC in Q122 patients (MOCK-PT-0106 through MOCK-PT-0120 + 7 recerts)Discharged Q114 patientsTransferred Q13 patientsActive at Mar 31 (Q1 close)120 patientsTotal episodes tracked Q1127 episodesHospitalizations Q15 (MOCK-PT-0009, 0022, 0047, 0071, 0098)ED visits without hospitalization3 (MOCK-PT-0031, 0056, 0089)Payer mix74% Medicare A, 17% Medi-Cal, 9% Medicare AdvantageDiagnosis distribution30% CHF/COPD/Cardiac, 16% Wound, 13% Ortho post-op, 11% Neuro, 9% DM, 7% Onco/Palliative, 6% Psych/MSW, 8% Multi-morbidService area splitNorth 27%, South 26%, East 25%, West 22%
+
+2.2 Patient Master Records — Sample (20 of 120)
+
+patient_idfirst_namelast_namedobprimary_dxpayerdisciplines_orderedservice_arearisk_levelepisode_statusassigned_cmMOCK-PT-0001EleanorFairchild1942-03-15CHF (I50.9)Medicare ARN, MSWNorthHighActive-RecertMOCK-CLIN-0027MOCK-PT-0002HaroldNguyen1938-11-02COPD (J44.1)Medicare ARN, PT, RTSouthHighActive-RecertMOCK-CLIN-0027MOCK-PT-0003DoloresEspinoza1950-07-28Hip Fx post-op (M84.352A)Medicare APT, PTA, OTEastMediumActive-SOCMOCK-CLIN-0027MOCK-PT-0004WinstonAbrams1945-01-19DM w/ neuropathy (E11.40)Medi-CalRN, HHAWestMediumActive-RecertMOCK-CLIN-0027MOCK-PT-0005BeatriceKowalski1956-04-30Wound care (L97.529)Medicare ARN, HHANorthHighActive-SOCMOCK-CLIN-0027MOCK-PT-0006SamuelOkafor1948-09-12CVA/Hemiplegia (I69.351)Medicare APT, OT, SLP, RNSouthHighActive-RecertMOCK-CLIN-0027MOCK-PT-0007IngridLarsson1961-06-17Breast CA palliative (C50.912)Medicare AdvantageRN, MSW, HHAEastHighActive-SOCMOCK-CLIN-0027MOCK-PT-0008RaymondTorres1953-02-24Knee replacement (Z96.651)Medicare APT, PTAWestLowActive-SOCMOCK-CLIN-0027MOCK-PT-0009VivianChen1939-12-08CHF exacerbation (I50.33)Medicare ARN, HHANorthHighHospitalized-ActiveMOCK-CLIN-0027MOCK-PT-0010FranklinDupree1947-08-05COPD w/ pneumonia (J44.1, J18.9)Medicare ARN, PTSouthHighActive-RecertMOCK-CLIN-0027MOCK-PT-0011ConstanceMwangi1965-03-21DM type 2, wound (E11.621)Medi-CalRN, HHAEastMediumActive-SOCMOCK-CLIN-0027MOCK-PT-0012AlbertoReyes1943-10-14CAD post-CABG (I25.10)Medicare ARN, PT, HHAWestHighActive-RecertMOCK-CLIN-0027MOCK-PT-0013NormaPatel1957-05-09Parkinson's (G20)Medicare APT, OT, SLP, RNNorthHighActive-RecertMOCK-CLIN-0027MOCK-PT-0014GeraldWashington1952-07-31Wound/pressure injury (L89.312)Medi-CalRN, HHASouthHighActive-SOCMOCK-CLIN-0027MOCK-PT-0015LoisBrennan1960-01-26Total hip arthroplasty (Z96.641)Medicare APT, OTEastLowDischargedMOCK-CLIN-0027MOCK-PT-0016YusufHassan1949-11-18CHF (I50.9)Medicare AdvantageRN, HHAWestHighActive-RecertMOCK-CLIN-0027MOCK-PT-0017CarmenDelgado1971-08-03MS (G35)Medicare APT, OT, SLP, RN, HHANorthMediumActive-RecertMOCK-CLIN-0027MOCK-PT-0018TheodoreBianchi1944-04-22Prostate CA + wound (C61)Medicare ARN, MSW, HHASouthHighActive-SOCMOCK-CLIN-0027MOCK-PT-0019SylviaYamamoto1958-09-07Anxiety/depression (F41.1)Medi-CalMSW, RNEastMediumActive-SOCMOCK-CLIN-0027MOCK-PT-0020BernardOkonkwo1941-12-30COPD, multi-morbid (J44.1)Medicare ARN, PT, HHAWestHighActive-RecertMOCK-CLIN-0027
+
+Full census: MOCK-PT-0001 through MOCK-PT-0120. All names, DOBs, and IDs are entirely fictional.
+
+
+
+SECTION 3 — CLINICIAN / STAFF MASTER RECORDS (MOCK-CLIN-0001 through MOCK-CLIN-0028)
+
+clinician_idnamedisciplinerolesupervisorservice_areastatuscaseload_Q1MOCK-CLIN-0001Angela R. MortonRNField NurseMOCK-CLIN-0027NorthActive14 ptsMOCK-CLIN-0002Kevin J. TranRNField NurseMOCK-CLIN-0027SouthActive13 ptsMOCK-CLIN-0003Denise M. HollowayRNField NurseMOCK-CLIN-0027EastActive⚠️ 15 pts (high caseload finding)MOCK-CLIN-0004Marcus T. BellLVNField LVNMOCK-CLIN-0001NorthActive11 ptsMOCK-CLIN-0005Sandra K. OduyaLVNField LVNMOCK-CLIN-0002SouthActive10 ptsMOCK-CLIN-0006Thomas B. GarrettPTPhysical TherapistMOCK-CLIN-0026EastActive12 ptsMOCK-CLIN-0007Lily A. ParkPTAPT AssistantMOCK-CLIN-0006EastActive9 ptsMOCK-CLIN-0008Rafael E. MorenoPTPhysical TherapistMOCK-CLIN-0026WestActive11 ptsMOCK-CLIN-0009Grace H. WintersOTOccupational TherapistMOCK-CLIN-0026NorthActive10 ptsMOCK-CLIN-0010Evan C. PriceCOTAOT AssistantMOCK-CLIN-0009SouthActive8 ptsMOCK-CLIN-0011Miriam F. ObasiSLPSpeech-Language Path.MOCK-CLIN-0027WestActive7 ptsMOCK-CLIN-0012Curtis A. JamesMSWSocial WorkerMOCK-CLIN-0027NorthActive9 ptsMOCK-CLIN-0013Priya N. SharmaHHAHome Health AideMOCK-CLIN-0001NorthActive6 ptsMOCK-CLIN-0014Darnell Q. BrooksHHAHome Health AideMOCK-CLIN-0002SouthActive6 ptsMOCK-CLIN-0015Hana T. InoueHHAHome Health AideMOCK-CLIN-0003EastActive5 ptsMOCK-CLIN-0016Leo R. VasquezHHAHome Health AideMOCK-CLIN-0008WestActive⚠️ Disciplinary flag: cloned notes (see DISC-TRIG-Q1-002)MOCK-CLIN-0017Felicia J. MonroeRNField Nurse / Infection Ctrl Coord.MOCK-CLIN-0027SouthActive10 ptsMOCK-CLIN-0018Patrick S. NwachukwuRNField NurseMOCK-CLIN-0027WestActive⚠️ 12 pts + late doc flag (DISC-TRIG-Q1-001)MOCK-CLIN-0019Irene G. CastilloLVNField LVNMOCK-CLIN-0003EastActive9 ptsMOCK-CLIN-0020Howard L. FieldsPTPhysical TherapistMOCK-CLIN-0026SouthActive11 ptsMOCK-CLIN-0021Naomi R. AdeyemiOTOccupational TherapistMOCK-CLIN-0026EastActive9 ptsMOCK-CLIN-0022Brian T. CallahanRNCase Manager RNMOCK-CLIN-0027NorthActive14 ptsMOCK-CLIN-0023Olivia M. ReyesSchedulerOffice CoordinatorMOCK-CLIN-0027All areasActiveN/AMOCK-CLIN-0024Jerome K. AdkinsITIT/Security ReviewerMOCK-CLIN-0028All areasActiveN/AMOCK-CLIN-0025David R. KimJDCompliance OfficerMOCK-CLIN-0028All areasActiveN/AMOCK-CLIN-0026Patricia G. HoldenPTQAPI Committee ChairMOCK-CLIN-0028All areasActiveN/AMOCK-CLIN-0027James T. ReevesRNClinical ManagerMOCK-CLIN-0028All areasActiveN/AMOCK-CLIN-0028Maria L. SantosRN, MSNAdministratorGoverning BodyAll areasActiveN/A
+
+
+
+SECTION 4 — QUALITY METRIC OBSERVATIONS (January / February / March 2026)
+
+metric_idindicatormonthnumeratordenominatorratethresholdstatustrendQM-Q1-001OASIS Accuracy RateJanuary749082.2%≥90%⚠️ BELOWBaselineQM-Q1-002OASIS Accuracy RateFebruary779283.7%≥90%⚠️ BELOWSlight improvementQM-Q1-003OASIS Accuracy RateMarch809584.2%≥90%⚠️ BELOW — PIP TRIGGERImproving but still belowQM-Q1-004Visit Documentation Timeliness (within 24h)January10111885.6%≥95%⚠️ BELOWBaselineQM-Q1-005Visit Documentation Timeliness (within 24h)February10412086.7%≥95%⚠️ BELOWMinimal changeQM-Q1-006Visit Documentation Timeliness (within 24h)March10612286.9%≥95%⚠️ BELOW — PIP TRIGGERPersistent gap — PIP warrantedQM-Q1-007Medication Reconciliation at SOC/ROCJanuary162272.7%≥95%🔴 CRITICAL BELOWBaseline — alarmingQM-Q1-008Medication Reconciliation at SOC/ROCFebruary182378.3%≥95%🔴 CRITICAL BELOWSome improvementQM-Q1-009Medication Reconciliation at SOC/ROCMarch192479.2%≥95%🔴 CRITICAL BELOW — PIP TRIGGERRemains criticalQM-Q1-010POC Goal Documentation CompletenessJanuary8811080.0%≥92%⚠️ BELOWBaselineQM-Q1-011POC Goal Documentation CompletenessFebruary9011280.4%≥92%⚠️ BELOWFlatQM-Q1-012POC Goal Documentation CompletenessMarch9211580.0%≥92%⚠️ BELOW — PIP TRIGGERNo improvement — PIP warrantedQM-Q1-013Missed Visit RateJanuary71853.8%≤2%⚠️ ABOVE thresholdBaselineQM-Q1-014Missed Visit RateFebruary81904.2%≤2%⚠️ ABOVE — worseningTrending upQM-Q1-015Missed Visit RateMarch91954.6%≤2%🔴 ABOVE — PIP TRIGGERPersistent increaseQM-Q1-016Hospitalization RateJanuary21051.9%≤3%✅ WITHINNormalQM-Q1-017Hospitalization RateFebruary21121.8%≤3%✅ WITHINStableQM-Q1-018Hospitalization RateMarch11180.8%≤3%✅ WITHINImprovingQM-Q1-019Wound Infection RateJanuary32810.7%≤5%⚠️ ABOVE — WATCHBaselineQM-Q1-020Wound Infection RateFebruary43013.3%≤5%🔴 ABOVE — PIP TRIGGERIncreasingQM-Q1-021Wound Infection RateMarch43112.9%≤5%🔴 ABOVE — PIP TRIGGERPersistent spikeQM-Q1-022Complaint Resolution Timeliness (within 5 days)January4666.7%≥90%🔴 CRITICAL — PIP TRIGGERBaseline — criticalQM-Q1-023Complaint Resolution Timeliness (within 5 days)February5771.4%≥90%🔴 CRITICAL BELOWSlight improvementQM-Q1-024Complaint Resolution Timeliness (within 5 days)March5862.5%≥90%🔴 CRITICAL — PIP TRIGGERWorsening — urgent PIP
+
+
+
+SECTION 5 — 40 FEEDER AUDIT COMPLETION RECORDS
+
+All 40 feeder audits completed and signed by 2026-04-02 ✅ (5 business days before QAPI meeting 2026-04-09)
+
+audit_idworkflow_idcategoryreviewer_idstatussigned_bysigned_atkey_findingAUD-Q1-CL-001CL-WF-26Clinical QualityMOCK-CLIN-0022CompleteMOCK-CLIN-00272026-03-30OASIS M-item support gaps in 14 of 95 charts reviewedAUD-Q1-CL-002CL-WF-27Clinical QualityMOCK-CLIN-0001CompleteMOCK-CLIN-00272026-03-30POC missing patient-specific goals in 23% of chartsAUD-Q1-CL-003CL-WF-28Clinical QualityMOCK-CLIN-0017CompleteMOCK-CLIN-00272026-03-31Visit note timeliness: 13.1% late beyond 24hAUD-Q1-CL-004CL-WF-29Clinical QualityMOCK-CLIN-0002CompleteMOCK-CLIN-00272026-03-31Med rec completed at SOC 79.2%; critical gapAUD-Q1-CL-005CL-WF-30Clinical QualityMOCK-CLIN-0022CompleteMOCK-CLIN-00272026-04-01Care coordination delays for 8 patients with multiple disciplinesAUD-Q1-CL-006CL-WF-31Clinical QualityMOCK-CLIN-0003CompleteMOCK-CLIN-00272026-04-01Discharge documentation incomplete in 3 of 14 discharged casesAUD-Q1-CL-007CL-WF-32Clinical QualityMOCK-CLIN-0001CompleteMOCK-CLIN-00272026-04-019 missed visits in January, escalating to 9 in MarchAUD-Q1-CL-008CL-WF-33Clinical QualityMOCK-CLIN-0017CompleteMOCK-CLIN-00272026-04-02Wound infection cluster: 4 infections in Feb across 3 cliniciansAUD-Q1-CL-009CL-WF-34Clinical QualityMOCK-CLIN-0022CompleteMOCK-CLIN-00272026-04-02OASIS GG item inconsistencies flagged in 11 chartsAUD-Q1-CL-010CL-WF-35Clinical QualityMOCK-CLIN-0002CompleteMOCK-CLIN-00272026-04-025 hospitalizations tracked; 3 potentially preventableAUD-Q1-CL-011CL-WF-36Clinical QualityMOCK-CLIN-0003CompleteMOCK-CLIN-00272026-04-02Chart review: 6 deficiency rows, 2 repeat findings from Q4 2025AUD-Q1-CL-012CL-WF-37Clinical QualityMOCK-CLIN-0001CompleteMOCK-CLIN-00272026-04-02Care plan review: discipline justification absent in 18% of OT/SLP casesAUD-Q1-CO-001CO-WF-23Compliance/BillingMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-03-30Doc-to-claim mismatch on 6 claim lines (LVN visit billed as RN)AUD-Q1-CO-002CO-WF-24Compliance/BillingMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-03-31Eligibility re-verification overdue for 4 patients on Medi-CalAUD-Q1-CO-003CO-WF-25Compliance/BillingMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-03-31Billing timeliness: 3 claims submitted >30 days from service dateAUD-Q1-CO-004CO-WF-26Compliance/BillingMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-01Hotline: 2 intake records Q1 — 1 resolved, 1 under investigationAUD-Q1-CO-005CO-WF-27Compliance/BillingMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-01Overpayment check: $1,200 identified — voluntary refund initiatedAUD-Q1-CO-006CO-WF-28Compliance/BillingMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-01Skilled need documentation sufficient in 93% of reviewed chartsAUD-Q1-CO-007CO-WF-29Compliance/BillingMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-02Compliance committee notes complete for Jan–Mar 2026AUD-Q1-CO-008CO-WF-30Compliance/BillingMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-02Policy scorecard: 11 of 14 policies at ≥90% complianceAUD-Q1-QA-001QA-WF-13QAPI SupportMOCK-CLIN-0026CompleteMOCK-CLIN-00262026-03-308 quality indicators tracked; 5 below thresholdAUD-Q1-QA-002QA-WF-14QAPI SupportMOCK-CLIN-0026CompleteMOCK-CLIN-00262026-03-31PIP baseline measurements established for 3 new PIPsAUD-Q1-QA-003QA-WF-15QAPI SupportMOCK-CLIN-0026CompleteMOCK-CLIN-00262026-04-01CAP tracker updated; 4 items open, 2 overdue (remediated by 04-02)AUD-Q1-QA-004QA-WF-16QAPI SupportMOCK-CLIN-0026CompleteMOCK-CLIN-00262026-04-01Prior quarter (Q4 2025) action follow-up: 3 of 4 closedAUD-Q1-QA-005QA-WF-17QAPI SupportMOCK-CLIN-0026CompleteMOCK-CLIN-00262026-04-02PIP remeasurement pending for 1 carry-forward PIP from Q4 2025AUD-Q1-QA-006QA-WF-18QAPI SupportMOCK-CLIN-0026CompleteMOCK-CLIN-00262026-04-02Agenda distributed 2026-04-06; pre-read package sent to all membersAUD-Q1-HR-001HR-WF-18HR/TrainingMOCK-CLIN-0023CompleteMOCK-CLIN-00282026-04-01Annual training compliance: 26 of 28 staff complete (2 remediated by 04-02)AUD-Q1-HR-002HR-WF-19HR/TrainingMOCK-CLIN-0023CompleteMOCK-CLIN-00282026-04-01License/credential verification: all 28 current; 1 expires May 2026 — flaggedAUD-Q1-HR-003HR-WF-20HR/TrainingMOCK-CLIN-0023CompleteMOCK-CLIN-00282026-04-02Personnel file audit: 2 files missing TB test update (remediated)AUD-Q1-HR-004HR-WF-21HR/TrainingMOCK-CLIN-0023CompleteMOCK-CLIN-00282026-04-02Competency records complete for all clinical staffAUD-Q1-RM-001RM-WF-16Risk/SafetyMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-03-315 adverse events Q1; 2 required RCA (see SECT 6)AUD-Q1-RM-002RM-WF-17RMMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-01Near-miss: 3 records; 2 resolved, 1 CAP assignedAUD-Q1-RM-003RM-WF-18Risk/SafetyMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-01Safety audit complete; 4 findings, all CAPs initiatedAUD-Q1-RM-004RM-WF-19Risk/SafetyMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-02Patient complaint trend: 6 complaints, 3 communication, 2 schedulingAUD-Q1-RM-005RM-WF-20Risk/SafetyMOCK-CLIN-0025CompleteMOCK-CLIN-00252026-04-02Workplace safety: 1 near-miss fall (staff), corrective equipment providedAUD-Q1-IT-001IT-WF-21IT/SecurityMOCK-CLIN-0024CompleteMOCK-CLIN-00242026-03-31Access review: 2 terminated staff accounts disabled within 24h ✅AUD-Q1-IT-002IT-WF-22IT/SecurityMOCK-CLIN-0024CompleteMOCK-CLIN-00242026-04-01Audit log review: no unauthorized access events detectedAUD-Q1-IT-003IT-WF-23IT/SecurityMOCK-CLIN-0024CompleteMOCK-CLIN-00242026-04-01Backup/security: all systems verified; last backup 2026-03-31 ✅AUD-Q1-IT-004IT-WF-24IT/SecurityMOCK-CLIN-0024CompleteMOCK-CLIN-00242026-04-02HIPAA training: 27 of 28 complete (1 remediated same day)AUD-Q1-IT-005IT-WF-25IT/SecurityMOCK-CLIN-0024CompleteMOCK-CLIN-00242026-04-02Security incident: 1 phishing attempt blocked; no breach; report filed
+
+
+
+SECTION 6 — ADVERSE EVENTS & RCA RECORDS
+
+event_idpatient_idevent_typeevent_dateseverityrca_requiredrca_idrca_findingsclinician_idstatusAE-Q1-001MOCK-PT-0009Hospitalization — CHF exacerbation2026-01-18HighYesRCA-Q1-001Missed weight gain documentation by RN; delayed escalationMOCK-CLIN-0018RCA Complete — CAP assignedAE-Q1-002MOCK-PT-0022Fall at home — no injury2026-02-05MediumYesRCA-Q1-002Environmental hazard not documented on SOC; HHA not instructedMOCK-CLIN-0015RCA Complete — safety plan updatedAE-Q1-003MOCK-PT-0047ED visit — wound dehiscence2026-02-14MediumNoN/AWound care protocol followed; dehiscence documented as expected courseMOCK-CLIN-0005Monitored — no RCA requiredAE-Q1-004MOCK-PT-0071Hospitalization — sepsis2026-03-03CriticalYesRCA-Q1-003 (pending close)Infection signs present on prior visit note but not escalated per protocol (DISC-TRIG-Q1-005)MOCK-CLIN-0004RCA In ProgressAE-Q1-005MOCK-PT-0098Hospitalization — pneumonia2026-03-19HighNoN/ARapid deterioration; no prior warning signs documentedMOCK-CLIN-0002Closed — no systemic finding
+
+
+
+SECTION 7 — INFECTION SURVEILLANCE LINE LIST (Q1 2026)
+
+infx_idpatient_idinfection_typeonset_dateresolution_dateclinician_idinterventionreported_tostatusINF-Q1-001MOCK-PT-0005Wound infection — surgical site2026-01-222026-02-08MOCK-CLIN-0005Antibiotic ordered; wound care protocol updatedMOCK-CLIN-0017ResolvedINF-Q1-002MOCK-PT-0011Wound infection — DM foot2026-02-032026-02-20MOCK-CLIN-0003Wound care specialist consult; protocol changeMOCK-CLIN-0017ResolvedINF-Q1-003MOCK-PT-0014Pressure injury infection2026-02-102026-03-01MOCK-CLIN-0004Antibiotic; offloading device orderedMOCK-CLIN-0017ResolvedINF-Q1-004MOCK-PT-0018Wound infection — post-surgical2026-02-172026-03-05MOCK-CLIN-0005Surgeon notified; dressing change protocol upgradedMOCK-CLIN-0017ResolvedINF-Q1-005MOCK-PT-0071Sepsis secondary to wound2026-03-02Ongoing (hospitalized)MOCK-CLIN-0004Hospitalized; RCA initiated (AE-Q1-004)MOCK-CLIN-0017, MOCK-CLIN-0028Under Investigation
+
+
+
+SECTION 8 — PATIENT COMPLAINTS (Q1 2026)
+
+complaint_idpatient_idcomplaint_typecomplaint_dateresolved_byresolution_datedays_to_resolvewithin_5_daysstatusCOMP-Q1-001MOCK-PT-0017Communication — clinician did not call before visit2026-01-08MOCK-CLIN-00272026-01-146❌ No — PIP triggerClosedCOMP-Q1-002MOCK-PT-0033Scheduling — repeated last-minute reschedule2026-01-21MOCK-CLIN-00232026-01-265⚠️ BorderlineClosedCOMP-Q1-003MOCK-PT-0056Communication — clinician did not explain treatment plan2026-02-04MOCK-CLIN-00272026-02-128❌ No — PIP triggerClosedCOMP-Q1-004MOCK-PT-0072Scheduling — missed visit not communicated2026-02-19MOCK-CLIN-00232026-02-245⚠️ BorderlineClosedCOMP-Q1-005MOCK-PT-0088Communication — interpreter not arranged despite request2026-03-07MOCK-CLIN-00272026-03-1912❌ No — PIP trigger (critical delay)Closed — complaint escalated to GBCOMP-Q1-006MOCK-PT-0101Scheduling — consistent late arrivals by HHA2026-03-22MOCK-CLIN-0023PendingN/A❌ Not yet resolvedOpen — CAP initiated
+
+
+
+SECTION 9 — PIP TRIGGERS (8 Required) — Q1 2026
+
+trigger_idtrigger_typesource_record_idsclinician_idpolicy_iddate_detectedseverityfinding_summaryrecommended_actionstatusPIP-TRIG-Q1-001OASIS Accuracy Below ThresholdQM-Q1-001,002,003; AUD-Q1-CL-001; AUD-Q1-CL-009MultipleQA-PG-0012026-03-31HighOASIS accuracy 82–84% vs ≥90% threshold for 3 consecutive months; M/GG item support gapsPIPActive — PIP-Q1-001 initiatedPIP-TRIG-Q1-002POC Goal Documentation DeficiencyQM-Q1-010,011,012; AUD-Q1-CL-002; AUD-Q1-CL-012MultipleQA-PG-0012026-03-31HighPOC missing patient-specific goals in 20% of charts; discipline justification absent in 18% of OT/SLPPIPActive — PIP-Q1-002 initiatedPIP-TRIG-Q1-003Visit Documentation Timeliness Below TargetQM-Q1-004,005,006; AUD-Q1-CL-003MOCK-CLIN-0018, MOCK-CLIN-0003QA-PG-0022026-03-31High13.1% of visit notes late beyond 24h; persistent 3-month trendPIP + disciplinary review (DISC-TRIG-Q1-001)ActivePIP-TRIG-Q1-004Medication Reconciliation Gap at SOC/ROCQM-Q1-007,008,009; AUD-Q1-CL-004MultipleQA-PG-0012026-03-31CriticalMed rec rate 72–79% vs ≥95% threshold; systemic process gap identifiedPIPActive — PIP-Q1-004 initiatedPIP-TRIG-Q1-005Missed Visit Rate Above ThresholdQM-Q1-013,014,015; AUD-Q1-CL-007MultipleQA-PG-0022026-03-31HighMissed visit rate increased from 3.8% to 4.6%; physician/patient notification incomplete in 5 of 24 casesPIPActive — PIP-Q1-005 initiatedPIP-TRIG-Q1-006Wound Infection Surveillance SpikeQM-Q1-019,020,021; AUD-Q1-CL-008; INF-Q1-001 through 005MOCK-CLIN-0004, MOCK-CLIN-0005QA-PG-0012026-03-15CriticalWound infection rate 10–13% vs ≤5% threshold; repeat wound infections across 3 clinicians; sepsis eventPIP + infection control protocol reviewActive — PIP-Q1-006 initiatedPIP-TRIG-Q1-007Complaint/Grievance Communication TrendQM-Q1-022,023,024; COMP-Q1-001,003,005; AUD-Q1-RM-004MultipleQA-PG-0022026-03-31Critical3 of 6 complaints involved communication failures; resolution rate 62–67% vs ≥90% thresholdPIPActive — PIP-Q1-007 initiatedPIP-TRIG-Q1-008Documentation-to-Claim MismatchAUD-Q1-CO-001; AUD-Q1-CO-005MOCK-CLIN-0004, MOCK-CLIN-0005QA-PG-0022026-03-30High6 claim lines with doc-to-claim mismatch; $1,200 overpayment identified; voluntary refund initiatedPIP + compliance reviewActive — PIP-Q1-008 initiated
+
+
+
+SECTION 10 — DISCIPLINARY ACTION TRIGGERS (5 Required) — Q1 2026
+
+trigger_idclinician_idtrigger_typesource_record_idsdate_detectedseverityfinding_summaryrecommended_actionstatusDISC-TRIG-Q1-001MOCK-CLIN-0018 (Patrick Nwachukwu, RN)Repeated Late Documentation After Prior CoachingQM-Q1-004,005,006; AUD-Q1-CL-0032026-03-15High18 late visit notes in Q1; coaching documented Q4 2025; no improvement. Notes >24h on 15 occasionsDisciplinary review — written warningReferred to HRDISC-TRIG-Q1-002MOCK-CLIN-0016 (Leo Vasquez, HHA)Copy-Forward / Cloned Visit NarrativesAUD-Q1-CL-011; chart review finding CR-Q1-016-A2026-03-22High8 consecutive visit notes for 2 patients contain identical narrative text; no patient-specific variation detectedDisciplinary review — education + monitoring planReferred to HRDISC-TRIG-Q1-003MOCK-CLIN-0019 (Irene Castillo, LVN)Missed Visit Not Reported TimelyQM-Q1-013,014; AUD-Q1-CL-007; COMP-Q1-0042026-02-21High3 missed visits not reported within required 2-hour window; patient complaint received; prior verbal coaching documentedDisciplinary review — performance improvement planIn ProgressDISC-TRIG-Q1-004MOCK-CLIN-0003 (Denise Holloway, RN)Unauthorized Documentation Change After Chart ReviewAUD-Q1-CL-011; chart review CR-Q1-003-B2026-03-28CriticalVisit note amended 11 days after initial entry without documented clinical reason; amendment not countersigned by supervisor; potential retroactive alterationDisciplinary review — suspension pending investigationUnder InvestigationDISC-TRIG-Q1-005MOCK-CLIN-0004 (Marcus Bell, LVN)Failure to Follow Escalation/Reporting Chain — Patient Safety ConcernAE-Q1-004; INF-Q1-005; RCA-Q1-0032026-03-04CriticalSigns of wound infection/sepsis documented in visit note 2026-03-02 but not escalated for 36 hours; patient hospitalized with sepsis; RCA pending. This is a patient safety failure.Disciplinary review — immediate retraining + supervisionRCA pending — disciplinary hold
+
+
+
+SECTION 11 — CORRECTIVE ACTION PLANS (CAPs) — Q1 2026
+
+cap_idsource_triggercap_descriptionowner_iddue_datestatusCAP-Q1-001PIP-TRIG-Q1-001OASIS accuracy improvement: mandatory re-training on M/GG items + weekly supervisor reviewMOCK-CLIN-00272026-05-09OpenCAP-Q1-002PIP-TRIG-Q1-004Med rec protocol re-education + checklist implementation at SOC/ROCMOCK-CLIN-00272026-04-30OpenCAP-Q1-003PIP-TRIG-Q1-006 + AE-Q1-004Wound infection control protocol revision; mandatory in-service for field cliniciansMOCK-CLIN-00172026-04-23OpenCAP-Q1-004DISC-TRIG-Q1-001Performance improvement plan for MOCK-CLIN-0018; weekly documentation audit for 60 daysMOCK-CLIN-00272026-05-09OpenCAP-Q1-005PIP-TRIG-Q1-008Billing alignment review: retrain LVN/RN on visit type documentation matching billed serviceMOCK-CLIN-00252026-04-30Open
+
+
+
+SECTION 12 — QAPI MEETING SOURCE RECORDS (Q1 2026)
+
+record_typerecord_iddetaildatestatusAgendaAGD-Q1-00112-section QAPI agenda for 2026-04-09 meeting; includes all 8 PIP triggers + 5 disc. items2026-04-06Distributed ✅Pre-read DistributionPRE-Q1-001Pre-read package sent to all 9 committee members on 2026-04-062026-04-06Confirmed ✅AttendanceATT-Q1-0019 of 9 members present; quorum = 5; quorum met ✅2026-04-09Confirmed ✅QuorumQUO-Q1-001Quorum confirmed at 9:02 AM by QAPI Chair (MOCK-CLIN-0026)2026-04-09Confirmed ✅Prior Minutes ApprovalMIN-APPR-Q1-001Q4 2025 minutes approved unanimously (motion: MOCK-CLIN-0027; second: MOCK-CLIN-0025)2026-04-09Approved ✅GB Escalation ItemsGB-Q1-0014 items escalated: sepsis case (AE-Q1-004), interpreter failure complaint (COMP-Q1-005), OASIS accuracy trend, doc-to-claim mismatch findings2026-04-09Escalated ✅Administrator Sign-offSGN-Q1-ADM-001Signed by MOCK-CLIN-0028 (Maria L. Santos)2026-04-09Signed ✅Clinical Manager Sign-offSGN-Q1-CM-001Signed by MOCK-CLIN-0027 (James T. Reeves)2026-04-09Signed ✅QAPI Chair Sign-offSGN-Q1-CHAIR-001Signed by MOCK-CLIN-0026 (Patricia G. Holden)2026-04-09Signed ✅MinutesMIN-Q1-001Minutes drafted by MOCK-CLIN-0027; due 2026-04-16; all 12 sections present2026-04-16Complete ✅
+
+
+
+⚠️ SYNTHETIC DATA ONLY — SUNRISE VALLEY HOME HEALTH AGENCY (SVHHA) — NO REAL PHI — FOR MOCK/UAT USE ONLY — NOT FOR PRODUCTION
+
+
+
+QAPI Q2 2026 — SYNTHETIC RAW MOCK DATASET
+
+Dataset ID: QAPI-Q2-DS-001 | Companion Cheat Sheet: QAPI-Q2-CS-001
+Quarter: Q2 2026 (April 1 – June 30, 2026)
+Workflow: QA-WF-03 — Quarterly QAPI Committee Review
+QAPI Meeting Date: 2026-07-10
+Agenda Distribution Deadline: 2026-07-07 (3 business days prior)
+Feeder Audit Completion Deadline: 2026-07-02 (5 business days prior)
+Governing Body Package Deadline: 2026-07-03 (7 days prior to GB meeting 2026-07-10)
+Minutes Due: 2026-07-17 (7 days after meeting) — Assigned to: Clinical Manager
+Policy Basis: QA-PG-001, QA-PG-002, GV-GB-001
+Required Sign-offs: Administrator, Clinical Manager, QAPI Committee Chair
+
+
+
+SECTION 1 — PATIENT CENSUS (MOCK-PT-0001 through MOCK-PT-0100)
+
+1.1 Patient Master Records (Sample — 20 of 100)
+
+Full census: MOCK-PT-0001 through MOCK-PT-0100. All records use fictional names, DOBs, addresses.
+
+patient_idfirst_namelast_namedobprimary_dxpayerdisciplines_orderedservice_arearisk_levelepisode_statusassigned_cmMOCK-PT-0001EleanorFairchild1942-03-15CHF (I50.9)Medicare ASN, PT, HHANorthHighActive Q2MOCK-CLIN-0001MOCK-PT-0002HaroldWestbrook1938-07-22COPD (J44.1)Medicare ASN, RT, HHASouthHighActive Q2MOCK-CLIN-0002MOCK-PT-0003GloriaMendoza1955-11-08DM Type 2 (E11.9)Medicare ASN, MSWEastModerateActive Q2MOCK-CLIN-0001MOCK-PT-0004RaymondKowalski1945-04-30CVA (I63.9)Medi-CalSN, PT, OT, STNorthHighActive Q2MOCK-CLIN-0003MOCK-PT-0005MiriamOsei1950-09-14Hip Fracture (S72.001A)Medicare ASN, PT, OTWestHighDischarged 2026-05-15MOCK-CLIN-0004MOCK-PT-0006ThomasNguyen1961-02-28Wound — Stage 3 (L89.153)Medicare ASN, HHAEastHighActive Q2MOCK-CLIN-0005MOCK-PT-0007BeatriceKamara1948-06-19Parkinson's (G20)Medicare ASN, PT, OT, ST, HHANorthHighActive Q2MOCK-CLIN-0006MOCK-PT-0008VictorDelgado1953-12-05CAD (I25.10)Medicare ASN, MSWSouthModerateActive Q2MOCK-CLIN-0002MOCK-PT-0009AgnesThornton1936-08-01Dementia (F03.90)Medicare A + Medi-CalSN, HHA, MSWWestHighActive Q2MOCK-CLIN-0007MOCK-PT-0010JamesPatel1958-03-22Sepsis Recovery (A41.9)Medicare ASN, PTEastHighActive Q2MOCK-CLIN-0008MOCK-PT-0011DorothyFitzpatrick1944-10-17COPD (J44.1)Medicare ASN, HHANorthModerateActive Q2MOCK-CLIN-0001MOCK-PT-0012SamuelOkafor1951-01-30DM + Wound (E11.9 / L97.509)Medicare ASN, HHASouthHighActive Q2MOCK-CLIN-0009MOCK-PT-0013HenriettaVasquez1940-07-11CHF (I50.9)Medi-CalSN, PTEastHighHospitalized 2026-05-22MOCK-CLIN-0010MOCK-PT-0014FranklinAbramowitz1947-05-03Cancer (C79.89)Medicare A + HospiceSN, MSW, HHANorthHighTransferred Hospice 2026-06-01MOCK-CLIN-0011MOCK-PT-0015RosarioDiaz1963-09-25MS (G35)Medicare ASN, OT, PT, MSWWestHighActive Q2MOCK-CLIN-0012MOCK-PT-0016LeonardChan1956-04-14Orthopedic Post-Op (Z96.641)Medicare APT, OTSouthModerateDischarged 2026-06-20MOCK-CLIN-0013MOCK-PT-0017MabelJohansson1941-11-28Renal Failure (N18.4)Medicare ASN, MSWNorthHighActive Q2MOCK-CLIN-0001MOCK-PT-0018WinstonAchebe1949-06-07CVA (I63.9)Medicare ASN, PT, STEastHighActive Q2MOCK-CLIN-0014MOCK-PT-0019PhyllisMoreau1952-08-16Depression (F32.1)Medi-CalSN, MSWSouthModerateActive Q2MOCK-CLIN-0015MOCK-PT-0020ClarenceYuen1939-12-09Wound — Stage 2 (L89.213)Medicare ASN, HHAWestModerateActive Q2MOCK-CLIN-0016
+
+MOCK-PT-0021 through MOCK-PT-0100: Additional records follow same schema. Mix of diagnoses: 28% CHF/COPD/Cardiac, 18% Wound/Skin, 14% Orthopedic, 12% Neuro/CVA, 8% DM/Metabolic, 8% Oncology/Palliative, 7% Psych/MSW, 5% Multi-morbid Complex, rest mixed. Payer split: 72% Medicare A, 18% Medi-Cal, 10% Medicare Advantage.
+
+1.2 Episode Records (Q2 2026)
+
+
+
+
+
+Total Q2 Episodes: 100 active at start of Q2 + 12 new SOC admissions during Q2 = 112 episodes tracked
+
+
+
+Episode types: SOC (8), ROC (6), Recert (54), Continuing (34), Discharge (18), Transfer (4)
+
+
+
+Hospitalization events: 7 patients hospitalized during Q2 (MOCK-PT-0013, 0027, 0041, 0053, 0067, 0079, 0088)
+
+
+
+ED visits without hospitalization: 4 patients (MOCK-PT-0033, 0048, 0062, 0095)
+
+1.3 Visit Schedule Summary
+
+
+
+
+
+Total ordered visits Q2: 2,847
+
+
+
+Total delivered visits Q2: 2,741
+
+
+
+Missed visits: 106 (3.7% miss rate — above 3% threshold, PIP trigger #5)
+
+
+
+Late documentation (>24h): 214 visit notes (7.8% — above 5% threshold, PIP trigger #3)
+
+
+
+Copy-forward/clone flags: 9 visit notes by MOCK-CLIN-0017 and MOCK-CLIN-0022 (disciplinary trigger #2)
+
+1.4 Patient Complaint Records
+
+complaint_idpatient_iddatecategorydescriptionstatusMOCK-CMP-001MOCK-PT-00092026-04-12CommunicationFamily states nurse did not call to confirm visit time; arrived 2 hrs late without noticeResolved — coaching provided to MOCK-CLIN-0007MOCK-CMP-002MOCK-PT-00312026-04-18SchedulingVisit missed entirely — no notification to patient or MDResolved — missed visit reporting to MD completed lateMOCK-CMP-003MOCK-PT-00452026-05-03CommunicationPatient states care instructions were confusing; caregiver unsure of wound care stepsRe-education completed 2026-05-05MOCK-CMP-004MOCK-PT-00622026-05-14SchedulingThree consecutive missed HHA visits — no substitute arrangedOpen — under reviewMOCK-CMP-005MOCK-PT-00732026-05-22CommunicationPhysician states discharge summary not received within 5 business daysResolved — process correction initiatedMOCK-CMP-006MOCK-PT-00812026-06-04SchedulingPatient states visits scheduled at wrong time despite documented preferenceResolved — scheduling system note updatedMOCK-CMP-007MOCK-PT-00912026-06-17CommunicationFamily complaint — RN did not explain medication change clearly at SOCOpen — coaching scheduled
+
+Complaint trend: 7 complaints Q2 vs. 4 Q1 = 75% increase. Communication + Scheduling = 100% of category. PIP trigger #7 met.
+
+
+
+SECTION 2 — CLINICIAN / STAFF RECORDS (MOCK-CLIN-0001 through MOCK-CLIN-0030)
+
+2.1 Clinician Master Records
+
+clinician_idnameroledisciplinesupervisorstatusterritorycaseloadMOCK-CLIN-0001Patricia ReyesRN Case ManagerSNMOCK-CLIN-0026ActiveNorth18MOCK-CLIN-0002Marcus JohnsonRN Case ManagerSNMOCK-CLIN-0026ActiveSouth16MOCK-CLIN-0003Sandra KimRN Case ManagerSNMOCK-CLIN-0026ActiveNorth14MOCK-CLIN-0004Devon WilliamsLVNSNMOCK-CLIN-0001ActiveWest12MOCK-CLIN-0005Anita PhamRN Case ManagerSNMOCK-CLIN-0026ActiveEast20MOCK-CLIN-0006Robert ChenRN Case ManagerSNMOCK-CLIN-0026ActiveNorth15MOCK-CLIN-0007Yolanda TorresLVNSNMOCK-CLIN-0002ActiveWest11MOCK-CLIN-0008Benjamin OseiRN Case ManagerSNMOCK-CLIN-0026ActiveEast17MOCK-CLIN-0009Maria GutierrezLVNSNMOCK-CLIN-0003ActiveSouth13MOCK-CLIN-0010James AdeyemiRN Case ManagerSNMOCK-CLIN-0026ActiveEast16MOCK-CLIN-0011Helen ParkRN Case ManagerSNMOCK-CLIN-0026ActiveNorth14MOCK-CLIN-0012Thomas BrennanRN Case ManagerSNMOCK-CLIN-0026ActiveWest15MOCK-CLIN-0013Fatima DialloPTPTMOCK-CLIN-0027ActiveSouth22MOCK-CLIN-0014Kevin NakamuraPTPTMOCK-CLIN-0027ActiveEast20MOCK-CLIN-0015Louise AchebeMSWMSWMOCK-CLIN-0026ActiveSouth18MOCK-CLIN-0016Derek OkonkwoPTAPTMOCK-CLIN-0013ActiveWest19MOCK-CLIN-0017Carmen SalazarLVNSNMOCK-CLIN-0005ActiveEast14MOCK-CLIN-0018Phillip MbekiOTOTMOCK-CLIN-0028ActiveNorth17MOCK-CLIN-0019Grace HoffmanCOTAOTMOCK-CLIN-0018ActiveEast15MOCK-CLIN-0020Isaiah WashingtonST/SLPSTMOCK-CLIN-0026ActiveNorth12MOCK-CLIN-0021Nina JohanssonHHA SupervisorHHA-AdminMOCK-CLIN-0029ActiveAllN/AMOCK-CLIN-0022Roberto FuentesHHAHHAMOCK-CLIN-0021ActiveSouth8MOCK-CLIN-0023Alice MensahHHAHHAMOCK-CLIN-0021ActiveNorth9MOCK-CLIN-0024Omar HassanHHAHHAMOCK-CLIN-0021ActiveEast7MOCK-CLIN-0025Donna ReidScheduler/IntakeAdminMOCK-CLIN-0029ActiveAllN/AMOCK-CLIN-0026Angela MoralesClinical Manager / DONAdmin-ClinicalMOCK-CLIN-0029ActiveAllN/AMOCK-CLIN-0027Steven ParkPT Lead SupervisorPTMOCK-CLIN-0026ActiveAllN/AMOCK-CLIN-0028Diana FloresOT Lead SupervisorOTMOCK-CLIN-0026ActiveAllN/AMOCK-CLIN-0029Edward NakamuraAdministratorAdminN/AActiveAllN/AMOCK-CLIN-0030Christine LeeQAPI Committee Chair / Compliance OfficerAdmin-ComplianceMOCK-CLIN-0029ActiveAllN/A
+
+2.2 Credential/License Records (Intentional Findings)
+
+
+
+
+
+MOCK-CLIN-0004: CPR expired 2026-04-15 — flagged, remediated 2026-05-01 ✅
+
+
+
+MOCK-CLIN-0017: Annual competency overdue as of 2026-06-01 — pending completion ⚠️
+
+
+
+MOCK-CLIN-0022: Background check renewal flagged — 3-year cycle due 2026-05-30, completed 2026-06-10 ✅
+
+
+
+MOCK-CLIN-0024: HHA skills checklist incomplete — TB screening record missing ⚠️
+
+
+
+All others: Credentials current through Q2 2026
+
+
+
+SECTION 3 — QUALITY METRIC OBSERVATIONS (April, May, June 2026)
+
+3.1 Monthly Quality Indicator Dashboard — Raw Metric Rows
+
+metric_idindicatormonthnumeratordenominatorratethresholdstatusQM-APR-001Acute Care Hospitalization RateApril 20263983.1%≤4.0%✅ On TargetQM-APR-002OASIS Accuracy RateApril 2026789284.8%≥90%🔴 Below ThresholdQM-APR-003Visit Documentation Timeliness (<24h)April 202657864290.0%≥95%⚠️ CautionQM-APR-004POC Documentation CompletenessApril 2026829883.7%≥90%🔴 Below ThresholdQM-APR-005Medication Reconciliation at SOC/ROCApril 2026141877.8%≥95%🔴 Below ThresholdQM-APR-006Missed Visit RateApril 2026288763.2%≤3.0%🔴 Below ThresholdQM-APR-007Discharge Documentation CompletenessApril 2026111478.6%≥90%🔴 Below ThresholdQM-APR-008Patient Satisfaction (Overall)April 2026––82%≥85%⚠️ CautionQM-MAY-001Acute Care Hospitalization RateMay 20262992.0%≤4.0%✅ On TargetQM-MAY-002OASIS Accuracy RateMay 2026738982.0%≥90%🔴 Below ThresholdQM-MAY-003Visit Documentation TimelinessMay 202654163485.3%≥95%🔴 Below ThresholdQM-MAY-004POC Documentation CompletenessMay 2026779779.4%≥90%🔴 Below ThresholdQM-MAY-005Medication Reconciliation at SOC/ROCMay 2026111573.3%≥95%🔴 Below ThresholdQM-MAY-006Missed Visit RateMay 2026348923.8%≤3.0%🔴 Below ThresholdQM-MAY-007Discharge Documentation CompletenessMay 2026101662.5%≥90%🔴 Below ThresholdQM-MAY-008Patient Satisfaction (Overall)May 2026––80%≥85%🔴 Below ThresholdQM-JUN-001Acute Care Hospitalization RateJune 202621002.0%≤4.0%✅ On TargetQM-JUN-002OASIS Accuracy RateJune 2026748884.1%≥90%🔴 Below Threshold — 3rd consecutive monthQM-JUN-003Visit Documentation TimelinessJune 202654863786.0%≥95%🔴 Below ThresholdQM-JUN-004POC Documentation CompletenessJune 2026749677.1%≥90%🔴 Below Threshold — deterioratingQM-JUN-005Medication Reconciliation at SOC/ROCJune 2026121770.6%≥95%🔴 Below Threshold — 3rd consecutive monthQM-JUN-006Missed Visit RateJune 2026449794.5%≤3.0%🔴 Below Threshold — worsening trendQM-JUN-007Discharge Documentation CompletenessJune 202681361.5%≥90%🔴 Below Threshold — 3rd consecutive monthQM-JUN-008Patient Satisfaction (Overall)June 2026––79%≥85%🔴 Below Threshold
+
+
+
+SECTION 4 — 40 FEEDER AUDIT RAW RECORDS
+
+4.1 Clinical Quality Audits (CL-WF-26 through CL-WF-37)
+
+audit_idworkflow_idaudit_typeperiodrecords_reviewedcompliance_ratefindings_countreviewer_idsigned_bysigned_atstatusMOCK-AUD-CL-001CL-WF-26POC AuditQ2 20262579.2%5 deficienciesMOCK-CLIN-0030MOCK-CLIN-00262026-07-01Complete ✅MOCK-AUD-CL-002CL-WF-27OASIS Accuracy AuditQ2 20263083.3%5 OASIS errors (M/GG)MOCK-CLIN-0030MOCK-CLIN-00262026-07-01Complete ✅MOCK-AUD-CL-003CL-WF-28Visit Documentation AuditQ2 20264085.0%6 late notes, 2 clonesMOCK-CLIN-0026MOCK-CLIN-00262026-07-01Complete ✅MOCK-AUD-CL-004CL-WF-29Medication Reconciliation AuditQ2 20262073.5%5 discrepancies at SOC/ROCMOCK-CLIN-0030MOCK-CLIN-00262026-07-01Complete ✅MOCK-AUD-CL-005CL-WF-30Care Coordination AuditQ2 20261580.0%3 coordination delaysMOCK-CLIN-0026MOCK-CLIN-00262026-07-01Complete ✅MOCK-AUD-CL-006CL-WF-31Discharge Documentation AuditQ2 20261866.7%6 incomplete dischargesMOCK-CLIN-0030MOCK-CLIN-00262026-07-01Complete ✅MOCK-AUD-CL-007CL-WF-32Timeliness AuditQ2 20263586.9%Late SOC 2, Late F2F 3MOCK-CLIN-0030MOCK-CLIN-00262026-07-01Complete ✅MOCK-AUD-CL-008CL-WF-33Missed Visit AuditQ2 2026106 missed visitsN/A — frequency count44 unnotified MD casesMOCK-CLIN-0025MOCK-CLIN-00262026-07-02Complete ✅MOCK-AUD-CL-009CL-WF-34Hospitalization TrackingQ2 20267 hosp eventsN/A2 no 30-day follow-upMOCK-CLIN-0026MOCK-CLIN-00262026-07-02Complete ✅MOCK-AUD-CL-010CL-WF-35Chart Review — High RiskQ2 20262085.0%3 major deficienciesMOCK-CLIN-0030MOCK-CLIN-00262026-07-02Complete ✅MOCK-AUD-CL-011CL-WF-36Infection Control Chart ReviewQ2 20262290.9%2 PPE doc gapsMOCK-CLIN-0030MOCK-CLIN-00262026-07-02Complete ✅MOCK-AUD-CL-012CL-WF-37Patient Refusal AuditQ2 202612 refusal events91.7%1 undocumented refusalMOCK-CLIN-0026MOCK-CLIN-00262026-07-02Complete ✅
+
+4.2 Compliance & Billing Audits (CO-WF-23 through CO-WF-30)
+
+audit_idworkflow_idaudit_typerecords_reviewedcompliance_ratefindingssigned_atstatusMOCK-AUD-CO-001CO-WF-23Claim Line Audit50 claims92.0%4 doc-to-claim mismatches (PIP trigger #8)2026-07-01Complete ✅MOCK-AUD-CO-002CO-WF-24Eligibility / Skilled Need Audit25 episodes88.0%3 questionable skilled need2026-07-01Complete ✅MOCK-AUD-CO-003CO-WF-25Billing Timeliness Audit60 claims95.0%3 late submissions2026-07-01Complete ✅MOCK-AUD-CO-004CO-WF-26Overpayment Review30 episodes96.7%1 potential overpayment identified2026-07-01Complete ✅MOCK-AUD-CO-005CO-WF-27Compliance Hotline Review3 intakes Q2N/AAll closed — no substantiation2026-07-01Complete ✅MOCK-AUD-CO-006CO-WF-28F2F Encounter Compliance40 episodes90.0%4 late/missing F2F2026-07-02Complete ✅MOCK-AUD-CO-007CO-WF-29HIPAA / Privacy Audit15 records access logs93.3%1 unauthorized access flag resolved2026-07-02Complete ✅MOCK-AUD-CO-008CO-WF-30ABN / Advance Notice Compliance20 episodes85.0%3 missing ABN2026-07-02Complete ✅
+
+4.3 QAPI Support Audits (QA-WF-13 through QA-WF-18)
+
+audit_idworkflow_idaudit_typeperiodresultsigned_atstatusMOCK-AUD-QA-001QA-WF-13Monthly Quality Metric Verification — AprilApril 20268 indicators compiled — 5 below threshold2026-05-05Complete ✅MOCK-AUD-QA-002QA-WF-14Monthly Quality Metric Verification — MayMay 20268 indicators compiled — 6 below threshold2026-06-04Complete ✅MOCK-AUD-QA-003QA-WF-15Monthly Quality Metric Verification — JuneJune 20268 indicators compiled — 7 below threshold2026-07-02Complete ✅MOCK-AUD-QA-004QA-WF-16PIP Inventory ReviewQ2 20262 active PIPs per plan; 8 PIP triggers identified2026-07-02Complete ✅MOCK-AUD-QA-005QA-WF-17PIP RemeasurementQ2 2026Prior Q1 PIP (Doc Timeliness): partial improvement — not yet at goal2026-07-02Complete ✅MOCK-AUD-QA-006QA-WF-18QAPI Pre-Input Completeness LogQ2 2026All 40 feeder audits confirmed complete and signed before meeting date2026-07-02Complete ✅
+
+4.4 HR & Training Audits (HR-WF-18 through HR-WF-21)
+
+audit_idworkflow_idaudit_typeresultfindingssigned_atstatusMOCK-AUD-HR-001HR-WF-18Required Training Completion Audit28/30 = 93.3%MOCK-CLIN-0017 and MOCK-CLIN-0024 overdue — remediated by 2026-07-022026-07-02Complete ✅MOCK-AUD-HR-002HR-WF-19License/Credential Verification29/30 = 96.7%MOCK-CLIN-0017 competency overdue — scheduled 2026-07-152026-07-02Complete ✅MOCK-AUD-HR-003HR-WF-20Personnel File Completeness28/30 = 93.3%MOCK-CLIN-0024 TB screening missing — obtained 2026-07-012026-07-02Complete ✅MOCK-AUD-HR-004HR-WF-21Competency Assessment Audit27/30 = 90.0%3 HHA annual competency assessments overdue — 2 completed, 1 pending2026-07-02Complete ✅
+
+4.5 Risk & Safety Audits (RM-WF-16 through RM-WF-20)
+
+audit_idworkflow_idaudit_typeresultfindingssigned_atstatusMOCK-AUD-RM-001RM-WF-16Adverse Event ReviewQ2 20269 adverse events — 2 Level 3, 7 Level 1-22026-07-01Complete ✅MOCK-AUD-RM-002RM-WF-17Near-Miss ReviewQ2 20264 near-misses logged2026-07-01Complete ✅MOCK-AUD-RM-003RM-WF-18Safety AuditQ2 20262 home environment hazards identified — both corrected2026-07-01Complete ✅MOCK-AUD-RM-004RM-WF-19Patient Safety Trend ReviewQ2 2026Fall rate on target; medication error trend up (feeds PIP #4)2026-07-02Complete ✅MOCK-AUD-RM-005RM-WF-20Incident Pattern AnalysisQ2 20263 incidents from missed visits without timely notification — disciplinary trigger #32026-07-02Complete ✅
+
+4.6 IT & Security Audits (IT-WF-21 through IT-WF-25)
+
+audit_idworkflow_idaudit_typeresultfindingssigned_atstatusMOCK-AUD-IT-001IT-WF-21Access ReviewQ2 20262 inactive accounts not disabled within policy — corrected2026-07-01Complete ✅MOCK-AUD-IT-002IT-WF-22Audit Log ReviewQ2 20261 unauthorized access flag — investigated, no breach confirmed2026-07-01Complete ✅MOCK-AUD-IT-003IT-WF-23Backup / Security CheckQ2 2026All backups current; 1 workstation patch 14 days late — patched2026-07-01Complete ✅MOCK-AUD-IT-004IT-WF-24HIPAA Security Training Audit29/30 = 96.7%1 staff overdue — completed 2026-07-012026-07-02Complete ✅MOCK-AUD-IT-005IT-WF-25Security Incident ReviewQ2 20260 confirmed breaches; 1 phishing attempt blocked by filter2026-07-02Complete ✅
+
+
+
+SECTION 5 — ADVERSE EVENTS & RCA RECORDS
+
+5.1 Adverse Event Source Records
+
+event_idpatient_idclinician_idevent_typeseveritydatedescriptionstatusMOCK-AE-001MOCK-PT-0027MOCK-CLIN-0009Unplanned HospitalizationLevel 32026-04-08Patient admitted — CHF exacerbation. SOC OASIS understated functional decline. RCA initiated.RCA Complete — CAP initiatedMOCK-AE-002MOCK-PT-0041MOCK-CLIN-0017Medication ErrorLevel 22026-04-22Wrong dose documentation in visit note. Physician notified. No harm. Root cause: copy-forward from prior visit.Investigation complete — coaching issuedMOCK-AE-003MOCK-PT-0053MOCK-CLIN-0006Unplanned HospitalizationLevel 32026-05-03Patient admitted — wound infection. Prior visits showed deterioration not escalated timely (escalation failure — disciplinary trigger #5).RCA Complete — CAP initiatedMOCK-AE-004MOCK-PT-0062MOCK-CLIN-0022Near-Miss — Missed MedLevel 12026-05-15HHA observed patient had not taken AM meds — reported appropriately. Near-miss documentation complete.Closed — no harmMOCK-AE-005MOCK-PT-0067MOCK-CLIN-0017Unplanned HospitalizationLevel 22026-05-28Patient ED visit — fall at home. Prior fall risk assessment not updated per protocol after level change.Investigation complete — CAP initiatedMOCK-AE-006MOCK-PT-0079MOCK-CLIN-0004Adverse Drug ReactionLevel 22026-06-10Patient experienced dizziness/fall post medication adjustment. Medication reconciliation incomplete at ROC — direct correlation to PIP trigger #4.Investigation completeMOCK-AE-007MOCK-PT-0088MOCK-CLIN-0010Unplanned HospitalizationLevel 32026-06-18Patient admitted — sepsis. Wound care audit shows missed visits 3 of prior 7 scheduled. Missed visit not reported to MD per protocol — disciplinary trigger #3.RCA initiated
+
+5.2 RCA Records
+
+
+
+
+
+RCA-001 — Ref: MOCK-AE-001. Root cause: OASIS M/GG items consistently understated by MOCK-CLIN-0009 — pattern identified across 3 patients. CAP-001 initiated. → Feeds PIP trigger #1.
+
+
+
+RCA-002 — Ref: MOCK-AE-003. Root cause: Escalation chain not followed by MOCK-CLIN-0006. Wound deterioration documented but not escalated to RN or MD for 6 days. Pattern: 2nd similar incident in 6 months. → Disciplinary trigger #5.
+
+
+
+SECTION 6 — INFECTION SURVEILLANCE LINE-LIST
+
+infection_idpatient_idclinician_idinfection_typeonset_dateresolution_dateHAIcluster_flagnotesMOCK-INF-001MOCK-PT-0006MOCK-CLIN-0005Wound / Surgical Site2026-04-142026-05-01YesNoStage 3 wound — new drainage, culture positive MRSA. Isolation protocol initiated.MOCK-INF-002MOCK-PT-0012MOCK-CLIN-0009Wound / Surgical Site2026-04-282026-05-12YesYes — Cluster ADM wound patient. Same clinician as INF-003. Cluster declared 2026-05-05.MOCK-INF-003MOCK-PT-0020MOCK-CLIN-0009Wound / Surgical Site2026-05-022026-05-18YesYes — Cluster AStage 2 wound. Same clinician MOCK-CLIN-0009. Cluster investigation completed — no sterile technique breach confirmed, re-education delivered.MOCK-INF-004MOCK-PT-0033MOCK-CLIN-0002UTI2026-05-102026-05-20SuspectedNoCommunity-likely. Documented and tracked.MOCK-INF-005MOCK-PT-0053MOCK-CLIN-0006Wound — Repeat2026-05-03Open at Q2 closeYesNoRepeat wound infection. Linked to AE-003. PPE audit ordered.MOCK-INF-006MOCK-PT-0075MOCK-CLIN-0001Respiratory (ILI)2026-06-052026-06-15SuspectedNoILI symptoms. Not COVID. Monitored. Patient isolated from family during acute phase.MOCK-INF-007MOCK-PT-0091MOCK-CLIN-0003UTI2026-06-22Open at Q2 closeSuspectedNoFoley catheter patient. UTI protocol initiated. Under treatment.
+
+Infection trend: 5 confirmed HAIs Q2 vs. 2 Q1 = 150% increase — PIP trigger #6 (wound infection spike).
+
+
+
+SECTION 7 — PIP SOURCE RECORDS
+
+7.1 PIP Master Records (8 PIP Triggers — Meets Minimum Requirement)
+
+pip_trigger_idtrigger_typesource_record_idspatient_ids (sample)clinician_ids (sample)policy_idworkflow_idthresholdactual_valuefinding_summaryrecommended_actionstatusMOCK-PIP-T-001PIPMOCK-AUD-CL-002, RCA-001, QM-APR-002, QM-MAY-002, QM-JUN-002MOCK-PT-0027MOCK-CLIN-0009QA-PI-002CL-WF-27≥90%83.3%OASIS accuracy below threshold 3 consecutive months — M/GG items inconsistently supportedPIP — OASIS Accuracy ImprovementPIP Charter initiatedMOCK-PIP-T-002PIPMOCK-AUD-CL-001, QM-APR-004, QM-MAY-004, QM-JUN-004MultipleMOCK-CLIN-0002, 0005, 0017QA-PI-002CL-WF-26≥90%79.2%POC documentation missing patient-specific goals or discipline justification in 20.8% of reviewed recordsPIP — POC Documentation QualityPIP Charter initiatedMOCK-PIP-T-003PIPMOCK-AUD-CL-003, QM-APR-003, QM-MAY-003, QM-JUN-003MultipleMOCK-CLIN-0017, 0022, 0009QA-PI-002CL-WF-28≥95%85.3% (May)Visit documentation timeliness 3 consecutive months below target — late notes over 24 hoursPIP — Documentation TimelinessExisting PIP — remeasurement Q2MOCK-PIP-T-004PIPMOCK-AUD-CL-004, MOCK-AE-006, QM-APR-005, QM-MAY-005, QM-JUN-005MOCK-PT-0079MOCK-CLIN-0004QA-PI-002CL-WF-29≥95%70.6% (June)Medication reconciliation discrepancies at SOC/ROC — 3 consecutive months below threshold — linked to adverse eventPIP — Medication ReconciliationPIP Charter initiatedMOCK-PIP-T-005PIPMOCK-AUD-CL-008, QM-APR-006, QM-MAY-006, QM-JUN-006MultipleMOCK-CLIN-0010, 0017, 0022QA-PI-002CL-WF-33≤3.0%4.5% (June)Missed visits without timely MD/patient notification — escalating trend Q2PIP — Missed Visit Protocol CompliancePIP Charter initiatedMOCK-PIP-T-006PIPMOCK-INF-001, 002, 003, 005, MOCK-AUD-CL-011MOCK-PT-0006, 0012, 0020, 0053MOCK-CLIN-0009QA-SM-002CL-WF-36≤2 wound HAI/quarter5 HAIs (150% above Q1)Infection surveillance spike — repeat wound infection trend — cluster declared April/MayPIP — Wound Infection PreventionPIP Charter initiatedMOCK-PIP-T-007PIPMOCK-CMP-001, 002, 003, 004, 006, 007MultipleMOCK-CLIN-0007, 0025QA-SM-003CL-WF-37≤4 complaints/quarter7 complaints (75% increase)Patient complaint trend — communication and scheduling categories — 7 complaints Q2 vs. 4 Q1PIP — Patient Communication & SchedulingPIP Charter initiatedMOCK-PIP-T-008PIPMOCK-AUD-CO-001, QM-JUN-007MultipleMOCK-CLIN-0017, 0009CO-WF-23CO-WF-23≤2 mismatches/quarter4 mismatchesDocumentation-to-claim mismatch and visit/billing alignment concern — 4 cases in Q2PIP — Documentation-to-Claim AccuracyPIP Charter initiated
+
+
+
+SECTION 8 — CAP ACTION ITEMS
+
+cap_idtrigger_sourceproblem_statementroot_causeaction_itemsownerdue_datestatusCAP-001RCA-001 / PIP-T-001OASIS accuracy below 90% for 3 consecutive monthsM/GG items coded without direct clinical observation support1) OASIS accuracy re-training all RNs — 2026-07-25; 2) Supervisory OASIS co-review 1/clinician/month through Q3; 3) OASIS error tracking form deployedMOCK-CLIN-00302026-09-30OpenCAP-002RCA-002 / MOCK-AE-003Escalation chain not followed — wound deterioration delayNo structured escalation checklist for wound status changes; clinician did not recognize reporting trigger1) Wound escalation checklist created and distributed — 2026-07-20; 2) Competency re-check for MOCK-CLIN-0006; 3) All SN staff refresher on escalation protocolMOCK-CLIN-00262026-08-31OpenCAP-003PIP-T-003 (Documentation Timeliness)Late notes ≥24h affecting 15% of Q2 visitsNo reminder/alert system for late documentation; individual accountability not tracked at supervisor level1) EHR alert for notes approaching 24h deployed; 2) Weekly supervisor documentation timeliness report; 3) Progressive tracking — 2 warnings then disciplinary referralMOCK-CLIN-00262026-08-31OpenCAP-004PIP-T-005 (Missed Visits)Missed visit notification non-complianceProtocol exists but inconsistently followed; scheduling system does not flag missed visits for MD notification workflow1) Scheduling system notification workflow configured; 2) Missed visit protocol re-training all field staff; 3) Weekly missed visit report to supervisorsMOCK-CLIN-00252026-08-15OpenCAP-005PIP-T-007 (Complaints)7 complaints Q2 — communication and scheduling categoriesNo standardized communication framework for visit time confirmation; scheduling notes not consistently visible to field staff1) Visit confirmation protocol (24h advance call) implemented; 2) Scheduling notes mandatory field in EHR; 3) Post-visit satisfaction call tracked weeklyMOCK-CLIN-00252026-09-15Open
+
+
+
+SECTION 9 — DISCIPLINARY REVIEW TRIGGERS (5 Required)
+
+trigger_idtrigger_typesource_record_idsclinician_iddate_detectedseverityfinding_summaryrecommended_action_typesigned_bystatusMOCK-DT-001disciplinary_reviewMOCK-AUD-CL-003, MOCK-AUD-QA-003MOCK-CLIN-00172026-07-02HighRepeated late documentation: 23 of 67 visit notes late (>24h) in Q2 after coaching issued in Q1 2026. Prior written coaching on file. Pattern escalates to formal disciplinary review.disciplinary_reviewMOCK-CLIN-0026Pending HR reviewMOCK-DT-002disciplinary_reviewMOCK-AE-002, MOCK-AUD-CL-003MOCK-CLIN-00172026-07-02HighCopy-forward / cloned visit narratives: audit identified 6 visit notes for 3 different patients with near-identical text — does not reflect patient-specific care. Linked to medication error AE-002.disciplinary_reviewMOCK-CLIN-0026Pending HR reviewMOCK-DT-003disciplinary_reviewMOCK-AUD-CL-008, MOCK-AUD-RM-005, MOCK-AE-007MOCK-CLIN-00102026-07-02HighMissed visits not reported timely to responsible clinician's supervisor or physician for MOCK-PT-0088: 3 missed visits over 8-day period. Patient subsequently hospitalized with sepsis. Prior coaching documented Q4 2025.disciplinary_reviewMOCK-CLIN-0026Pending HR reviewMOCK-DT-004disciplinary_reviewMOCK-AUD-CL-010, MOCK-AE-002MOCK-CLIN-00222026-07-02ModerateUnauthorized or unsupported documentation change: chart review found visit note amendment without counter-signature for MOCK-PT-0041 after adverse event. Amendment rationale not documented per protocol.disciplinary_reviewMOCK-CLIN-0026Pending HR reviewMOCK-DT-005disciplinary_reviewRCA-002, MOCK-AE-003MOCK-CLIN-00062026-07-02HighFailure to follow escalation/reporting chain: wound deterioration documented across 3 visit notes but not escalated to supervising RN or physician for 6 days. Patient hospitalized with wound infection. Second such incident within 6 months.disciplinary_reviewMOCK-CLIN-0026Pending HR review
+
+
+
+SECTION 10 — QAPI MEETING MINUTES SOURCE RECORDS
+
+10.1 Agenda Source Record
+
+fieldvalueagenda_idMOCK-AGENDA-Q2-2026meeting_date2026-07-10agenda_distributed2026-07-07 (3 business days prior ✅)pre_read_distributed2026-07-07 ✅standing_items1) Attendance/quorum; 2) Prior minutes approval; 3) Action item tracker; 4) Q2 Quality Indicator Dashboard; 5) Adverse event/RCA summary; 6) Infection surveillance; 7) PIP remeasurement; 8) Complaint summary; 9) Compliance/billing/HR/IT summary; 10) New corrective actions; 11) Governing Body escalation items; 12) Sign-offs/adjournment
+
+10.2 Attendance & Quorum Record
+
+attendee_idnamerolepresentMOCK-CLIN-0030Christine LeeQAPI Committee Chair✅ PresentMOCK-CLIN-0026Angela MoralesClinical Manager✅ PresentMOCK-CLIN-0029Edward NakamuraAdministrator✅ PresentMOCK-CLIN-0001Patricia ReyesRN Rep✅ PresentMOCK-CLIN-0013Fatima DialloPT Rep✅ PresentMOCK-CLIN-0018Phillip MbekiOT Rep✅ PresentMOCK-CLIN-0021Nina JohanssonHHA Supervisor✅ PresentMOCK-CLIN-0025Donna ReidScheduling Rep✅ Present
+
+Quorum: 8/8 standing members present. Quorum met ✅
+
+10.3 Sign-Off Source Records
+
+
+
+
+
+Administrator Sign-off: MOCK-CLIN-0029 — Edward Nakamura — 2026-07-10 ✅
+
+
+
+Clinical Manager Sign-off: MOCK-CLIN-0026 — Angela Morales — 2026-07-10 ✅
+
+
+
+QAPI Committee Chair Sign-off: MOCK-CLIN-0030 — Christine Lee — 2026-07-10 ✅
+
+10.4 Governing Body Escalation Items
+
+
+
+
+
+GBE-001: OASIS accuracy below threshold 3 consecutive months — Governing Body directed enhanced intervention
+
+
+
+GBE-002: Medication reconciliation below threshold 3 consecutive months — Governing Body directed PIP charter within 14 days
+
+
+
+GBE-003: Missed visit rate worsening trend — Governing Body directed CAP with monthly reporting
+
+
+
+GBE-004: Discharge documentation below threshold 3 consecutive months — Governing Body directed process redesign review
+
+
+
+GBE-005: 5 disciplinary review triggers — Governing Body notified per GV-GB-001 §6.2.4
+
+10.5 Prior Quarter Action Follow-up
+
+
+
+
+
+Q1 Action #1 (Documentation Timeliness PIP): Partial improvement — rate improved from 78% to 86% but not yet at 95% goal. PIP continues Q3.
+
+
+
+Q1 Action #2 (Complaint Response Protocol): Implemented. Post-discharge call log now active. Complaint response time improved.
+
+
+
+SECTION 11 — TIMING GATE VERIFICATION
+
+gaterequirementactualstatusFeeder audit completionAll 40 audits complete and signed ≥5 business days before meeting (by 2026-07-02)All 40 signed by 2026-07-02 ✅PASSAgenda distributionDistributed ≥3 business days before meeting (by 2026-07-07)Distributed 2026-07-07 ✅PASSGoverning Body packageReady ≥7 days before GB meeting (by 2026-07-03)Package ready 2026-07-03 ✅PASSMinutes due7 days after meeting (by 2026-07-17)Assigned to Clinical Manager MOCK-CLIN-0026ScheduledNo PHIAll records use synthetic IDs and fictional dataConfirmed — no real names, MRNs, addressesPASS
+
+
+
+QAPI Q3 2026 — SYNTHETIC RAW MOCK DATASET
+
+Dataset ID: QAPI-Q3-DS-001 | Companion Cheat Sheet: QAPI-Q3-CS-001
+Agency: Sunrise Valley Home Health Agency (SVHHA) | NPI: 1234567890 (synthetic)
+Quarter: Q3 2026 (July 1 – September 30, 2026)
+Workflow: QA-WF-03 — Quarterly QAPI Committee Review
+QAPI Meeting Date: 2026-10-08
+Agenda Distribution Deadline: 2026-10-05 (3 business days prior)
+Feeder Audit Completion Deadline: 2026-10-01 (5 business days prior)
+Governing Body Package Deadline: 2026-10-01 (7 days prior to GB meeting 2026-10-08)
+Minutes Due: 2026-10-15 (7 days after meeting) — Assigned to: Clinical Manager
+Policy Basis: QA-PG-001, QA-PG-002, GV-GB-001
+Required Sign-offs: Administrator, Clinical Manager, QAPI Committee Chair
+Year Arc Note: Q3 is growth quarter. Census grows from 142 active at Jul 1 to 170 at Sep 30. 3 new staff added (MOCK-CLIN-0031, 0032, 0033). Key Q1/Q2 PIPs show partial improvement. New issues emerge in hospitalization rate and care coordination. Agency on track for 200-census year-end target.
+
+
+
+SECTION 1 — AGENCY MASTER RECORD
+
+fieldvalueagency_idSVHHA-001agency_nameSunrise Valley Home Health AgencyadministratorMOCK-CLIN-0028 (Maria L. Santos, RN, MSN)clinical_managerMOCK-CLIN-0027 (James T. Reeves, RN)qapi_chairMOCK-CLIN-0026 (Patricia G. Holden, PT)compliance_officerMOCK-CLIN-0025 (David R. Kim, JD)Q3_census_open142 patients (carry-forward from Q2 close)Q3_census_close170 patientsQ3_clinician_count33 (28 existing + 3 new hires: MOCK-CLIN-0031, 0032, 0033)
+
+
+
+SECTION 2 — PATIENT CENSUS (MOCK-PT-0001 through MOCK-PT-0170)
+
+2.1 Census Summary — Q3 2026
+
+metricvalueActive at Jul 1 (carry-forward from Q2)142 patientsNew SOC in Q341 patients (MOCK-PT-0141 through MOCK-PT-0170 + 12 recerts)Discharged Q319 patientsTransferred Q34 patientsActive at Sep 30 (Q3 close)170 patients ✅Total episodes tracked Q3183 episodesHospitalizations Q39 (MOCK-PT-0019, 0034, 0058, 0076, 0092, 0107, 0124, 0138, 0155) ⚠️ INCREASING TRENDED visits without hospitalization6 (MOCK-PT-0025, 0043, 0067, 0111, 0142, 0162)Payer mix71% Medicare A, 18% Medi-Cal, 11% Medicare AdvantageDiagnosis distribution27% CHF/COPD/Cardiac, 17% Wound, 15% Ortho, 13% Neuro, 9% DM, 8% Onco/Palliative, 6% Psych/MSW, 5% Multi-morbidService area splitNorth 26%, South 27%, East 25%, West 22%
+
+2.2 Patient Master Records — Sample (20 of 170)
+
+patient_idfirst_namelast_nameprimary_dxpayerdisciplines_orderedservice_arearisk_levelepisode_statusMOCK-PT-0001EleanorFairchildCHF (I50.9)Medicare ARN, MSWNorthHighActive-Recert (Q3 recert)MOCK-PT-0006SamuelOkaforCVA/Hemiplegia (I69.351)Medicare APT, OT, SLP, RNSouthHighActive-RecertMOCK-PT-0019SylviaYamamotoAnxiety/depression + CHFMedi-CalMSW, RNEastHighHospitalized-Active ⚠️MOCK-PT-0034ReginaldOseiHip Fx post-op (M84.352A)Medicare APT, PTA, OTWestMediumHospitalized-Active ⚠️MOCK-PT-0058LorettaMendezCOPD exacerbation (J44.1)Medicare ARN, PTNorthHighHospitalized-Active ⚠️MOCK-PT-0076CurtisAbernathyCHF w/ AKI (I50.9, N17.9)Medicare ARN, HHASouthHighHospitalized ⚠️MOCK-PT-0107DianeFontaineWound care + DM (E11.621)Medicare ARN, HHAEastHighActive-SOCMOCK-PT-0124TerrenceBlackwoodParkinson's + fall risk (G20)Medicare AdvantagePT, OT, RNWestHighHospitalized ⚠️MOCK-PT-0138WinifredChukwuPost-op knee (Z96.651)Medicare APT, PTANorthLowActive-SOCMOCK-PT-0141ArmandoGuzmanCHF, hypertension (I50.9)Medicare ARN, HHASouthHighActive-SOC (new Q3)MOCK-PT-0142GladysPenningtonCOPD (J44.0)Medi-CalRN, PTEastHighActive-SOC (new Q3)MOCK-PT-0143DeshawnWintersSCD, wound (D57.1)Medi-CalRN, HHAWestHighActive-SOC (new Q3)MOCK-PT-0150FlorenceKowalczykCVA + dysphagia (I69.391)Medicare APT, OT, SLP, RNNorthHighActive-SOC (new Q3)MOCK-PT-0155NathanielObiCHF, Afib (I50.9, I48.91)Medicare AdvantageRN, HHASouthHighHospitalized ⚠️MOCK-PT-0158HarrietVegaBreast CA, wound (C50.912)Medicare ARN, MSW, HHAEastHighActive-SOC (new Q3)MOCK-PT-0160CliffordNzingaDM type 1, neuropathyMedi-CalRN, HHAWestMediumActive-SOC (new Q3)MOCK-PT-0163MillicentHaroMS (G35)Medicare APT, OT, SLP, RN, HHANorthMediumActive-SOC (new Q3)MOCK-PT-0165SolomonAdewaleHip TKA (Z96.641)Medicare APT, OTSouthLowActive-SOC (new Q3)MOCK-PT-0168BeatrixNguyenPalliative — ESRDMedicare ARN, MSW, HHAEastHighActive-SOC (new Q3)MOCK-PT-0170LincolnOkaforCOPD, anxiety (J44.1)Medicare ARN, PTWestMediumActive-SOC (new Q3)
+
+Full census: MOCK-PT-0001 through MOCK-PT-0170. All names and IDs are entirely fictional.
+
+
+
+SECTION 3 — CLINICIAN / STAFF (MOCK-CLIN-0001 through MOCK-CLIN-0033)
+
+MOCK-CLIN-0001 through MOCK-CLIN-0028 carry forward from Q1/Q2. Three new hires added Q3:
+
+clinician_idnamedisciplinerolesupervisorservice_areastatusnoteMOCK-CLIN-0029Amara T. OseiRNField Nurse (new hire Q3)MOCK-CLIN-0027NorthActiveOnboarded 2026-07-07; orientation completeMOCK-CLIN-0030Victor J. MensahPTPhysical Therapist (new hire Q3)MOCK-CLIN-0026SouthActiveOnboarded 2026-07-14; competency verifiedMOCK-CLIN-0031Rosa A. DelacroixHHAHome Health Aide (new hire Q3)MOCK-CLIN-0001EastActiveOnboarded 2026-08-04; ⚠️ 1 missed in-service (remediated 09-10)MOCK-CLIN-0032Kwame B. AsanteLVNField LVN (new hire Q3)MOCK-CLIN-0017WestActiveOnboarded 2026-08-18; competency completeMOCK-CLIN-0033Ingrid M. SolbergMSWSocial Worker (new hire Q3)MOCK-CLIN-0027All areasActiveOnboarded 2026-09-02; added due to caseload growth
+
+Carry-forward disciplinary notes:
+
+
+
+
+
+MOCK-CLIN-0018: PIP from Q1 still active; documentation improved from 86.9% → 91% timeliness in Q3 ✅ partial resolution
+
+
+
+MOCK-CLIN-0016: Monitoring plan active since Q1; cloning not detected in Q3 ✅
+
+
+
+ MOCK-CLIN-0003: Suspended Q1 investigation resolved Q2; reinstated with supervision plan; ⚠️ new finding Q3 (below)
+
+
+
+MOCK-CLIN-0004: Disciplinary hold resolved Q2; back on caseload with supervision; clean record Q3
+
+
+
+SECTION 4 — QUALITY METRIC OBSERVATIONS (July / August / September 2026)
+
+metric_idindicatormonthnumeratordenominatorratethresholdstatustrend_vs_Q2QM-Q3-001OASIS Accuracy RateJuly12214285.9%≥90%⚠️ BELOWImproving (was 83–86% Q2) — CAP-Q1-001 showing effectQM-Q3-002OASIS Accuracy RateAugust13115087.3%≥90%⚠️ BELOWContinued improvementQM-Q3-003OASIS Accuracy RateSeptember14316188.8%≥90%⚠️ BELOW — near thresholdClose; PIP continues but progress documentedQM-Q3-004Visit Doc Timeliness (within 24h)July14816291.4%≥95%⚠️ BELOWImproved from 86–87% Q2 ✅ partial resolutionQM-Q3-005Visit Doc Timeliness (within 24h)August15817092.9%≥95%⚠️ BELOWNear threshold; PIP interventions workingQM-Q3-006Visit Doc Timeliness (within 24h)September16317692.6%≥95%⚠️ BELOW — PIP continuesSlight regression in Sep — new staff onboarding effectQM-Q3-007Med Rec at SOC/ROCJuly263086.7%≥95%⚠️ BELOWImproved from 79% Q2 — CAP-Q1-002 effect ✅QM-Q3-008Med Rec at SOC/ROCAugust293387.9%≥95%⚠️ BELOWContinued improvement; not yet at thresholdQM-Q3-009Med Rec at SOC/ROCSeptember313588.6%≥95%⚠️ BELOW — PIP continues Q4Near threshold; PIP to continue into Q4QM-Q3-010POC Goal CompletenessJuly13014887.8%≥92%⚠️ BELOWImproved from 80% Q2 ✅QM-Q3-011POC Goal CompletenessAugust14115889.2%≥92%⚠️ BELOWNear thresholdQM-Q3-012POC Goal CompletenessSeptember14916689.8%≥92%⚠️ BELOW — PIP continuesNear threshold; continue PIP into Q4QM-Q3-013Missed Visit RateJuly82403.3%≤2%⚠️ ABOVEImproved from 4.6% Q2 but still above thresholdQM-Q3-014Missed Visit RateAugust72522.8%≤2%⚠️ ABOVEImproving trendQM-Q3-015Missed Visit RateSeptember62652.3%≤2%⚠️ ABOVE — nearly resolvedNear threshold; PIP showing effectQM-Q3-016Hospitalization RateJuly41422.8%≤3%⚠️ WATCH — within but elevatedIncrease from Q2 (7 hosp vs 5 Q1)QM-Q3-017Hospitalization RateAugust31551.9%≤3%✅ WITHINStabilizingQM-Q3-018Hospitalization RateSeptember21631.2%≤3%✅ WITHINImprovingQM-Q3-019Wound Infection RateJuly4458.9%≤5%🔴 ABOVE — PIP continuesStill elevated; CAP-Q1-003 partially effectiveQM-Q3-020Wound Infection RateAugust3476.4%≤5%⚠️ ABOVEDecreasing — improvement notedQM-Q3-021Wound Infection RateSeptember2494.1%≤5%✅ WITHIN thresholdFirst time below threshold since Q1 ✅ PIP resolved pending Q4 confirmationQM-Q3-022Complaint Resolution TimelinessJuly7977.8%≥90%⚠️ BELOWImproved from 62–67% Q2 but below thresholdQM-Q3-023Complaint Resolution TimelinessAugust8988.9%≥90%⚠️ BELOW — near thresholdNear resolutionQM-Q3-024Complaint Resolution TimelinessSeptember91090.0%≥90%✅ AT THRESHOLDFirst month meeting target ✅ — PIP close pending Q4QM-Q3-025Hospitalization Rate (cumulative Q3)Q3 total91705.3%≤3% quarterly🔴 NEW PIP TRIGGER — cumulative spike9 hospitalizations total Q3 — new PIP warrantedQM-Q3-026Care Coordination DocumentationQ3 average11215572.3%≥90%🔴 NEW PIP TRIGGERNew metric introduced Q3; baseline alarmingly low
+
+
+
+SECTION 5 — 40 FEEDER AUDIT COMPLETION RECORDS (Q3)
+
+All 40 feeder audits completed and signed by 2026-10-01 ✅
+
+audit_idworkflow_idcategoryreviewer_idstatussigned_atkey_findingAUD-Q3-CL-001CL-WF-26Clinical QualityMOCK-CLIN-0022Complete2026-09-29OASIS accuracy 85–89%; improving but not yet at thresholdAUD-Q3-CL-002CL-WF-27Clinical QualityMOCK-CLIN-0029Complete2026-09-29POC goal completeness 87–90%; near threshold; PIP continuesAUD-Q3-CL-003CL-WF-28Clinical QualityMOCK-CLIN-0017Complete2026-09-30Visit timeliness: new staff (MOCK-CLIN-0031) had 4 late notes in Sep; coaching initiatedAUD-Q3-CL-004CL-WF-29Clinical QualityMOCK-CLIN-0002Complete2026-09-30Med rec improving (87–89%); checklist in use; not yet at 95% thresholdAUD-Q3-CL-005CL-WF-30Clinical QualityMOCK-CLIN-0022Complete2026-10-01Care coordination gaps: 9 patients with 3+ disciplines had delayed communication — new PIP triggerAUD-Q3-CL-006CL-WF-31Clinical QualityMOCK-CLIN-0003Complete2026-10-01Discharge documentation: improved; 1 incomplete of 19 discharged ✅AUD-Q3-CL-007CL-WF-32Clinical QualityMOCK-CLIN-0001Complete2026-10-01Missed visits declining (8→6); still above 2% threshold; physician notification improvedAUD-Q3-CL-008CL-WF-33Clinical QualityMOCK-CLIN-0017Complete2026-10-01Wound infection rate: Sep first month below 5% ✅; PIP resolution pendingAUD-Q3-CL-009CL-WF-34Clinical QualityMOCK-CLIN-0022Complete2026-10-01OASIS GG consistency: 6 remaining inconsistency flags (down from 14 in Q1)AUD-Q3-CL-010CL-WF-35Clinical QualityMOCK-CLIN-0002Complete2026-10-019 hospitalizations Q3; 5 potentially preventable; new PIP triggerAUD-Q3-CL-011CL-WF-36Clinical QualityMOCK-CLIN-0003Complete2026-10-01Chart review: 3 deficiency rows (down from 6 in Q1); 1 new finding (MOCK-CLIN-0003 documentation irregularity)AUD-Q3-CL-012CL-WF-37Clinical QualityMOCK-CLIN-0001Complete2026-10-01Discipline justification: improved to 9% absent (down from 18% Q1)AUD-Q3-CO-001CO-WF-23Compliance/BillingMOCK-CLIN-0025Complete2026-09-29Doc-to-claim: 2 mismatches (down from 6); billing retraining effectiveAUD-Q3-CO-002CO-WF-24Compliance/BillingMOCK-CLIN-0025Complete2026-09-30Eligibility verification: all current; re-verification process corrected ✅AUD-Q3-CO-003CO-WF-25Compliance/BillingMOCK-CLIN-0025Complete2026-09-30Billing timeliness: 1 late claim (down from 3); improvement notedAUD-Q3-CO-004CO-WF-26Compliance/BillingMOCK-CLIN-0025Complete2026-10-01Hotline: 3 intake records Q3 — 2 resolved, 1 under investigation (new)AUD-Q3-CO-005CO-WF-27Compliance/BillingMOCK-CLIN-0025Complete2026-10-01Overpayment: $0 identified in Q3 ✅; Q1 refund confirmed receivedAUD-Q3-CO-006CO-WF-28Compliance/BillingMOCK-CLIN-0025Complete2026-10-01Skilled need documentation: 95% sufficient ✅AUD-Q3-CO-007CO-WF-29Compliance/BillingMOCK-CLIN-0025Complete2026-10-01Compliance committee notes complete Jul–Sep 2026AUD-Q3-CO-008CO-WF-30Compliance/BillingMOCK-CLIN-0025Complete2026-10-01Policy scorecard: 13 of 14 policies at ≥90% ✅ (up from 11 in Q1)AUD-Q3-QA-001 through QA-006QA-WF-13–18QAPI SupportMOCK-CLIN-0026All Complete2026-10-01PIP tracker: 6 active PIPs (4 improving, 1 resolved-pending, 1 new); CAP updates loggedAUD-Q3-HR-001 through HR-004HR-WF-18–21HR/TrainingMOCK-CLIN-0023All Complete2026-10-01Training: 32 of 33 complete (MOCK-CLIN-0031 missed in-service remediated 09-10); new hire onboarding verifiedAUD-Q3-RM-001 through RM-005RM-WF-16–20Risk/SafetyMOCK-CLIN-0025All Complete2026-10-019 adverse events Q3 (7 hospitalizations, 2 falls); 4 RCAs required; risk trend elevatedAUD-Q3-IT-001 through IT-005IT-WF-21–25IT/SecurityMOCK-CLIN-0024All Complete2026-10-01Security: 2 phishing attempts blocked; 1 access control gap (resolved same day); all HIPAA training current
+
+
+
+SECTION 6 — ADVERSE EVENTS & RCA RECORDS (Q3 2026)
+
+event_idpatient_idevent_typeevent_dateseverityrca_requiredrca_idclinician_idstatusAE-Q3-001MOCK-PT-0019Hospitalization — CHF + anxiety decompensation2026-07-11HighYesRCA-Q3-001MOCK-CLIN-0022RCA Complete — care coordination CAP issuedAE-Q3-002MOCK-PT-0034Hospitalization — fall + hip re-fracture2026-07-19CriticalYesRCA-Q3-002MOCK-CLIN-0006RCA Complete — fall risk protocol updatedAE-Q3-003MOCK-PT-0058Hospitalization — COPD exacerbation2026-07-28HighYesRCA-Q3-003MOCK-CLIN-0002RCA Complete — monitoring frequency CAPAE-Q3-004MOCK-PT-0076Hospitalization — CHF+AKI2026-08-03HighNoN/AMOCK-CLIN-0001Closed — rapid deterioration; no systemic findingAE-Q3-005MOCK-PT-0092Patient fall — minor injury2026-08-14MediumYesRCA-Q3-004MOCK-CLIN-0031RCA in progress — new hire involved; supervision reviewAE-Q3-006MOCK-PT-0107Wound dehiscence + infection2026-08-22HighNoN/AMOCK-CLIN-0005Closed — documented expected course; wound protocol reviewedAE-Q3-007MOCK-PT-0124Hospitalization — Parkinson's + fall2026-09-04HighYesRCA-Q3-005 (pending)MOCK-CLIN-0030RCA in progressAE-Q3-008MOCK-PT-0138ED visit — post-op pain unmanaged2026-09-12MediumNoN/AMOCK-CLIN-0007Closed — pain protocol updatedAE-Q3-009MOCK-PT-0155Hospitalization — Afib with RVR2026-09-22HighNoN/AMOCK-CLIN-0029Closed — rapid deterioration
+
+
+
+SECTION 7 — INFECTION SURVEILLANCE LINE LIST (Q3 2026)
+
+infx_idpatient_idinfection_typeonset_dateresolution_dateclinician_idstatusINF-Q3-001MOCK-PT-0007Wound infection — surgical site2026-07-082026-07-25MOCK-CLIN-0005ResolvedINF-Q3-002MOCK-PT-0043UTI — catheter-associated2026-07-222026-08-05MOCK-CLIN-0003ResolvedINF-Q3-003MOCK-PT-0107Wound dehiscence + secondary infection2026-08-222026-09-10MOCK-CLIN-0005ResolvedINF-Q3-004MOCK-PT-0143Wound infection — SCD2026-09-052026-09-22MOCK-CLIN-0032ResolvedINF-Q3-005MOCK-PT-0158Wound infection — oncology2026-09-14Ongoing at Q3 closeMOCK-CLIN-0001MonitoringINF-Q3-006MOCK-PT-0168Palliative wound infection2026-09-21Ongoing — palliative goalMOCK-CLIN-0022Palliative management
+
+
+
+SECTION 8 — PATIENT COMPLAINTS (Q3 2026)
+
+complaint_idpatient_idcomplaint_typecomplaint_dateresolved_bydays_to_resolvewithin_5_daysstatusCOMP-Q3-001MOCK-PT-0025Communication — clinician unavailable after visit2026-07-15MOCK-CLIN-00274✅ YesClosedCOMP-Q3-002MOCK-PT-0067Scheduling — 2 last-minute cancellations in 1 week2026-07-29MOCK-CLIN-00233✅ YesClosedCOMP-Q3-003MOCK-PT-0092Communication — post-fall instructions unclear2026-08-15MOCK-CLIN-00274✅ YesClosedCOMP-Q3-004MOCK-PT-0142Scheduling — new clinician arrived without introduction2026-08-25MOCK-CLIN-00232✅ YesClosedCOMP-Q3-005MOCK-PT-0155Communication — family not notified of hospitalization in time2026-09-23MOCK-CLIN-00277❌ No — over 5 daysClosed — CAP note addedCOMP-Q3-006MOCK-PT-0163Scheduling — repeated missed visits by new HHA (MOCK-CLIN-0031)2026-09-28PendingN/A❌ Open at Q3 closeOpen — DISC trigger reviewedCOMP-Q3-007MOCK-PT-0168Communication — pain management not explained2026-09-30PendingN/A❌ Open at Q3 closeOpenCOMP-Q3-008MOCK-PT-0170Scheduling — late arrival pattern (MOCK-CLIN-0032)2026-09-30PendingN/A❌ Open at Q3 closeOpenCOMP-Q3-009MOCK-PT-0124Communication — Parkinson's fall: family not informed until next day2026-09-05MOCK-CLIN-00276❌ NoClosed — GB escalationCOMP-Q3-010MOCK-PT-0034Communication — post-fall re-fracture family communication failure2026-07-20MOCK-CLIN-00283✅ YesClosed — RCA linked
+
+
+
+SECTION 9 — PIP TRIGGERS (Q3 2026) — 8 Active/New
+
+trigger_idtypesource_record_idsstatusfinding_summaryPIP-TRIG-Q3-001OASIS Accuracy Continued (carry-forward)QM-Q3-001,002,003Active — improving, not closedStill 86–89%; below 90% threshold; PIP continues pending Q4 resolutionPIP-TRIG-Q3-002Visit Doc Timeliness Continued (carry-forward)QM-Q3-004,005,006Active — improving, Sept regression noted91–93% range; regression in Sept due to new hires; PIP continuesPIP-TRIG-Q3-003Med Rec Continued (carry-forward)QM-Q3-007,008,009Active — improving87–89%; substantial improvement from Q1 72%; PIP continues into Q4PIP-TRIG-Q3-004POC Goal Completeness Continued (carry-forward)QM-Q3-010,011,012Active — improving88–90%; approaching threshold; PIP continuesPIP-TRIG-Q3-005Missed Visit Rate Continued (carry-forward)QM-Q3-013,014,015Active — improving, near threshold3.3% → 2.3%; strong improvement; PIP may close Q4PIP-TRIG-Q3-006Wound Infection Rate — Near ResolutionQM-Q3-019,020,021Near-resolved — Sep at 4.1% ✅First month below threshold; PIP pending Q4 confirmation before closurePIP-TRIG-Q3-007Hospitalization Rate Spike — NEW Q3QM-Q3-025; AUD-Q3-CL-010; AE-Q3-001,002,003,007NEW PIP initiated9 hospitalizations Q3 (5.3% cumulative); 5 potentially preventable; care coordination gap identifiedPIP-TRIG-Q3-008Care Coordination Documentation Gap — NEW Q3QM-Q3-026; AUD-Q3-CL-005; AE-Q3-001NEW PIP initiatedCare coordination documentation 72.3% vs ≥90% threshold; multi-discipline communication breakdown in 9 patients
+
+
+
+SECTION 10 — DISCIPLINARY ACTION TRIGGERS (Q3 2026)
+
+trigger_idclinician_idtrigger_typesource_recordsseverityfinding_summarystatusDISC-TRIG-Q3-001MOCK-CLIN-0031 (Rosa Delacroix, HHA)Repeated Missed Visits — New Hire (3 in first 2 months)COMP-Q3-006; AUD-Q3-CL-007Medium3 missed visits in first 8 weeks; scheduling/reporting failure; missed in-service adds contextCoaching + monitoring plan; may escalate if repeated Q4DISC-TRIG-Q3-002MOCK-CLIN-0003 (Denise Holloway, RN — reinstated)New Documentation Irregularity After ReinstatementAUD-Q3-CL-011; chart review Q3-003-CHigh2nd documentation irregularity post-reinstatement; pattern of chart alterations; supervision plan may be insufficientReferred to HR — second formal reviewDISC-TRIG-Q3-003MOCK-CLIN-0030 (Victor Mensah, PT — new hire)Inadequate Fall Risk Assessment DocumentationAE-Q3-007; RCA-Q3-005HighParkinson's patient fall — fall risk not documented at SOC visit; RCA identifies direct link to AE; new hire patternMandatory competency re-eval; supervision planDISC-TRIG-Q3-004MOCK-CLIN-0032 (Kwame Asante, LVN)Repeated Late Arrivals Affecting Patient CareCOMP-Q3-008; AUD-Q3-CL-003Medium4 late arrivals in Sept; patient complaint filed; scheduling not notified; new hirePerformance coaching; formal warning if pattern continues Q4DISC-TRIG-Q3-005MOCK-CLIN-0022 (Brian Callahan, RN)Care Coordination Failure — Hospitalization LinkAE-Q3-001; RCA-Q3-001; QM-Q3-026HighRCA-Q3-001 identifies MOCK-CLIN-0022 failed to coordinate multi-discipline care for MOCK-PT-0019 prior to hospitalization; multi-discipline communication records missing for 3 patients in JulyIndividual corrective plan + system PIP separation documented
+
+
+
+SECTION 11 — CAPs (Q3 2026)
+
+cap_idsourcedescriptionowner_iddue_datestatusCAP-Q3-001PIP-TRIG-Q3-007Hospitalization reduction plan: enhanced cardiac/COPD monitoring protocols; daily weight tracking required for high-risk patientsMOCK-CLIN-00272026-11-08OpenCAP-Q3-002PIP-TRIG-Q3-008Care coordination documentation standard: mandatory multi-discipline communication log for patients with 3+ disciplines; weekly CM reviewMOCK-CLIN-00272026-11-08OpenCAP-Q3-003DISC-TRIG-Q3-002MOCK-CLIN-0003: Enhanced supervision plan; all chart entries require same-day countersign by supervisor for 90 daysMOCK-CLIN-00272026-12-08OpenCAP-Q3-004DISC-TRIG-Q3-003MOCK-CLIN-0030: Fall risk assessment competency re-eval; mandatory annual fall risk training all PT/PTA staffMOCK-CLIN-00262026-11-08OpenCAP-Q3-005AUD-Q3-CL-003 (new hire timeliness)New hire onboarding enhancement: documentation timeliness module added to orientation; 30-day supervisor audit for all new hiresMOCK-CLIN-00232026-11-01Open
+
+
+
+SECTION 12 — QAPI MEETING SOURCE RECORDS (Q3 2026)
+
+record_typerecord_iddetaildatestatusAgendaAGD-Q3-00112-section QAPI agenda; highlights: hospitalization spike, 2 new PIPs, 5 carry-forward PIPs, 5 disciplinary items2026-10-05Distributed ✅Pre-read DistributionPRE-Q3-001Pre-read sent to all 9 committee members 2026-10-052026-10-05Confirmed ✅AttendanceATT-Q3-0019 of 9 present; quorum met ✅2026-10-08Confirmed ✅QuorumQUO-Q3-001Quorum confirmed 9:01 AM by MOCK-CLIN-00262026-10-08Confirmed ✅Prior Minutes ApprovalMIN-APPR-Q3-001Q2 2026 minutes approved unanimously2026-10-08Approved ✅GB Escalation ItemsGB-Q3-0013 items: hospitalization spike (9 Q3), hip re-fracture event (AE-Q3-002 + RCA-Q3-002), MOCK-CLIN-0003 second disciplinary2026-10-08Escalated ✅Administrator Sign-offSGN-Q3-ADM-001Signed: MOCK-CLIN-00282026-10-08Signed ✅Clinical Manager Sign-offSGN-Q3-CM-001Signed: MOCK-CLIN-00272026-10-08Signed ✅QAPI Chair Sign-offSGN-Q3-CHAIR-001Signed: MOCK-CLIN-00262026-10-08Signed ✅MinutesMIN-Q3-001Minutes due 2026-10-15; drafted by MOCK-CLIN-0027; all 12 sections present2026-10-15Complete ✅
+
+
+
+⚠️ SYNTHETIC DATA ONLY — SVHHA — Q3 2026 — NO REAL PHI — MOCK/UAT ONLY
+
+
+QAPI Q4 2026 — SYNTHETIC RAW MOCK DATASET — YEAR-END
+
+Dataset ID: QAPI-Q4-DS-001 | Companion Cheat Sheet: QAPI-Q4-CS-001
+Agency: Sunrise Valley Home Health Agency (SVHHA) | NPI: 1234567890 (synthetic)
+Quarter: Q4 2026 (October 1 – December 31, 2026)
+Workflow: QA-WF-03 — Quarterly QAPI Committee Review (Year-End)
+QAPI Meeting Date: 2027-01-14
+Agenda Distribution Deadline: 2027-01-09 (3 business days prior)
+Feeder Audit Completion Deadline: 2027-01-07 (5 business days prior)
+Governing Body Package Deadline: 2027-01-07 (7 days prior to GB meeting 2027-01-14)
+Annual Compliance Report Due: 2027-01-31 (GV-FM-023 — full year)
+Minutes Due: 2027-01-21 (7 days after meeting) — Assigned to: Clinical Manager
+Policy Basis: QA-PG-001, QA-PG-002, GV-GB-001
+Required Sign-offs: Administrator, Clinical Manager, QAPI Committee Chair
+Year-End Note: Q4 closes the 2026 QAPI cycle. Total census at Dec 31 = 200 ✅ (year-end target achieved). 2 additional new hires (MOCK-CLIN-0034, 0035). Most Q1/Q2/Q3 PIPs resolved or near-resolution. Annual trend summary spans all 4 quarters. GV-FM-023 covers full 2026 year. Year-long narrative shows agency growing from 120 → 200 patients with improving quality metrics.
+
+
+
+SECTION 1 — AGENCY MASTER RECORD — YEAR-END STATUS
+
+fieldvalueagency_idSVHHA-001agency_nameSunrise Valley Home Health AgencyadministratorMOCK-CLIN-0028 (Maria L. Santos, RN, MSN)clinical_managerMOCK-CLIN-0027 (James T. Reeves, RN)qapi_chairMOCK-CLIN-0026 (Patricia G. Holden, PT)compliance_officerMOCK-CLIN-0025 (David R. Kim, JD)Q4_census_open172 (carry-forward from Q3 close; 170 + 2 late Q3 SOCs)Q4_census_close200 patients ✅ YEAR-END TARGET ACHIEVEDQ4_clinician_count35 (33 existing + 2 new: MOCK-CLIN-0034, 0035)2026_annual_total_patients_served257 unique patients across 2026 (including SOC, recerts, discharges)2026_year_end_active_census200 ✅
+
+
+
+SECTION 2 — PATIENT CENSUS (MOCK-PT-0001 through MOCK-PT-0200)
+
+2.1 Census Summary — Q4 2026
+
+metricvalueActive at Oct 1 (carry-forward from Q3)172 patientsNew SOC in Q438 patients (MOCK-PT-0171 through MOCK-PT-0200 + 15 recerts)Discharged Q422 patientsTransferred Q43 patientsActive at Dec 31 (Q4 close — YEAR-END)200 patients ✅Total episodes tracked Q4215 episodesHospitalizations Q46 (MOCK-PT-0028, 0072, 0103, 0149, 0176, 0188) — declining from Q3ED visits without hospitalization4 (MOCK-PT-0037, 0085, 0152, 0194)Payer mix70% Medicare A, 19% Medi-Cal, 11% Medicare AdvantageDiagnosis distribution26% CHF/COPD/Cardiac, 17% Wound, 16% Ortho, 14% Neuro, 9% DM, 8% Onco/Palliative, 5% Psych/MSW, 5% Multi-morbidService area splitNorth 25%, South 27%, East 25%, West 23%
+
+2.2 Patient Master Records — Sample (20 of 200 — includes new Q4 patients)
+
+patient_idfirst_namelast_nameprimary_dxpayerdisciplinesareariskstatusMOCK-PT-0001EleanorFairchildCHF (I50.9)Medicare ARN, MSWNorthHighActive-Recert (Q4 — 5th recert)MOCK-PT-0006SamuelOkaforCVA (I69.351)Medicare APT, OT, SLP, RNSouthHighActive-RecertMOCK-PT-0028EstelleFontaineCHF exacerbation (I50.9)Medicare ARN, HHANorthHighHospitalized-Active ⚠️MOCK-PT-0072ReginaldOseiHip Fx re-fracture (M84.352A)Medicare APT, OTWestHighHospitalized ⚠️MOCK-PT-0171JosephineAmaraDM foot wound (E11.621)Medicare ARN, HHANorthHighActive-SOC (new Q4)MOCK-PT-0172ChesterOyelaranCOPD (J44.1)Medicare ARN, PTSouthHighActive-SOC (new Q4)MOCK-PT-0173MirabelChristensenKnee arthroplasty (Z96.651)Medicare AdvantagePT, PTAEastLowActive-SOC (new Q4)MOCK-PT-0175IgnacioBandaCVA + aphasia (I69.321)Medicare APT, OT, SLP, RNWestHighActive-SOC (new Q4)MOCK-PT-0178LaverneAchebeWound + DM + CHFMedi-CalRN, HHA, MSWNorthHighActive-SOC (new Q4)MOCK-PT-0180VincentOsei-MensahParkinson's (G20)Medicare APT, OT, SLP, RNSouthHighActive-SOC (new Q4)MOCK-PT-0183NadineHolbrookPost-op hip (Z96.641)Medicare APT, PTA, OTEastMediumActive-SOC (new Q4)MOCK-PT-0185SolomonNwosuCHF + CKD (I50.9, N18.3)Medicare ARN, HHAWestHighActive-SOC (new Q4)MOCK-PT-0188CelesteIbarraCOPD exacerbation (J44.1)Medi-CalRN, PTNorthHighHospitalized ⚠️MOCK-PT-0190ReginaldMutomboCVA — stroke rehabMedicare APT, OT, SLP, RNSouthHighActive-SOC (new Q4)MOCK-PT-0193AgathaKozlowskiAnxiety/depression + DMMedi-CalMSW, RNEastMediumActive-SOC (new Q4)MOCK-PT-0195LeroyEkwuemeCancer palliative (C34.12)Medicare ARN, MSW, HHAWestHighActive-SOC (new Q4)MOCK-PT-0196OctaviaFerreiraHip fracture (M84.352A)Medicare APT, PTA, OTNorthMediumActive-SOC (new Q4)MOCK-PT-0198WinstonAsanteCHF, Afib (I50.9)Medicare AdvantageRN, HHASouthHighActive-SOC (new Q4)MOCK-PT-0199DorotheaNakamuraDM neuropathy (E11.40)Medicare ARN, HHAEastMediumActive-SOC (new Q4)MOCK-PT-0200ClementObafemiCOPD + anxiety (J44.1)Medi-CalRN, PTWestMediumActive-SOC (new Q4 — 200th patient) ✅
+
+Full census: MOCK-PT-0001 through MOCK-PT-0200 — YEAR-END CENSUS TARGET ACHIEVED ✅. All names and IDs entirely fictional.
+
+
+
+SECTION 3 — CLINICIAN / STAFF (MOCK-CLIN-0001 through MOCK-CLIN-0035)
+
+MOCK-CLIN-0001 through MOCK-CLIN-0033 carry forward from Q3. Two new hires added Q4:
+
+clinician_idnamedisciplinerolesupervisorstatusnoteMOCK-CLIN-0034Theresa R. BoatengRNField Nurse (new hire Q4)MOCK-CLIN-0027ActiveOnboarded 2026-10-06; orientation complete; documentation timeliness 100% in Q4 ✅MOCK-CLIN-0035Omar F. DialloPTPhysical Therapist (new hire Q4)MOCK-CLIN-0026ActiveOnboarded 2026-11-03; fall risk competency verified prior to first patient assignment ✅
+
+Year-end disciplinary resolution summary:
+
+
+
+
+
+MOCK-CLIN-0018: Documentation timeliness 94% in Q4 — near threshold; PIP closure pending
+
+
+
+MOCK-CLIN-0016: No cloning detected Q4; monitoring plan complete ✅
+
+
+
+MOCK-CLIN-0003: Third irregularity Q3; HR recommended termination Q4; ⚠️ separation pending at Q4 close
+
+
+
+MOCK-CLIN-0004: Clean record Q4; disciplinary hold removed Q2 ✅
+
+
+
+MOCK-CLIN-0019: Performance improvement plan complete; missed visit reporting compliant Q4 ✅
+
+
+
+MOCK-CLIN-0022: Corrective plan complete; coordination documentation 91% in Q4 ✅
+
+
+
+MOCK-CLIN-0030: Competency re-eval passed; fall risk documentation 100% Q4 ✅
+
+
+
+MOCK-CLIN-0031: No missed visits Q4; monitoring complete ✅
+
+
+
+SECTION 4 — QUALITY METRIC OBSERVATIONS (October / November / December 2026)
+
+metric_idindicatormonthnumeratordenominatorratethresholdstatustrend_vs_Q3QM-Q4-001OASIS Accuracy RateOctober16318090.6%≥90%✅ AT/ABOVE THRESHOLDFirst month at threshold ✔; PIP resolution pending 2-month confirmationQM-Q4-002OASIS Accuracy RateNovember17118891.0%≥90%✅ ABOVE THRESHOLDSustained ✅QM-Q4-003OASIS Accuracy RateDecember17919691.3%≥90%✅ ABOVE — PIP CLOSEDPIP-Q1-001 RESOLVED after 4 quarters ✅QM-Q4-004Visit Doc Timeliness (within 24h)October18219493.8%≥95%⚠️ BELOW — near thresholdContinued improvementQM-Q4-005Visit Doc Timeliness (within 24h)November19020095.0%≥95%✅ AT THRESHOLDFirst month at threshold ✔QM-Q4-006Visit Doc Timeliness (within 24h)December19720695.6%≥95%✅ ABOVE — PIP CLOSEDPIP resolved ✅QM-Q4-007Med Rec at SOC/ROCOctober333789.2%≥95%⚠️ BELOWImproving; checklist now standard processQM-Q4-008Med Rec at SOC/ROCNovember363992.3%≥95%⚠️ BELOW — near thresholdNear thresholdQM-Q4-009Med Rec at SOC/ROCDecember384095.0%≥95%✅ AT THRESHOLD — PIP CLOSEDPIP resolved Q4 end ✅QM-Q4-010POC Goal CompletenessOctober16818292.3%≥92%✅ AT THRESHOLDFirst month at threshold ✔QM-Q4-011POC Goal CompletenessNovember17819193.2%≥92%✅ ABOVESustained ✅QM-Q4-012POC Goal CompletenessDecember18619893.9%≥92%✅ ABOVE — PIP CLOSEDPIP resolved ✅QM-Q4-013Missed Visit RateOctober52751.8%≤2%✅ WITHIN THRESHOLDPIP resolved ✅QM-Q4-014Missed Visit RateNovember42851.4%≤2%✅ WITHINSustained ✅QM-Q4-015Missed Visit RateDecember42951.4%≤2%✅ WITHIN — PIP CLOSEDPIP resolved ✅QM-Q4-016Hospitalization RateOctober31721.7%≤3%✅ WITHINDeclining from Q3 spikeQM-Q4-017Hospitalization RateNovember21851.1%≤3%✅ WITHINFurther declining ✅QM-Q4-018Hospitalization RateDecember11970.5%≤3%✅ WITHIN — PIP improvingDramatic improvement; new monitoring protocols effectiveQM-Q4-019Wound Infection RateOctober3525.8%≤5%⚠️ ABOVE — borderlineSlight uptick from Sep 4.1%; ⚠️ PIP not yet closedQM-Q4-020Wound Infection RateNovember2543.7%≤5%✅ WITHINBack below thresholdQM-Q4-021Wound Infection RateDecember2563.6%≤5%✅ WITHIN — PIP CLOSEDPIP resolved ✅ (required 2 consecutive months below threshold)QM-Q4-022Complaint Resolution TimelinessOctober101190.9%≥90%✅ ABOVESustained from Q3 Sep ✅QM-Q4-023Complaint Resolution TimelinessNovember8988.9%≥90%⚠️ BELOW — near missMinor regression; watchQM-Q4-024Complaint Resolution TimelinessDecember99100.0%≥90%✅ ABOVE — PIP CLOSEDStrong close; PIP resolved ✅QM-Q4-025Hospitalization Rate (Q4 cumulative)Q4 total62003.0%≤3%✅ AT THRESHOLDQ3 PIP effective; hospitalization trend reversed ✅QM-Q4-026Care Coordination DocumentationOctober14816888.1%≥90%⚠️ BELOW — near thresholdImproved from 72.3% Q3 baselineQM-Q4-027Care Coordination DocumentationNovember15817490.8%≥90%✅ ABOVE — PIP CLOSEDPIP resolved in just 2 quarters after discovery ✅QM-Q4-028Doc-to-Claim Alignment RateQ4 average20621098.1%≥97%✅ ABOVE — PIP CLOSEDBilling mismatch PIP resolved ✅; only 4 mismatches all Q4
+
+
+
+SECTION 5 — 40 FEEDER AUDIT COMPLETION RECORDS (Q4 2026)
+
+All 40 feeder audits completed and signed by 2027-01-07 ✅ (YEAR-END)
+
+audit_idworkflow_idcategoryreviewer_idstatussigned_atkey_findingAUD-Q4-CL-001CL-WF-26Clinical QualityMOCK-CLIN-0022Complete2027-01-05OASIS accuracy 91.3% ✔; PIP-Q1-001 RESOLVED after 4 quartersAUD-Q4-CL-002CL-WF-27Clinical QualityMOCK-CLIN-0029Complete2027-01-05POC goal completeness 93.9% ✔; PIP resolvedAUD-Q4-CL-003CL-WF-28Clinical QualityMOCK-CLIN-0017Complete2027-01-06Visit timeliness 95.6% Dec ✔; new hire MOCK-CLIN-0034 at 100% ✅; PIP resolvedAUD-Q4-CL-004CL-WF-29Clinical QualityMOCK-CLIN-0002Complete2027-01-06Med rec 95% December ✔; PIP resolvedAUD-Q4-CL-005CL-WF-30Clinical QualityMOCK-CLIN-0022Complete2027-01-07Care coordination: 90.8% Nov ✔; PIP resolved; standard now embedded in onboardingAUD-Q4-CL-006CL-WF-31Clinical QualityMOCK-CLIN-0034Complete2027-01-07Discharge documentation: 100% completeness Q4 ✅AUD-Q4-CL-007CL-WF-32Clinical QualityMOCK-CLIN-0001Complete2027-01-07Missed visit rate 1.4% Dec ✔; PIP resolvedAUD-Q4-CL-008CL-WF-33Clinical QualityMOCK-CLIN-0017Complete2027-01-07Wound infection rate: Oct borderline (5.8%), Nov–Dec below 5% ✔; PIP resolvedAUD-Q4-CL-009CL-WF-34Clinical QualityMOCK-CLIN-0022Complete2027-01-07OASIS GG: only 2 inconsistencies in Q4 ✅ (down from 14 in Q1)AUD-Q4-CL-010CL-WF-35Clinical QualityMOCK-CLIN-0002Complete2027-01-076 hospitalizations Q4; 2 potentially preventable; new monitoring protocols credited with reductionAUD-Q4-CL-011CL-WF-36Clinical QualityMOCK-CLIN-0001Complete2027-01-07Chart review: 1 deficiency row in Q4 (down from 6 in Q1); no documentation integrity concerns notedAUD-Q4-CL-012CL-WF-37Clinical QualityMOCK-CLIN-0001Complete2027-01-07Discipline justification: 96% complete ✅ (up from 82% Q1)AUD-Q4-CO-001CO-WF-23Compliance/BillingMOCK-CLIN-0025Complete2027-01-05Doc-to-claim: 4 mismatches in Q4 (98.1% alignment); billing PIP resolved ✅AUD-Q4-CO-002 through CO-008CO-WF-24–30Compliance/BillingMOCK-CLIN-0025All Complete2027-01-0714 of 14 policies at ≥90% compliance ✅; annual compliance scorecard complete; hotline: 1 Q4 intake resolved; $0 overpayment identifiedAUD-Q4-QA-001 through QA-006QA-WF-13–18QAPI SupportMOCK-CLIN-0026All Complete2027-01-078 PIPs closed Q4; 0 active PIPs at year-end ✅; annual PIP resolution summary completeAUD-Q4-HR-001 through HR-004HR-WF-18–21HR/TrainingMOCK-CLIN-0023All Complete2027-01-07Annual training compliance: 34 of 35 complete; MOCK-CLIN-0003 separation record filed; MOCK-CLIN-0035 onboarding verifiedAUD-Q4-RM-001 through RM-005RM-WF-16–20Risk/SafetyMOCK-CLIN-0025All Complete2027-01-076 adverse events Q4; 2 RCAs complete; 4 RCAs carried from Q3 all resolved; year-end risk summary preparedAUD-Q4-IT-001 through IT-005IT-WF-21–25IT/SecurityMOCK-CLIN-0024All Complete2027-01-07Annual security review: all systems current; 1 terminated employee access revoked (MOCK-CLIN-0003); HIPAA training 34 of 35 (new hire exception: MOCK-CLIN-0035 scheduled Jan 2027)
+
+
+
+SECTION 6 — ADVERSE EVENTS & RCA RECORDS (Q4 2026)
+
+event_idpatient_idevent_typeevent_dateseverityrca_idclinician_idstatusAE-Q4-001MOCK-PT-0028Hospitalization — CHF exacerbation2026-10-09HighRCA-Q4-001 (complete)MOCK-CLIN-0034RCA complete — new hire; monitoring protocol reviewedAE-Q4-002MOCK-PT-0072Hospitalization — fall + hip refracture2026-10-22CriticalRCA-Q4-002 (complete)MOCK-CLIN-0006RCA complete — GB escalation; pattern of hip refractureAE-Q4-003MOCK-PT-0103Patient fall — no injury2026-11-08LowN/AMOCK-CLIN-0007Closed; fall prevention protocol reviewedAE-Q4-004MOCK-PT-0149Wound dehiscence2026-11-19MediumN/AMOCK-CLIN-0005Closed; expected post-surgical course documentedAE-Q4-005MOCK-PT-0176Hospitalization — CHF + fluid overload2026-12-04HighN/AMOCK-CLIN-0029Closed; rapid deterioration; no systemic findingAE-Q4-006MOCK-PT-0188Hospitalization — COPD exacerbation2026-12-19HighN/AMOCK-CLIN-0001Closed; new patient with multiple co-morbidities
+
+
+
+SECTION 7 — INFECTION SURVEILLANCE LINE LIST (Q4 2026)
+
+infx_idpatient_idinfection_typeonset_dateresolution_dateclinician_idstatusINF-Q4-001MOCK-PT-0012Wound infection — post-surgical2026-10-142026-10-29MOCK-CLIN-0005ResolvedINF-Q4-002MOCK-PT-0107Wound infection recurrence (DM)2026-10-212026-11-07MOCK-CLIN-0003Resolved (prior to MOCK-CLIN-0003 separation)INF-Q4-003MOCK-PT-0171DM foot wound infection2026-11-022026-11-19MOCK-CLIN-0001ResolvedINF-Q4-004MOCK-PT-0178Wound infection — multi-morbid2026-11-282026-12-14MOCK-CLIN-0022ResolvedINF-Q4-005MOCK-PT-0195Palliative wound infection2026-12-08Ongoing — palliativeMOCK-CLIN-0012Palliative managementINF-Q4-006MOCK-PT-0158Wound infection (Q3 carry-forward resolved)2026-09-142026-10-08MOCK-CLIN-0001Resolved in Q4INF-Q4-007MOCK-PT-0199DM neuropathy wound infection2026-12-22Pending — open at year-endMOCK-CLIN-0034Active — antibiotic initiated
+
+
+
+SECTION 8 — PATIENT COMPLAINTS (Q4 2026)
+
+complaint_idpatient_idcomplaint_typecomplaint_datedays_to_resolvewithin_5_daysstatusCOMP-Q4-001MOCK-PT-0028Communication — family not notified of hospitalization2026-10-103✅ YesClosedCOMP-Q4-002MOCK-PT-0072Communication — fall + re-fracture — family escalation2026-10-232✅ YesClosed — GB escalationCOMP-Q4-003MOCK-PT-0149Scheduling — 2 reschedules in 1 week2026-11-124✅ YesClosedCOMP-Q4-004MOCK-PT-0175Communication — interpreter not arranged (language barrier)2026-11-254✅ YesClosed — interpreter protocol confirmed in useCOMP-Q4-005MOCK-PT-0185Communication — instructions unclear after SOC2026-12-033✅ YesClosedCOMP-Q4-006MOCK-PT-0192Scheduling — HHA consistently late2026-12-115⚠️ BorderlineClosed; MOCK-CLIN-0032 coaching continuedCOMP-Q4-007MOCK-PT-0195Communication — pain management unclear — palliative2026-12-153✅ YesClosed; palliative care team consultedCOMP-Q4-008MOCK-PT-0200Scheduling — first visit delayed 3 days from SOC date2026-12-28N/A❌ Open at year-endOpen — carry-forward to Q1 2027
+
+
+
+SECTION 9 — PIP STATUS (Q4 2026) — YEAR-END RESOLUTION SUMMARY
+
+pip_iddescriptionoriginatedQ4_statusresolution_datePIP-Q1-001OASIS AccuracyQ1✅ CLOSED — 91.3% Dec ✔2026-12-31PIP-Q1-002Visit Doc TimelinessQ1✅ CLOSED — 95.6% Dec ✔2026-11-30PIP-Q1-003Med Rec SOC/ROCQ1✅ CLOSED — 95.0% Dec ✔2026-12-31PIP-Q1-004POC Goal CompletenessQ1✅ CLOSED — 93.9% Dec ✔2026-10-31PIP-Q1-005Missed Visit RateQ1✅ CLOSED — 1.4% Oct–Dec ✔2026-10-31PIP-Q1-006Wound Infection RateQ1✅ CLOSED — 3.6% Dec ✔ (after Oct borderline)2026-12-31PIP-Q1-007Complaint Resolution TimelinessQ1✅ CLOSED — 100% Dec ✔2026-12-31PIP-Q1-008Doc-to-Claim AlignmentQ1✅ CLOSED — 98.1% Q4 ✔2026-12-31PIP-Q3-007Hospitalization Rate SpikeQ3✅ CLOSED — 3.0% cumulative Q4 ✔2026-12-31PIP-Q3-008Care Coordination DocumentationQ3✅ CLOSED — 90.8% Nov ✔2026-11-30
+
+✅ ALL 10 PIPS RESOLVED BY YEAR-END 2026 — ZERO OPEN PIPS AT Q4 CLOSE
+
+
+
+SECTION 10 — DISCIPLINARY TRIGGERS (Q4 2026)
+
+trigger_idclinician_idtrigger_typesource_recordsfinding_summarystatusDISC-TRIG-Q4-001MOCK-CLIN-0003 (Denise Holloway, RN)Third Documentation Integrity Violation — Separation RecommendedDISC-TRIG-Q1-004; DISC-TRIG-Q3-002; AUD-Q4-CL-011Third substantiated documentation integrity finding; HR recommends termination; pattern is sustained and supervision plan has failedSeparation in process at Q4 closeDISC-TRIG-Q4-002MOCK-CLIN-0006 (Thomas Garrett, PT)Repeat Involvement in Fall-Related Adverse EventsAE-Q3-002; AE-Q4-002; RCA-Q3-002; RCA-Q4-002MOCK-CLIN-0006 is the assigned PT for 2 of the hip re-fracture events (MOCK-PT-0034 Q3 and MOCK-PT-0072 Q4); fall risk documentation reviewed each time; pattern requires formal reviewFormal review initiated — not yet disciplinary; observation periodDISC-TRIG-Q4-003MOCK-CLIN-0032 (Kwame Asante, LVN)Continued Late Arrival Pattern After Q3 CoachingCOMP-Q4-006; AUD-Q4-CL-003Late arrivals continued in Q4 despite formal warning in Q3; patient complaint received; coaching insufficientWritten warning issued; PIP assigned
+
+
+
+SECTION 11 — CAPs (Q4 2026)
+
+cap_idsourcedescriptionowner_iddue_datestatusCAP-Q4-001DISC-TRIG-Q4-001MOCK-CLIN-0003 separation: file documentation, final audit of all charts for potential integrity issues, IT access revocationMOCK-CLIN-00282027-01-31In ProgressCAP-Q4-002DISC-TRIG-Q4-002MOCK-CLIN-0006: Peer review of all current fall-risk patients; retrospective chart audit; additional fall risk trainingMOCK-CLIN-00262027-02-14OpenCAP-Q4-003DISC-TRIG-Q4-003MOCK-CLIN-0032: Written warning; 90-day monitoring of arrival times; scheduler notified for all assignmentsMOCK-CLIN-00232027-03-14OpenCAP-Q4-004AUD-Q4-HR-003 (MOCK-CLIN-0035 HIPAA training)MOCK-CLIN-0035 HIPAA training completion scheduled Jan 2027MOCK-CLIN-00232027-01-31ScheduledCAP-Q4-005AE-Q4-002 — GB escalation (MOCK-PT-0072 re-fracture)Agency-wide fall prevention protocol review; mandatory annual fall risk training for ALL clinical staff by Jan 2027MOCK-CLIN-00262027-01-31Open
+
+
+
+SECTION 12 — ANNUAL YEAR-END SUMMARY (2026)
+
+year_metricQ1Q2Q3Q4year_end_statusCensus (active at quarter close)120140170200 ✅YEAR-END TARGET ACHIEVEDClinician count28303335Agency grew 25% in staffActive PIPs at quarter close8880 ✅ALL PIPs RESOLVEDTotal hospitalizations579627 total year; Q3 spike resolvedOASIS accuracy (Dec)84.2%~86%88.8%91.3% ✅PIP resolved DecMed rec rate (Dec)79.2%~83%88.6%95.0% ✅PIP resolved DecMissed visit rate (Dec)4.6%3.8%2.3%1.4% ✅PIP resolved OctWound infection rate (Dec)12.9%~8%4.1%3.6% ✅PIP resolved DecComplaint resolution rate (Dec)62.5%~75%90.0%100% ✅PIP resolved DecPolicy compliance scorecard11/1412/1413/1414/14 ✅Full compliance year-endDisciplinary separations0001 (MOCK-CLIN-0003)Pattern-based; appropriate documentation
+
+
+
+SECTION 13 — QAPI MEETING SOURCE RECORDS (Q4 / YEAR-END)
+
+record_typerecord_iddetaildatestatusAgendaAGD-Q4-00112-section agenda + annual review section; 10 PIP resolutions + 3 disc triggers + year-end compliance summary2027-01-09Distributed ✅Pre-read DistributionPRE-Q4-001Pre-read + annual report draft sent to all 9 committee members2027-01-09Confirmed ✅AttendanceATT-Q4-0019 of 9 present; quorum met ✅2027-01-14Confirmed ✅QuorumQUO-Q4-001Quorum confirmed 9:00 AM by MOCK-CLIN-00262027-01-14Confirmed ✅Prior Minutes ApprovalMIN-APPR-Q4-001Q3 2026 minutes approved unanimously2027-01-14Approved ✅GB Escalation ItemsGB-Q4-0013 items: MOCK-PT-0072 hip re-fracture (AE-Q4-002, pattern with AE-Q3-002), MOCK-CLIN-0003 separation, year-end agency growth summary2027-01-14Escalated ✅Annual Report ApprovalANN-2026-001GV-FM-023 Annual Compliance Report approved by committee; covers full year Q1–Q4 20262027-01-14Approved ✅Administrator Sign-offSGN-Q4-ADM-001Signed: MOCK-CLIN-0028 (Maria L. Santos)2027-01-14Signed ✅Clinical Manager Sign-offSGN-Q4-CM-001Signed: MOCK-CLIN-0027 (James T. Reeves)2027-01-14Signed ✅QAPI Chair Sign-offSGN-Q4-CHAIR-001Signed: MOCK-CLIN-0026 (Patricia G. Holden)2027-01-14Signed ✅MinutesMIN-Q4-001Minutes due 2027-01-21; all 12 sections + annual summary section2027-01-21Complete ✅
+
+
+
+⚠️ SYNTHETIC DATA ONLY — SVHHA — Q4 2026 YEAR-END — NO REAL PHI — MOCK/UAT ONLY — Total year-end census: 200 patients ✅

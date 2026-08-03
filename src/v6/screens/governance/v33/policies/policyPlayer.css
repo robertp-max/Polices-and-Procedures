@@ -1,0 +1,222 @@
+/* Governing Body policy reading room — §8 redesign.
+   Three-part desktop (contents rail / reading center / Board lens),
+   one-column mobile with drawers. Extends the existing V3 executive visual
+   language (forest / ivory / bronze, editorial serif) — no new palette.
+   All rules are scoped under .v33-scope to avoid leaking into other
+   features; class names use the pv3- prefix to avoid colliding with the
+   earlier gbp- rules that remain in v33-globals.css. */
+
+.v33-scope .pv3-shell { min-height: 100vh; color: var(--ink); background: radial-gradient(circle at 86% 5%, rgba(200,90,42,.055), transparent 28rem), var(--canvas); }
+
+/* ---- Header -------------------------------------------------------------- */
+.v33-scope .pv3-header { min-height: 80px; padding: 0 28px; position: sticky; top: 0; z-index: 40; display: grid; grid-template-columns: 38px 190px 1fr auto auto; gap: 18px; align-items: center; background: rgba(248,247,243,.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(20px); }
+.v33-scope .pv3-header > button { width: 36px; height: 36px; display: grid; place-items: center; color: var(--forest); background: transparent; border: 1px solid var(--line); border-radius: 50%; }
+.v33-scope .pv3-brand { display: flex; align-items: center; gap: 10px; }
+.v33-scope .pv3-brand img { width: 35px; height: 35px; object-fit: contain; }
+.v33-scope .pv3-brand span { color: var(--forest); font-size: 11px; font-weight: 600; letter-spacing: .16em; }
+.v33-scope .pv3-header-title { min-width: 0; padding-left: 18px; display: grid; gap: 4px; border-left: 1px solid var(--line); }
+.v33-scope .pv3-header-title small { color: var(--bronze); font-size: 11px; letter-spacing: .1em; }
+.v33-scope .pv3-header-title strong { overflow: hidden; font-family: var(--font-editorial); color: var(--forest); font-size: 17px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
+.v33-scope .pv3-record-state { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 11px; letter-spacing: .04em; white-space: nowrap; }
+.v33-scope .pv3-mobile-toggles { display: none; gap: 8px; }
+.v33-scope .pv3-mobile-toggles button { min-height: 34px; padding: 0 10px; display: inline-flex; align-items: center; gap: 6px; color: var(--forest); background: var(--surface-soft); border: 1px solid var(--line); border-radius: 6px; font-size: 11px; }
+
+/* ---- Three-part reading layout ------------------------------------------- */
+.v33-scope .pv3-reading-layout { width: min(1780px,calc(100% - 44px)); min-height: calc(100vh - 80px); margin: 0 auto; padding: 27px 0 58px; display: grid; grid-template-columns: 265px minmax(0,1fr) 280px; gap: 18px; align-items: start; }
+
+/* ---- Contents rail -------------------------------------------------------- */
+.v33-scope .pv3-rail { position: sticky; top: 106px; max-height: calc(100vh - 132px); overflow: hidden; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow-sm); }
+.v33-scope .pv3-rail-head { padding: 18px 18px 14px; display: grid; gap: 4px; color: #e6ede9; background: var(--forest); }
+.v33-scope .pv3-rail-head span { color: #d4b27c; font-size: 10px; letter-spacing: .14em; }
+.v33-scope .pv3-rail-head strong { font-family: var(--font-editorial); font-size: 22px; font-weight: 400; }
+.v33-scope .pv3-rail-head small { color: #a8bbb3; font-size: 11px; }
+.v33-scope .pv3-resume-marker { min-height: 40px; margin: 10px 14px 0; padding: 0 10px; display: flex; align-items: center; gap: 8px; text-align: left; color: var(--forest); background: var(--bronze-soft); border: 1px solid #e3d3ba; border-radius: 6px; font-size: 11px; }
+.v33-scope .pv3-rail-search { margin: 12px 14px; min-height: 36px; padding: 0 10px; display: flex; align-items: center; gap: 8px; color: var(--muted); background: var(--surface-soft); border: 1px solid var(--line); border-radius: 6px; }
+.v33-scope .pv3-rail-search input { min-width: 0; flex: 1; color: var(--ink); background: transparent; border: 0; outline: 0; font-size: 12px; }
+.v33-scope .pv3-rail nav { flex: 1; overflow-y: auto; padding-bottom: 6px; }
+.v33-scope .pv3-search-empty { margin: 0; padding: 16px; color: var(--muted); font-size: 11px; }
+.v33-scope .pv3-search-results { list-style: none; margin: 0; padding: 0 8px; }
+.v33-scope .pv3-search-results button { width: 100%; min-height: 40px; padding: 6px 10px; display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: center; text-align: left; color: var(--ink-soft); background: transparent; border: 0; border-radius: 6px; }
+.v33-scope .pv3-search-results button.active { color: var(--forest); background: var(--forest-soft); }
+.v33-scope .pv3-chapter-list { list-style: none; margin: 0; padding: 0 8px; }
+.v33-scope .pv3-chapter-head { width: 100%; min-height: 38px; padding: 8px 10px; display: grid; grid-template-columns: 14px 1fr 14px; gap: 8px; align-items: center; text-align: left; color: var(--ink); background: transparent; border: 0; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.v33-scope .pv3-chapter-head.visited { color: var(--ink-soft); }
+.v33-scope .pv3-chapter-head.visited svg:last-child { color: var(--success); }
+.v33-scope .pv3-chapter-head.active { color: var(--forest); background: var(--forest-soft); box-shadow: inset 3px 0 0 var(--bronze); }
+.v33-scope .pv3-chapter-children { list-style: none; margin: 0 0 6px; padding: 0 0 0 22px; }
+.v33-scope .pv3-chapter-children button { width: 100%; min-height: 34px; padding: 5px 8px; display: grid; grid-template-columns: 20px 1fr 12px; gap: 7px; align-items: center; text-align: left; color: var(--muted); background: transparent; border: 0; border-radius: 5px; }
+.v33-scope .pv3-chapter-children button > span { font-family: var(--font-editorial); font-size: 10px; color: var(--muted); }
+.v33-scope .pv3-chapter-children em { font-style: normal; font-size: 11px; line-height: 1.3; }
+.v33-scope .pv3-chapter-children button.visited { color: var(--ink-soft); }
+.v33-scope .pv3-chapter-children button.visited svg { color: var(--success); }
+.v33-scope .pv3-chapter-children button.active { color: var(--forest); background: var(--forest-soft); box-shadow: inset 3px 0 0 var(--bronze); }
+.v33-scope .pv3-forms-shortcut { min-height: 44px; margin: 4px 10px 10px; padding: 0 10px; display: flex; align-items: center; gap: 8px; text-align: left; color: var(--oxblood); background: var(--oxblood-soft); border: 1px solid #edc9b8; border-radius: 6px; font-size: 11px; font-weight: 600; }
+.v33-scope .pv3-forms-shortcut.active { box-shadow: inset 0 0 0 2px var(--oxblood); }
+.v33-scope .pv3-rail-footer { padding: 12px 16px 14px; background: var(--surface-soft); border-top: 1px solid var(--line); }
+.v33-scope .pv3-rail-footer > div { display: flex; justify-content: space-between; color: var(--muted); font-size: 10px; }
+.v33-scope .pv3-rail-footer > div strong { color: var(--forest); font-size: 12px; }
+.v33-scope .pv3-rail-footer > i { height: 3px; margin: 8px 0 6px; display: block; overflow: hidden; background: var(--line); border-radius: 3px; }
+.v33-scope .pv3-rail-footer > i b { height: 100%; display: block; background: var(--bronze); }
+.v33-scope .pv3-rail-footer small { color: var(--muted); font-size: 10px; }
+
+/* ---- Reading center -------------------------------------------------------- */
+.v33-scope .pv3-document { min-height: 780px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow-sm); }
+.v33-scope .pv3-document > header { min-height: 110px; padding: 28px 36px 22px; display: flex; justify-content: space-between; align-items: end; gap: 20px; border-bottom: 1px solid var(--line); }
+.v33-scope .pv3-document > header span { color: var(--bronze); font-size: 11px; letter-spacing: .1em; }
+.v33-scope .pv3-document > header h1 { margin: 8px 0 0; font-family: var(--font-editorial); color: var(--forest); font-size: clamp(28px,3vw,44px); line-height: 1; font-weight: 400; }
+.v33-scope .pv3-document > header > small { color: var(--muted); font-size: 11px; white-space: nowrap; }
+.v33-scope .pv3-prose, .v33-scope .pv3-table-wrap { padding: 32px 46px 46px; }
+.v33-scope .pv3-prose { color: var(--ink); font-family: var(--font-editorial); font-size: 17px; line-height: 1.72; }
+.v33-scope .pv3-prose p { margin: 0 0 20px; white-space: pre-line; }
+.v33-scope .pv3-table-wrap { overflow-x: auto; }
+.v33-scope .pv3-table-wrap table { width: 100%; border-collapse: collapse; color: var(--ink-soft); font-size: 13px; }
+.v33-scope .pv3-table-wrap th { padding: 11px 13px; color: #fff; text-align: left; background: var(--forest); font-size: 11px; letter-spacing: .04em; }
+.v33-scope .pv3-table-wrap td { padding: 11px 13px; vertical-align: top; border-bottom: 1px solid var(--line); line-height: 1.5; }
+.v33-scope .pv3-table-wrap tr:nth-child(even) td { background: var(--surface-soft); }
+
+.v33-scope .pv3-reading-gate { margin: 0 36px 28px; padding: 22px; display: grid; grid-template-columns: auto 1fr; gap: 15px; color: #d9e3de; background: var(--forest); border-radius: 6px; }
+.v33-scope .pv3-reading-gate > svg { color: #d9b574; }
+.v33-scope .pv3-reading-gate div { display: grid; gap: 10px; }
+.v33-scope .pv3-reading-gate > div > span { color: #d9b574; font-size: 11px; letter-spacing: .1em; }
+.v33-scope .pv3-reading-gate strong { font-family: var(--font-editorial); color: #fff; font-size: 18px; font-weight: 400; }
+.v33-scope .pv3-reading-gate > div > p { margin: 0; color: #abbcb4; font-size: 12px; line-height: 1.5; }
+.v33-scope .pv3-attestation { min-height: 60px; padding: 12px 14px; display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: center; color: #1c241f; background: #f6f1e7; border: 1px solid #e1d5c1; border-radius: 6px; cursor: pointer; }
+.v33-scope .pv3-attestation input { position: absolute; opacity: 0; pointer-events: none; }
+.v33-scope .pv3-attestation > span { width: 20px; height: 20px; display: grid; place-items: center; color: #fff; background: var(--bronze); border-radius: 4px; }
+.v33-scope .pv3-attestation p { margin: 0; font-size: 12px; line-height: 1.4; }
+.v33-scope .pv3-attestation strong { display: block; margin-bottom: 2px; color: var(--forest); }
+.v33-scope .pv3-save-row { display: grid; gap: 8px; }
+.v33-scope .pv3-save-button { min-height: 40px; padding: 0 16px; display: inline-flex; align-items: center; gap: 8px; justify-self: start; color: #1c241f; background: #e0c38f; border: 0; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.v33-scope .pv3-save-button:disabled { opacity: .5; cursor: not-allowed; }
+.v33-scope .pv3-preview-banner { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 10px 12px; color: #f3d9c9; background: rgba(200,90,42,.18); border: 1px solid rgba(200,90,42,.4); border-radius: 6px; font-size: 11.5px; line-height: 1.45; }
+.v33-scope .pv3-preview-banner svg { flex: none; margin-top: 1px; }
+.v33-scope .pv3-course-context { margin-top: 4px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.14); }
+.v33-scope .pv3-course-context span { color: #d9b574; font-size: 10px; letter-spacing: .08em; }
+.v33-scope .pv3-course-context p { margin: 6px 0 0; color: #c2cdc8; font-size: 11.5px; line-height: 1.5; }
+
+.v33-scope .pv3-document > footer, .v33-scope .pv3-quiz-card > footer, .v33-scope .pv3-result > footer { min-height: 68px; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; background: var(--surface-soft); border-top: 1px solid var(--line); }
+.v33-scope .pv3-document > footer > span { max-width: 45%; overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.v33-scope .pv3-document > footer button, .v33-scope .pv3-quiz-card > footer button, .v33-scope .pv3-result > footer button, .v33-scope .pv3-unavailable button { min-height: 38px; padding: 0 14px; display: inline-flex; align-items: center; gap: 7px; color: var(--forest); background: transparent; border: 1px solid var(--line-dark); border-radius: 5px; font-size: 11px; }
+.v33-scope .pv3-document > footer button.primary, .v33-scope .pv3-quiz-card > footer button.primary, .v33-scope .pv3-result > footer button.primary { color: #fff; background: var(--forest); border-color: var(--forest); }
+.v33-scope .pv3-document > footer button:disabled, .v33-scope .pv3-quiz-card > footer button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---- Related forms & records ---------------------------------------------- */
+.v33-scope .pv3-related-forms { padding: 32px 46px 46px; }
+.v33-scope .pv3-related-forms-head span { display: inline-flex; align-items: center; gap: 6px; color: var(--bronze); font-size: 11px; letter-spacing: .1em; }
+.v33-scope .pv3-related-forms-head h2 { margin: 8px 0 6px; font-family: var(--font-editorial); color: var(--forest); font-size: 26px; font-weight: 400; }
+.v33-scope .pv3-related-forms-head p { margin: 0 0 22px; color: var(--muted); font-size: 12px; line-height: 1.5; max-width: 70ch; }
+.v33-scope .pv3-forms-empty { padding: 16px; color: var(--muted); background: var(--surface-soft); border: 1px dashed var(--line); border-radius: 6px; font-size: 12.5px; }
+.v33-scope .pv3-forms-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.v33-scope .pv3-form-card { padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: start; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 8px; }
+.v33-scope .pv3-form-card-main { display: grid; gap: 6px; }
+.v33-scope .pv3-form-id { color: var(--bronze); font-size: 10.5px; font-weight: 700; letter-spacing: .06em; }
+.v33-scope .pv3-form-card-main strong { font-family: var(--font-editorial); color: var(--forest); font-size: 16px; font-weight: 400; }
+.v33-scope .pv3-form-purpose { margin: 0; color: var(--ink-soft); font-size: 12.5px; line-height: 1.5; }
+.v33-scope .pv3-form-reason { margin: 0; display: flex; align-items: flex-start; gap: 6px; color: var(--muted); font-size: 11px; line-height: 1.4; }
+.v33-scope .pv3-form-card-actions { display: grid; gap: 8px; justify-items: stretch; }
+.v33-scope .pv3-form-action { min-height: 34px; padding: 0 12px; display: inline-flex; align-items: center; gap: 6px; justify-content: center; color: var(--forest); background: var(--surface); border: 1px solid var(--line-dark); border-radius: 6px; font-size: 11px; text-decoration: none; white-space: nowrap; }
+.v33-scope .pv3-form-action-esign { color: #fff; background: var(--forest); border-color: var(--forest); }
+.v33-scope .pv3-reference-material { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--line); }
+.v33-scope .pv3-reference-material > header { display: flex; align-items: center; gap: 7px; color: var(--muted); }
+.v33-scope .pv3-reference-material h3 { margin: 0; font-family: var(--font-editorial); color: var(--forest); font-size: 18px; font-weight: 400; }
+.v33-scope .pv3-reference-note { margin: 6px 0 16px; color: var(--muted); font-size: 11.5px; }
+.v33-scope .pv3-reference-block { margin-bottom: 18px; padding: 16px 18px; background: var(--surface-soft); border: 1px solid var(--line); border-radius: 8px; }
+.v33-scope .pv3-reference-block h4 { margin: 0 0 8px; font-family: var(--font-editorial); color: var(--forest); font-size: 14px; font-weight: 400; }
+.v33-scope .pv3-ref-prose p { margin: 0 0 10px; color: var(--ink-soft); font-size: 12.5px; line-height: 1.55; }
+.v33-scope .pv3-ref-table-wrap { overflow-x: auto; }
+.v33-scope .pv3-ref-table-wrap table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.v33-scope .pv3-ref-table-wrap th { padding: 8px 10px; text-align: left; color: #fff; background: var(--forest); font-size: 10.5px; }
+.v33-scope .pv3-ref-table-wrap td { padding: 8px 10px; border-bottom: 1px solid var(--line); }
+
+/* ---- Board lens ------------------------------------------------------------ */
+.v33-scope .pv3-lens { position: sticky; top: 106px; max-height: calc(100vh - 132px); overflow-y: auto; padding: 22px; display: grid; gap: 20px; align-content: start; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow-sm); }
+.v33-scope .pv3-lens-head span { color: var(--bronze); font-size: 11px; letter-spacing: .1em; }
+.v33-scope .pv3-lens-head h2 { margin: 8px 0 6px; font-family: var(--font-editorial); color: var(--forest); font-size: 22px; font-weight: 400; }
+.v33-scope .pv3-lens-head p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.v33-scope .pv3-lens-block { padding-top: 16px; border-top: 1px solid var(--line); }
+.v33-scope .pv3-lens-block > header { display: flex; align-items: center; gap: 7px; color: var(--forest); }
+.v33-scope .pv3-lens-block > header svg { color: var(--bronze); flex: none; }
+.v33-scope .pv3-lens-block > header span { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; }
+.v33-scope .pv3-lens-block ul { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.v33-scope .pv3-lens-block li p { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
+.v33-scope .pv3-lens-block li small { color: var(--muted); font-size: 10px; }
+.v33-scope .pv3-lens-empty { margin: 8px 0 0; color: var(--muted); font-size: 11.5px; line-height: 1.45; }
+.v33-scope .pv3-evidence-list li { color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
+.v33-scope .pv3-lens-note { margin: 10px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.v33-scope .pv3-lens-link { margin-top: 8px; padding: 0; color: var(--oxblood); background: transparent; border: 0; font-size: 11.5px; font-weight: 600; text-align: left; cursor: pointer; }
+.v33-scope .pv3-lens-flag { background: var(--oxblood-soft); margin: 0 -22px; padding: 16px 22px 0; border-top-color: transparent; }
+.v33-scope .pv3-lens-flag > header { color: var(--oxblood); }
+.v33-scope .pv3-lens-flag > header svg { color: var(--oxblood); }
+
+/* ---- Developer preview quiz + result (reused staging shells) -------------- */
+.v33-scope .pv3-quiz-stage, .v33-scope .pv3-result-stage { width: min(1120px,calc(100% - 40px)); margin: 0 auto; padding: 46px 0 80px; }
+.v33-scope .pv3-quiz-card, .v33-scope .pv3-result { overflow: hidden; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow-md); }
+.v33-scope .pv3-quiz-card > header, .v33-scope .pv3-result > header { padding: 30px 38px; display: flex; justify-content: space-between; gap: 24px; align-items: center; color: #e4ebe7; background: linear-gradient(145deg,#142b24,#1c4136); }
+.v33-scope .pv3-quiz-card > header > div span { display: inline-flex; align-items: center; gap: 6px; color: #d4b27c; font-size: 10.5px; letter-spacing: .1em; }
+.v33-scope .pv3-quiz-card > header h1, .v33-scope .pv3-result > header h1 { margin: 10px 0 8px; font-family: var(--font-editorial); color: #fff; font-size: 28px; font-weight: 400; }
+.v33-scope .pv3-quiz-card > header p, .v33-scope .pv3-result > header p { margin: 0; color: #b0c0b9; font-size: 12px; line-height: 1.5; max-width: 68ch; }
+.v33-scope .pv3-question-progress { padding: 14px 38px; display: flex; justify-content: space-between; align-items: center; gap: 20px; background: var(--surface-soft); border-bottom: 1px solid var(--line); }
+.v33-scope .pv3-question-progress > span { color: var(--muted); font-size: 10.5px; letter-spacing: .06em; }
+.v33-scope .pv3-question-progress > i { min-width: 220px; display: grid; grid-auto-flow: column; gap: 5px; }
+.v33-scope .pv3-question-progress b { height: 3px; background: var(--line); border-radius: 3px; }
+.v33-scope .pv3-question-progress b.active { background: var(--bronze); }
+.v33-scope .pv3-question-progress b.complete { background: var(--success); }
+.v33-scope .pv3-quiz-card fieldset { margin: 0; padding: 34px 48px 28px; border: 0; }
+.v33-scope .pv3-quiz-card legend { max-width: 900px; margin: 0 0 22px; font-family: var(--font-editorial); color: var(--forest); font-size: 22px; line-height: 1.25; }
+.v33-scope .pv3-quiz-card fieldset > div { display: grid; gap: 9px; }
+.v33-scope .pv3-quiz-card label { min-height: 66px; padding: 13px 16px; display: grid; grid-template-columns: 30px 1fr; gap: 12px; align-items: center; color: var(--ink-soft); background: var(--surface-soft); border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+.v33-scope .pv3-quiz-card label:hover { border-color: var(--line-dark); }
+.v33-scope .pv3-quiz-card label.selected { color: var(--forest); background: var(--forest-soft); border-color: var(--forest); box-shadow: inset 3px 0 0 var(--forest); }
+.v33-scope .pv3-quiz-card label input { position: absolute; opacity: 0; pointer-events: none; }
+.v33-scope .pv3-quiz-card label > span { width: 26px; height: 26px; display: grid; place-items: center; color: var(--bronze); background: var(--surface); border: 1px solid var(--line-dark); border-radius: 50%; font-family: var(--font-editorial); font-size: 11px; }
+.v33-scope .pv3-quiz-card label > p { margin: 0; font-size: 12.5px; line-height: 1.5; }
+.v33-scope .pv3-score { width: 130px; height: 130px; flex: 0 0 130px; display: grid; place-items: center; align-content: center; border: 1px solid rgba(255,255,255,.18); border-radius: 50%; }
+.v33-scope .pv3-score strong { font-family: var(--font-editorial); color: #e2c695; font-size: 38px; font-weight: 400; }
+.v33-scope .pv3-score span { color: #9fb3aa; font-size: 10px; letter-spacing: .06em; }
+.v33-scope .pv3-result-list { padding: 12px 38px 28px; }
+.v33-scope .pv3-result-list article { padding: 18px 4px; display: grid; grid-template-columns: 26px 1fr; gap: 12px; border-bottom: 1px solid var(--line); }
+.v33-scope .pv3-result-list article > span { color: var(--success); }
+.v33-scope .pv3-result-list article.missed > span { color: var(--oxblood); }
+.v33-scope .pv3-result-list article > div { display: grid; gap: 6px; }
+.v33-scope .pv3-result-list small { color: var(--bronze); font-size: 10px; letter-spacing: .04em; }
+.v33-scope .pv3-result-list strong { font-family: var(--font-editorial); color: var(--forest); font-size: 15px; font-weight: 400; }
+.v33-scope .pv3-result-list p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+.v33-scope .pv3-unavailable { min-height: 100vh; display: grid; place-items: center; align-content: center; gap: 10px; text-align: center; }
+.v33-scope .pv3-unavailable > span { color: var(--bronze); font-size: 11px; letter-spacing: .1em; }
+.v33-scope .pv3-unavailable h1 { margin: 0; font-family: var(--font-editorial); color: var(--forest); font-size: 30px; font-weight: 400; }
+.v33-scope .pv3-unavailable p { max-width: 520px; margin: 0 0 12px; color: var(--muted); font-size: 12px; }
+
+/* ---- Accessibility: focus-visible everywhere in this feature -------------- */
+.v33-scope .pv3-shell button:focus-visible,
+.v33-scope .pv3-shell a:focus-visible,
+.v33-scope .pv3-shell input:focus-visible,
+.v33-scope .pv3-shell label:focus-within { outline: 2px solid var(--bronze); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .v33-scope .pv3-mobile-backdrop, .v33-scope .pv3-mobile-drawer { animation: none !important; transition: none !important; }
+}
+
+/* ---- Mobile: one column + drawers ----------------------------------------- */
+@media (max-width: 980px) {
+  .v33-scope .pv3-header { grid-template-columns: 34px 1fr auto; padding: 0 14px; }
+  .v33-scope .pv3-header-title, .v33-scope .pv3-brand span { display: none; }
+  .v33-scope .pv3-record-state span { display: none; }
+  .v33-scope .pv3-mobile-toggles { display: flex; }
+  .v33-scope .pv3-reading-layout { grid-template-columns: 1fr; width: 100%; padding: 16px 12px 48px; }
+  .v33-scope .pv3-rail, .v33-scope .pv3-lens { display: none; }
+  .v33-scope .pv3-document > header { padding: 20px 18px 16px; flex-direction: column; align-items: start; gap: 6px; }
+  .v33-scope .pv3-prose, .v33-scope .pv3-table-wrap, .v33-scope .pv3-related-forms { padding: 20px 18px 30px; }
+  .v33-scope .pv3-reading-gate { margin: 0 18px 20px; grid-template-columns: 1fr; }
+  .v33-scope .pv3-form-card { grid-template-columns: 1fr; }
+  .v33-scope .pv3-form-card-actions { grid-auto-flow: column; justify-content: start; }
+
+  .v33-scope .pv3-mobile-backdrop { position: fixed; inset: 0; z-index: 200; display: flex; justify-content: flex-end; background: rgba(13,20,17,.52); backdrop-filter: blur(6px); }
+  .v33-scope .pv3-mobile-drawer { position: relative; width: min(360px, 88vw); min-height: 100%; overflow-y: auto; background: var(--paper); box-shadow: -25px 0 80px rgba(15,23,19,.25); }
+  .v33-scope .pv3-mobile-drawer .pv3-rail, .v33-scope .pv3-mobile-drawer .pv3-lens { position: static; max-height: none; border: 0; border-radius: 0; box-shadow: none; height: 100%; }
+  .v33-scope .pv3-mobile-drawer-close { position: absolute; top: 10px; right: 10px; z-index: 2; width: 32px; height: 32px; display: grid; place-items: center; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 50%; }
+}
+
+@media (max-width: 1400px) {
+  .v33-scope .pv3-reading-layout { grid-template-columns: 240px minmax(0,1fr) 250px; }
+}

@@ -1,0 +1,236 @@
+/* §6 First-failure remediation — RemediationChoiceModal + GuidedTrueFalsePlayer.
+   Scoped under .v33-scope. Reuses shared .assessment-* classes from
+   compliance/compliance.css (assessment-shell, assessment-canvas,
+   assessment-head, assessment-question, assessment-option, assessment-primary,
+   assessment-attest, assessment-actions, assessment-result, assessment-pending,
+   assessment-preview-note, assessment-bar*) for visual consistency across every
+   assessment/remediation surface. Only new, remediation-specific classes are
+   defined here. */
+
+/* ---- Choice modal ------------------------------------------------------ */
+
+.v33-scope .remediation-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(15, 24, 20, 0.5);
+  backdrop-filter: blur(3px);
+}
+
+.v33-scope .remediation-modal {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 32px 30px 28px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  animation: remediation-modal-in 0.2s ease both;
+}
+
+@keyframes remediation-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v33-scope .remediation-modal { animation: none; }
+}
+
+.v33-scope .remediation-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 50%;
+}
+.v33-scope .remediation-close:hover { color: var(--ink); background: var(--surface-soft); border-color: var(--line); }
+
+.v33-scope .remediation-modal h2 {
+  margin: 0 0 10px;
+  padding-right: 30px;
+  font-family: var(--font-editorial);
+  font-weight: 400;
+  font-size: 25px;
+  color: var(--forest);
+}
+.v33-scope .remediation-modal h2:focus-visible { outline: none; }
+
+.v33-scope .remediation-sub {
+  margin: 0 0 18px;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.v33-scope .remediation-missed {
+  margin: 0 0 20px;
+  padding: 12px 15px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.v33-scope .remediation-missed > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.v33-scope .remediation-missed ul { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.v33-scope .remediation-missed li {
+  padding: 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.v33-scope .remediation-choices {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.v33-scope .remediation-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 16px 18px;
+  text-align: left;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.v33-scope .remediation-choice strong { font-size: 15px; color: var(--ink); }
+.v33-scope .remediation-choice span { font-size: 12.5px; color: var(--muted); }
+.v33-scope .remediation-choice:hover { border-color: var(--line-dark); background: var(--surface-soft); }
+
+.v33-scope .remediation-choice-primary { border-color: var(--forest); background: var(--forest-soft); }
+.v33-scope .remediation-choice-primary strong { color: var(--forest); }
+.v33-scope .remediation-choice-primary:hover { background: #dfeae4; }
+
+.v33-scope .remediation-choice-secondary { border-color: var(--line); }
+
+.v33-scope .remediation-review-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.v33-scope .remediation-review-link:hover { color: var(--forest); }
+
+/* ---- Guided True/False player ------------------------------------------ */
+
+.v33-scope .remediation-canvas { max-width: 740px; }
+
+.v33-scope .remediation-progress {
+  margin: 4px 0 16px;
+  font-size: 12px;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.v33-scope .remediation-item { display: flex; flex-direction: column; gap: 14px; }
+
+.v33-scope .remediation-binary { display: flex; gap: 12px; margin: 4px 0 2px; }
+.v33-scope .remediation-binary .assessment-option {
+  flex: 1;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-weight: 600;
+}
+.v33-scope .remediation-binary .assessment-option:has(input:checked) {
+  border-color: var(--forest);
+  background: var(--forest-soft);
+  color: var(--forest);
+}
+
+.v33-scope .remediation-feedback {
+  padding: 16px 18px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.v33-scope .remediation-feedback.correct { border-color: var(--success); background: #dcece4; }
+.v33-scope .remediation-feedback.incorrect { border-color: var(--line-dark); background: var(--surface-soft); }
+
+.v33-scope .remediation-feedback-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: var(--forest);
+}
+.v33-scope .remediation-feedback.correct .remediation-feedback-head { color: var(--success); }
+.v33-scope .remediation-feedback.incorrect .remediation-feedback-head { color: var(--ink-soft); }
+.v33-scope .remediation-feedback-head strong { font-size: 15px; }
+
+.v33-scope .remediation-feedback p { margin: 0 0 10px; font-size: 14px; line-height: 1.55; color: var(--ink-soft); }
+
+.v33-scope .remediation-source-line { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12.5px; }
+.v33-scope .remediation-source-ref,
+.v33-scope .remediation-source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--forest);
+  font-weight: 600;
+}
+.v33-scope .remediation-source-link:hover { background: var(--forest-soft); }
+
+.v33-scope .remediation-recheck-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 4px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.v33-scope .remediation-retry-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.v33-scope .remediation-retry-button:hover { border-color: var(--line-dark); background: var(--surface-soft); }
+
+@media (max-width: 640px) {
+  .v33-scope .remediation-modal { padding: 26px 20px 22px; }
+  .v33-scope .remediation-binary { flex-direction: column; }
+}

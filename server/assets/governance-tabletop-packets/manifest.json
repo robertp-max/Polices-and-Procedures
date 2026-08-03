@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "Fable",
+  "classification": "SYNTHETIC MOCK DATA - NO REAL PHI - NOT FOR PRODUCTION",
+  "artifacts": [
+    {
+      "packetId": "CI-GB-TT-Q1-2026-V1-0-0",
+      "caseId": "tabletop2026-q1",
+      "period": "Q1",
+      "version": "1.0.0",
+      "status": "superseded",
+      "sourceCutoff": "2026-04-09",
+      "sourceHash": "96718a76f248958d4adc91928295f522e1674401f5f1169873f7243650b6c67d",
+      "generatedAt": "2026-07-28T06:52:08.069Z",
+      "generatedBy": "Fable",
+      "pdfHash": "eaf36ec3a5752e98859cd630b5da1ee9ec945dc6bdacc3fb244ec28dd3c70905",
+      "pageCount": 40,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q1-2026-V1-0-0/pdf",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q1-2026-V1-0-0.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q2-2026-V1-0-0",
+      "caseId": "gb-tabletop-2026-q2",
+      "period": "Q2",
+      "version": "1.0.0",
+      "status": "superseded",
+      "sourceCutoff": "2026-07-10",
+      "sourceHash": "fd769df9fd1c8af486aab3b8456590f755704239b2fc32b6ed293366c4b25cc7",
+      "generatedAt": "2026-07-28T06:52:08.936Z",
+      "generatedBy": "Fable",
+      "pdfHash": "4a14f15197ae9b8c5c5f6e8a3e0ee4284d797d421b1caa91ef0e83dbfdeb8876",
+      "pageCount": 39,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q2-2026-V1-0-0/pdf",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q2-2026-V1-0-0.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q3-2026-V1-0-0",
+      "caseId": "GB-TT-Q3-2026",
+      "period": "Q3",
+      "version": "1.0.0",
+      "status": "superseded",
+      "sourceCutoff": "2026-10-08",
+      "sourceHash": "f2c84eecc42c8930161bb3da6f8b72ad9bf6a3c863fcb13fca3bf7f8c099e068",
+      "generatedAt": "2026-07-28T06:52:09.908Z",
+      "generatedBy": "Fable",
+      "pdfHash": "e7ff82320c1f4676b9e433c5bd8b497e8d802781e73224c5db6f5a7d833a11c3",
+      "pageCount": 42,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q3-2026-V1-0-0/pdf",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q3-2026-V1-0-0.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q4-2026-V1-0-0",
+      "caseId": "tabletop2026-q4",
+      "period": "Q4",
+      "version": "1.0.0",
+      "status": "superseded",
+      "sourceCutoff": "2026-12-31",
+      "sourceHash": "6ec87f573021c8738129fa2ad9f51cb8d59e4be8d6cdfc31664ea9c1f0bef3c2",
+      "generatedAt": "2026-07-28T06:52:10.854Z",
+      "generatedBy": "Fable",
+      "pdfHash": "4a3e232ae60b88a3bbdadc61f3d6e45d98692b10f6d119730abcc66dcad13261",
+      "pageCount": 41,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q4-2026-V1-0-0/pdf",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q4-2026-V1-0-0.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-ANNUAL-2026-V1-0-0",
+      "caseId": "GB-FY2026-ANNUAL-CASE",
+      "period": "Annual",
+      "version": "1.0.0",
+      "status": "superseded",
+      "sourceCutoff": "2026-12-31 (FY2026 close). Q1 and Q2 evidence is source-recovered and normalized. Q3 and Q4 remain normalization-pending in QAPI_2026 as of this case’s authoring (see EX-Q3-GROWTH-NOTE, EX-Q4-CLAIMS-NOTE, EX-ANNUAL-SUMMARY) and must never be treated as evidentiarily equivalent to recovered Q1/Q2 records — see DN-02 and DN-31.",
+      "sourceHash": "ab8f43668685014a829b7f9e7137cbffa4ce5c609f2c865357cf4ad67c288928",
+      "generatedAt": "2026-07-28T06:52:12.231Z",
+      "generatedBy": "Fable",
+      "pdfHash": "f0297d1c9d54a269c1cf9834a2a23be0e8976abc16d8bfc252b8d30f8bb0ecbe",
+      "pageCount": 59,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-ANNUAL-2026-V1-0-0/pdf",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-ANNUAL-2026-V1-0-0.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q1-2026-V1-0-1",
+      "caseId": "tabletop2026-q1",
+      "period": "Q1",
+      "version": "1.0.1",
+      "status": "superseded",
+      "sourceCutoff": "2026-04-09",
+      "sourceHash": "96718a76f248958d4adc91928295f522e1674401f5f1169873f7243650b6c67d",
+      "generatedAt": "2026-07-28T06:54:20.582Z",
+      "generatedBy": "Fable",
+      "pdfHash": "af8375df5d8be5a877e61a0afdd042e8a326bd764fec900709613cf7e851a62c",
+      "pageCount": 40,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q1-2026-V1-0-1/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q1-2026-V1-0-0",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q1-2026-V1-0-1.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q2-2026-V1-0-1",
+      "caseId": "gb-tabletop-2026-q2",
+      "period": "Q2",
+      "version": "1.0.1",
+      "status": "superseded",
+      "sourceCutoff": "2026-07-10",
+      "sourceHash": "fd769df9fd1c8af486aab3b8456590f755704239b2fc32b6ed293366c4b25cc7",
+      "generatedAt": "2026-07-28T06:54:21.444Z",
+      "generatedBy": "Fable",
+      "pdfHash": "fc9ccf5fd155dfb26f7ac35edf375532ccd550a33bc6d5cc1c8acd4de8b563f7",
+      "pageCount": 39,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q2-2026-V1-0-1/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q2-2026-V1-0-0",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q2-2026-V1-0-1.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q3-2026-V1-0-1",
+      "caseId": "GB-TT-Q3-2026",
+      "period": "Q3",
+      "version": "1.0.1",
+      "status": "superseded",
+      "sourceCutoff": "2026-10-08",
+      "sourceHash": "f2c84eecc42c8930161bb3da6f8b72ad9bf6a3c863fcb13fca3bf7f8c099e068",
+      "generatedAt": "2026-07-28T06:54:22.421Z",
+      "generatedBy": "Fable",
+      "pdfHash": "18e5f2715d95aaf4d67ab73db24a06a29fbc5ae57a0bbf688d44eb0d1598ed2c",
+      "pageCount": 42,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q3-2026-V1-0-1/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q3-2026-V1-0-0",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q3-2026-V1-0-1.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q4-2026-V1-0-1",
+      "caseId": "tabletop2026-q4",
+      "period": "Q4",
+      "version": "1.0.1",
+      "status": "superseded",
+      "sourceCutoff": "2026-12-31",
+      "sourceHash": "6ec87f573021c8738129fa2ad9f51cb8d59e4be8d6cdfc31664ea9c1f0bef3c2",
+      "generatedAt": "2026-07-28T06:54:23.288Z",
+      "generatedBy": "Fable",
+      "pdfHash": "d00aad23a119aacf0cccb3532e032bcc785e9324c0df4a1c067fbba8b510d811",
+      "pageCount": 41,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q4-2026-V1-0-1/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q4-2026-V1-0-0",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q4-2026-V1-0-1.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-ANNUAL-2026-V1-0-1",
+      "caseId": "GB-FY2026-ANNUAL-CASE",
+      "period": "Annual",
+      "version": "1.0.1",
+      "status": "superseded",
+      "sourceCutoff": "2026-12-31 (FY2026 close). Q1 and Q2 evidence is source-recovered and normalized. Q3 and Q4 remain normalization-pending in QAPI_2026 as of this case’s authoring (see EX-Q3-GROWTH-NOTE, EX-Q4-CLAIMS-NOTE, EX-ANNUAL-SUMMARY) and must never be treated as evidentiarily equivalent to recovered Q1/Q2 records — see DN-02 and DN-31.",
+      "sourceHash": "ab8f43668685014a829b7f9e7137cbffa4ce5c609f2c865357cf4ad67c288928",
+      "generatedAt": "2026-07-28T06:54:24.679Z",
+      "generatedBy": "Fable",
+      "pdfHash": "2fd3ea1b499de8cc73af8920479b9622ed3c0f658e81291a9be5eba130a35e4f",
+      "pageCount": 60,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-ANNUAL-2026-V1-0-1/pdf",
+      "supersedesPacketId": "CI-GB-TT-ANNUAL-2026-V1-0-0",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-ANNUAL-2026-V1-0-1.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q1-2026-V1-0-2",
+      "caseId": "tabletop2026-q1",
+      "period": "Q1",
+      "version": "1.0.2",
+      "status": "superseded",
+      "sourceCutoff": "2026-04-09",
+      "sourceHash": "96718a76f248958d4adc91928295f522e1674401f5f1169873f7243650b6c67d",
+      "generatedAt": "2026-07-28T06:55:27.108Z",
+      "generatedBy": "Fable",
+      "pdfHash": "5fcfd65513742ed174e17e557be0c22542d00c890f59389eacc37497562adef8",
+      "pageCount": 42,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q1-2026-V1-0-2/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q1-2026-V1-0-1",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q1-2026-V1-0-2.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q2-2026-V1-0-2",
+      "caseId": "gb-tabletop-2026-q2",
+      "period": "Q2",
+      "version": "1.0.2",
+      "status": "superseded",
+      "sourceCutoff": "2026-07-10",
+      "sourceHash": "fd769df9fd1c8af486aab3b8456590f755704239b2fc32b6ed293366c4b25cc7",
+      "generatedAt": "2026-07-28T06:55:27.991Z",
+      "generatedBy": "Fable",
+      "pdfHash": "20306104e1788fad3dff3fefc6c4d7cf55832742239e90ef5ddb9274b9af161b",
+      "pageCount": 39,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q2-2026-V1-0-2/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q2-2026-V1-0-1",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q2-2026-V1-0-2.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q3-2026-V1-0-2",
+      "caseId": "GB-TT-Q3-2026",
+      "period": "Q3",
+      "version": "1.0.2",
+      "status": "superseded",
+      "sourceCutoff": "2026-10-08",
+      "sourceHash": "f2c84eecc42c8930161bb3da6f8b72ad9bf6a3c863fcb13fca3bf7f8c099e068",
+      "generatedAt": "2026-07-28T06:55:29.058Z",
+      "generatedBy": "Fable",
+      "pdfHash": "3d2fe6accf12d6ef356e106283e187df8500b563517d622cb0d07acf0d4b2f80",
+      "pageCount": 42,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q3-2026-V1-0-2/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q3-2026-V1-0-1",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q3-2026-V1-0-2.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q4-2026-V1-0-2",
+      "caseId": "tabletop2026-q4",
+      "period": "Q4",
+      "version": "1.0.2",
+      "status": "superseded",
+      "sourceCutoff": "2026-12-31",
+      "sourceHash": "6ec87f573021c8738129fa2ad9f51cb8d59e4be8d6cdfc31664ea9c1f0bef3c2",
+      "generatedAt": "2026-07-28T06:55:30.015Z",
+      "generatedBy": "Fable",
+      "pdfHash": "1218a3f585277b215d5b98067590b736c0f88c6ab34efc3779867ce303c16525",
+      "pageCount": 40,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q4-2026-V1-0-2/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q4-2026-V1-0-1",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q4-2026-V1-0-2.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-ANNUAL-2026-V1-0-2",
+      "caseId": "GB-FY2026-ANNUAL-CASE",
+      "period": "Annual",
+      "version": "1.0.2",
+      "status": "superseded",
+      "sourceCutoff": "2026-12-31 (FY2026 close). Q1 and Q2 evidence is source-recovered and normalized. Q3 and Q4 remain normalization-pending in QAPI_2026 as of this case’s authoring (see EX-Q3-GROWTH-NOTE, EX-Q4-CLAIMS-NOTE, EX-ANNUAL-SUMMARY) and must never be treated as evidentiarily equivalent to recovered Q1/Q2 records — see DN-02 and DN-31.",
+      "sourceHash": "ab8f43668685014a829b7f9e7137cbffa4ce5c609f2c865357cf4ad67c288928",
+      "generatedAt": "2026-07-28T06:55:31.359Z",
+      "generatedBy": "Fable",
+      "pdfHash": "55f7576a634af2784722658a9624d71665efb83cba0503e5267224c7de007871",
+      "pageCount": 60,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-ANNUAL-2026-V1-0-2/pdf",
+      "supersedesPacketId": "CI-GB-TT-ANNUAL-2026-V1-0-1",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-ANNUAL-2026-V1-0-2.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q1-2026-V1-0-3",
+      "caseId": "tabletop2026-q1",
+      "period": "Q1",
+      "version": "1.0.3",
+      "status": "review_required",
+      "sourceCutoff": "2026-04-09",
+      "sourceHash": "96718a76f248958d4adc91928295f522e1674401f5f1169873f7243650b6c67d",
+      "generatedAt": "2026-07-28T06:56:51.955Z",
+      "generatedBy": "Fable",
+      "pdfHash": "9fb6599bd8b2c4b3f0d5124a6c93decabca400c56698152934a93efbd59d6016",
+      "pageCount": 43,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q1-2026-V1-0-3/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q1-2026-V1-0-2",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q1-2026-V1-0-3.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q2-2026-V1-0-3",
+      "caseId": "gb-tabletop-2026-q2",
+      "period": "Q2",
+      "version": "1.0.3",
+      "status": "review_required",
+      "sourceCutoff": "2026-07-10",
+      "sourceHash": "fd769df9fd1c8af486aab3b8456590f755704239b2fc32b6ed293366c4b25cc7",
+      "generatedAt": "2026-07-28T06:56:52.769Z",
+      "generatedBy": "Fable",
+      "pdfHash": "1e1be28012036c0ff41ccaf1b9c212606b762652dbc33cbc9fbb8f2508746d09",
+      "pageCount": 40,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q2-2026-V1-0-3/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q2-2026-V1-0-2",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q2-2026-V1-0-3.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q3-2026-V1-0-3",
+      "caseId": "GB-TT-Q3-2026",
+      "period": "Q3",
+      "version": "1.0.3",
+      "status": "review_required",
+      "sourceCutoff": "2026-10-08",
+      "sourceHash": "f2c84eecc42c8930161bb3da6f8b72ad9bf6a3c863fcb13fca3bf7f8c099e068",
+      "generatedAt": "2026-07-28T06:56:53.689Z",
+      "generatedBy": "Fable",
+      "pdfHash": "0c5d06d06b93b9369e78eacc61a38ea547906fe2115d132662e54a832ab83504",
+      "pageCount": 43,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q3-2026-V1-0-3/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q3-2026-V1-0-2",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q3-2026-V1-0-3.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-Q4-2026-V1-0-3",
+      "caseId": "tabletop2026-q4",
+      "period": "Q4",
+      "version": "1.0.3",
+      "status": "review_required",
+      "sourceCutoff": "2026-12-31",
+      "sourceHash": "6ec87f573021c8738129fa2ad9f51cb8d59e4be8d6cdfc31664ea9c1f0bef3c2",
+      "generatedAt": "2026-07-28T06:56:54.674Z",
+      "generatedBy": "Fable",
+      "pdfHash": "351e0ec540b116854a22d32b2101642fc3ffda741f11c2cdfd282cd1603e4658",
+      "pageCount": 41,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-Q4-2026-V1-0-3/pdf",
+      "supersedesPacketId": "CI-GB-TT-Q4-2026-V1-0-2",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-Q4-2026-V1-0-3.pdf"
+    },
+    {
+      "packetId": "CI-GB-TT-ANNUAL-2026-V1-0-3",
+      "caseId": "GB-FY2026-ANNUAL-CASE",
+      "period": "Annual",
+      "version": "1.0.3",
+      "status": "review_required",
+      "sourceCutoff": "2026-12-31 (FY2026 close). Q1 and Q2 evidence is source-recovered and normalized. Q3 and Q4 remain normalization-pending in QAPI_2026 as of this case’s authoring (see EX-Q3-GROWTH-NOTE, EX-Q4-CLAIMS-NOTE, EX-ANNUAL-SUMMARY) and must never be treated as evidentiarily equivalent to recovered Q1/Q2 records — see DN-02 and DN-31.",
+      "sourceHash": "ab8f43668685014a829b7f9e7137cbffa4ce5c609f2c865357cf4ad67c288928",
+      "generatedAt": "2026-07-28T06:56:55.916Z",
+      "generatedBy": "Fable",
+      "pdfHash": "ee6ed60373d8bf7b9afecce3d283e11969c03ea831b85ebc586810803c1054ed",
+      "pageCount": 60,
+      "protectedOpenUrl": "/api/governance/tabletop-packets/CI-GB-TT-ANNUAL-2026-V1-0-3/pdf",
+      "supersedesPacketId": "CI-GB-TT-ANNUAL-2026-V1-0-2",
+      "reviewFindings": [
+        "Human visual and evidentiary review pending."
+      ],
+      "filename": "CI-GB-TT-ANNUAL-2026-V1-0-3.pdf"
+    }
+  ]
+}

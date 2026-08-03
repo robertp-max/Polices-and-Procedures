@@ -13,6 +13,7 @@ export const USER_GROUPS: UserGroup[] = [
       'phi.read', 'phi.write',
       'user.provision', 'user.suspend',
       'system.replay',
+      'governance.portal.access',
     ],
   },
   {
@@ -175,7 +176,7 @@ export const USER_GROUPS: UserGroup[] = [
     id: 'grp-leadership-governing-body',
     name: 'Governing Body',
     description: 'Governing Body workforce group with leadership oversight visibility.',
-    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read'],
+    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'governance.portal.access'],
   },
   {
     id: 'grp-user-access-admin',
@@ -248,6 +249,52 @@ export const USER_GROUPS: UserGroup[] = [
     name: 'Pending User',
     description: 'Authenticated user awaiting explicit role, group, and page-access assignment.',
     permissions: [],
+  },
+  // --- Governing Body Office canonical groups ---
+  // Each grants governance.portal.access (portal ENTRY only). Operational/Board authority is
+  // resolved server-side against active appointment, term, committee charter, delegation, and
+  // conflict state — never from group membership alone.
+  {
+    id: 'grp-governance-board-chair',
+    name: 'Board Chair',
+    description: 'Governing Body Board Chair. Portal entry; Board authority resolved by appointment/term.',
+    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'governance.portal.access'],
+  },
+  {
+    id: 'grp-governance-board-secretary',
+    name: 'Board Secretary',
+    description: 'Governing Body Board Secretary. Portal entry; minutes/records authority resolved server-side.',
+    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'governance.portal.access'],
+  },
+  {
+    id: 'grp-governance-committee-member',
+    name: 'Committee Member',
+    description: 'Governing Body committee member. Portal entry; committee authority resolved by charter.',
+    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'governance.portal.access'],
+  },
+  {
+    id: 'grp-governance-legal-counsel',
+    name: 'Legal Counsel',
+    description: 'Governing Body legal counsel. Portal entry; advisory access, authority resolved server-side.',
+    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'governance.portal.access'],
+  },
+  {
+    id: 'grp-governance-cfo',
+    name: 'CFO',
+    description: 'Governing Body CFO / fiscal officer. Portal entry; fiscal authority resolved server-side.',
+    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'governance.portal.access'],
+  },
+  {
+    id: 'grp-governance-risk-manager',
+    name: 'Risk Manager',
+    description: 'Governing Body risk manager. Portal entry; risk-oversight authority resolved server-side.',
+    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'governance.portal.access'],
+  },
+  {
+    id: 'grp-governance-privacy-security-officer',
+    name: 'Privacy & Security Officer',
+    description: 'Governing Body privacy/security officer. Portal entry; authority resolved server-side.',
+    permissions: ['policy.view', 'form.view', 'ceu.view', 'audit.read', 'governance.portal.access'],
   },
 ];
 

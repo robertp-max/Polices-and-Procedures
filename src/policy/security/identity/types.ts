@@ -16,7 +16,8 @@ export type PermissionId =
   | 'phi.write'
   | 'user.provision'
   | 'user.suspend'
-  | 'system.replay';
+  | 'system.replay'
+  | 'governance.portal.access';
 
 export type ResourceKind =
   | 'policy'
@@ -25,7 +26,8 @@ export type ResourceKind =
   | 'audit'
   | 'phi'
   | 'user'
-  | 'system';
+  | 'system'
+  | 'governance';
 
 export interface Permission {
   id: PermissionId;
@@ -89,6 +91,13 @@ export interface UserGroup {
     | 'Clinical Manager'
     | 'Compliance Officer'
     | 'Governing Body'
+    | 'Board Chair'
+    | 'Board Secretary'
+    | 'Committee Member'
+    | 'Legal Counsel'
+    | 'CFO'
+    | 'Risk Manager'
+    | 'Privacy & Security Officer'
     | 'User Access Admin'
     | 'Director'
     | 'Executive'

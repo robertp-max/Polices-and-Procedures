@@ -68,7 +68,7 @@ Expected behavior:
 - Find A Home Care launcher → `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`
 - Journey launcher → `http://127.0.0.1:5193/journey/training?persona=taylor-rn` (the separate Journey app with the Journey/Connect toggle)
 - Connect launcher → `http://127.0.0.1:5192/` (separate Connect app; no source merge)
-- Governing Body launcher → `/governance` (Governing Body Portal route; not Find A Home Care)
+- Governing Body launcher → `/governance` (latest Governing Body V3 Executive Readiness portal; not Find A Home Care)
 
 ### qapi docs (from `qapi-uiux-discovery` / `qapi`)
 
@@ -95,6 +95,32 @@ No full `git merge qapi` (branch history diverges from base).
 - Reception workspace card and `/ehr-prototype` CTA both launch port 5194
 - Production build verified; UAT handoff is `apps/ehr-prototype/docs/UAT-REPORT.md`
 
+### Governing Body V3 Executive Readiness portal (from latest governance worktree)
+
+- Source: `C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\codex-governing-body-v3-executive-readiness-os`
+- Source branch: `codex/governing-body-v3-executive-readiness-os`
+- Source tip: `f67b794a` plus current governance worktree file state
+- Included app files: `src/v6/screens/governance/` and `src/v6/screens/pageviews/GovernanceScreen.tsx`
+- Included route wiring: `/governance`, `/governance/meetings`, `/governance/decisions`, `/governance/workflows`, `/governance/evidence`, `/governance/academy`, and related meeting/module child routes
+- Included scoped API support: `server/governance/`, `server/routes/governance*.ts`, `server/auth/requireGovernancePortalAccess.ts`, `server/auth/authorization/`, and governance reference/tabletop packet assets under `server/assets/`
+- Local route: `http://127.0.0.1:5201/governance`
+- Reception card opens the standalone portal route in a new tab.
+- Explicitly not sourced from the older `feature/governing-body-portal` / `GOVERNING_BODY_PORTAL` worktree.
+
+Latest correction verification:
+
+| Check | Result |
+| --- | --- |
+| `npm run build` | **PASS** |
+| `npx vitest run src/v6/screens/governance/v33` | **PASS** - 20 files, 240 tests |
+| `npx vitest run --config vitest.server.config.ts server/routes/governanceComplianceEvidence.test.ts server/routes/governanceReferences.test.ts server/routes/governanceTabletopPackets.test.ts server/governance` | **PASS** - 8 files, 39 tests |
+| Browser: `http://127.0.0.1:5201/reception` | **PASS** - Reception lists Journey, Connect, Governing Body, Find A Home Care, and EHR Prototype |
+| Browser: Reception launcher URLs | **PASS** - Governing Body -> `/governance`, Find A Home Care -> `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`, Journey -> `http://127.0.0.1:5193/journey/training?persona=taylor-rn`, Connect -> `http://127.0.0.1:5192/`, EHR -> `http://127.0.0.1:5194/`; all target `_blank` |
+| Browser: `http://127.0.0.1:5201/governance` | **PASS** - latest V3 home rendered with `Executive Readiness Office` and `My Compliance` |
+| Browser: `http://127.0.0.1:5201/governance#compliance/tabletop` | **PASS** - rendered `Governing Body Boardroom Simulation`, `Tabletop Hub`, and `Workflow Coverage` |
+| Browser: `http://127.0.0.1:5201/governance/academy/modules/GB-001` | **PASS** - normalized to `#compliance/training/module/GB-001` and rendered the V3 training module |
+| Current failed browser responses on verified routes | None |
+
 ## Intentionally excluded
 
 | Item | Reason |
@@ -104,6 +130,7 @@ No full `git merge qapi` (branch history diverges from base).
 | Main dirty `src/auth/apiClient.ts` (larger) / tests | Not reception-approved set |
 | Connect repo (`...\connect`) | Separate Sites source; Journey toggle stays there |
 | Employee Journey repo | Separate repo; reciprocal Journey/Connect toggle is maintained and verified there, not merged into this policy branch |
+| Older Governing Body portal branch (`feature/governing-body-portal`) | Superseded by `codex/governing-body-v3-executive-readiness-os`; not the source for the current Reception launcher |
 | Secrets (`.env`, service-account JSON, keys) | Never staged/committed |
 
 ## DefenCIble / Google Drive (investigation)

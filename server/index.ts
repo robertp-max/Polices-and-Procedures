@@ -7,6 +7,9 @@ import { env, assertDriveEvidenceLock } from './env.js';
 import { log } from './logger.js';
 import { ApiError } from './errors.js';
 import { calendarRouter } from './routes/calendar.js';
+import { governanceReferencesRouter } from './routes/governanceReferences.js';
+import { governanceComplianceEvidenceRouter } from './routes/governanceComplianceEvidence.js';
+import { governanceTabletopPacketsRouter } from './routes/governanceTabletopPackets.js';
 import { cesRouter } from './routes/ces.js';
 import { hubstaffRouter } from './routes/hubstaff.js';
 import { ecignRouter } from './routes/ecign.js';
@@ -24,6 +27,8 @@ import { requireApiAuth, requireRole } from './auth/apiAuthBoundary.js';
 import { ADMIN_ROLE_GROUPS, AUDIT_ADMIN_ROLES } from './auth/routeAccessMatrix.js';
 import { pmRouter } from './routes/pm.js';
 import { createBradRouter } from './routes/brad.js';
+import { governanceRouter } from './governance/routes.js';
+import { requireGovernancePortalAccess } from './auth/requireGovernancePortalAccess.js';
 import { packetTemplatesRouter, packetsRouter } from './packets/routes/index.js';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -105,6 +110,9 @@ app.use('/api/admin/user-access', requireRole(ADMIN_ROLE_GROUPS), userAccessRout
 app.use('/api', requireApiAuth());
 
 // ── Protected business routers (verified actor required) ──────────────────
+app.use('/api/governance/references', governanceReferencesRouter);
+app.use('/api/governance/compliance-evidence', governanceComplianceEvidenceRouter);
+app.use('/api/governance/tabletop-packets', governanceTabletopPacketsRouter);
 app.use('/api/calendar', calendarRouter);
 app.use('/api/ces', cesRouter);
 app.use('/api/hubstaff', hubstaffRouter);
@@ -140,6 +148,10 @@ app.use('/api/ia', createIaRouter(iaService));
 
 // Brad assistant + Super Admin guarded-action layer (append-only generated objects).
 app.use('/api/brad', createBradRouter());
+
+// Governing Body Office — permission-first gate. Portal entry only; mutations
+// and classified delivery are authorized inside the governance router.
+app.use('/api/governance', requireGovernancePortalAccess(), governanceRouter);
 
 // 404 for unknown routes under /api.
 app.use('/api', (req, _res, next) => {

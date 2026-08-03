@@ -7,6 +7,11 @@ import { authRouter } from './routes/auth.js';
 import { identityMiddleware } from './identity/middleware.js';
 import { createBradRouter } from './routes/brad.js';
 import { createNolanRouter } from './routes/nolan.js';
+import { governanceRouter } from './governance/routes.js';
+import { governanceReferencesRouter } from './routes/governanceReferences.js';
+import { governanceComplianceEvidenceRouter } from './routes/governanceComplianceEvidence.js';
+import { governanceTabletopPacketsRouter } from './routes/governanceTabletopPackets.js';
+import { requireGovernancePortalAccess } from './auth/requireGovernancePortalAccess.js';
 import { requireApiAuth } from './auth/apiAuthBoundary.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -59,18 +64,18 @@ app.use('/api/auth', authRouter);
 
 // Required-route availability, recorded at mount time (below) so readiness can
 // report the truth and traffic promotion can gate on it.
-const readiness = { brad: false, nolan: false };
+const readiness = { brad: false, nolan: false, governance: false };
 
 // Readiness (PUBLIC — registered before the boundary): reports required-route
 // availability plus build metadata for canary verification. 503 when any
 // required assistant failed to mount. No secrets, prompts, or paths exposed.
 app.get('/api/_readiness', (_req: Request, res: Response) => {
-  const ok = readiness.brad && readiness.nolan;
+  const ok = readiness.brad && readiness.nolan && readiness.governance;
   res.status(ok ? 200 : 503).json({
     ok,
     revision: process.env.K_REVISION ?? null,
     commit: process.env.BUILD_COMMIT ?? null,
-    routes: { auth: true, brad: readiness.brad, nolan: readiness.nolan },
+    routes: { auth: true, brad: readiness.brad, nolan: readiness.nolan, governance: readiness.governance },
   });
 });
 
@@ -98,6 +103,16 @@ try {
   readiness.nolan = true;
 } catch (err) {
   console.error(JSON.stringify({ event: 'cloudrun.nolan_mount_failed', message: (err as Error)?.message }));
+}
+
+try {
+  app.use('/api/governance/references', governanceReferencesRouter);
+  app.use('/api/governance/compliance-evidence', governanceComplianceEvidenceRouter);
+  app.use('/api/governance/tabletop-packets', governanceTabletopPacketsRouter);
+  app.use('/api/governance', requireGovernancePortalAccess(), governanceRouter);
+  readiness.governance = true;
+} catch (err) {
+  console.error(JSON.stringify({ event: 'cloudrun.governance_mount_failed', message: (err as Error)?.message }));
 }
 
 // Any other /api path → clean JSON 404 (must not fall through to the SPA).
@@ -139,11 +154,12 @@ app.use(errorHandler);
 // Fail closed: if a REQUIRED assistant route did not mount, do not begin serving.
 // Cloud Run marks the revision failed and keeps the previous good revision live,
 // rather than promoting a deployment whose assistants would 404.
-if (!readiness.brad || !readiness.nolan) {
+if (!readiness.brad || !readiness.nolan || !readiness.governance) {
   console.error(JSON.stringify({
     event: 'cloudrun.required_mounts_failed',
     brad: readiness.brad,
     nolan: readiness.nolan,
+    governance: readiness.governance,
   }));
   process.exit(1);
 }
@@ -153,7 +169,7 @@ const server = app.listen(PORT, HOST, () => {
   console.log(JSON.stringify({
     event: 'cloudrun.started', port: PORT, host: HOST, dist: DIST, hasDist: existsSync(DIST),
     revision: process.env.K_REVISION ?? null, commit: process.env.BUILD_COMMIT ?? null,
-    routes: { auth: true, brad: readiness.brad, nolan: readiness.nolan },
+    routes: { auth: true, brad: readiness.brad, nolan: readiness.nolan, governance: readiness.governance },
   }));
 });
 
