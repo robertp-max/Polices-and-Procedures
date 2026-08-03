@@ -1,0 +1,249 @@
+/* PatientChartScreen — deep patient record: overview, timeline, plan of care,
+   assessments, visits, orders, medications, documents. */
+
+.chart-not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 28px;
+}
+
+.chart-tabpanel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.chart-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.chart-card-head svg { color: var(--teal-500); flex-shrink: 0; }
+
+.chart-empty-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  padding: 10px 0 2px;
+}
+.chart-empty-note svg { flex-shrink: 0; color: var(--gray-300); }
+
+/* ---------- Overview grid ---------- */
+
+.chart-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 1180px) { .chart-overview-grid { grid-template-columns: 1fr; } }
+
+/* Care team */
+
+.chart-team-list { display: flex; flex-direction: column; gap: 12px; }
+.chart-team-row { display: flex; align-items: center; gap: 11px; }
+.chart-team-name { font-size: 13px; font-weight: 500; color: var(--ink-strong); }
+.chart-team-role { font-size: 11.5px; color: var(--ink-soft); margin-top: 1px; }
+
+/* Record integrity */
+
+.chart-integrity-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+.chart-integrity-count {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 20px;
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 10px;
+}
+.chart-integrity-count span { font-size: 12px; font-weight: 400; color: var(--ink-soft); font-family: var(--font-body); }
+.chart-integrity-list { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding-right: 2px; }
+.chart-integrity-row { display: flex; flex-direction: column; gap: 3px; }
+.chart-integrity-detail { font-size: 11.5px; color: var(--ink-soft); padding-left: 2px; }
+
+/* Upcoming visits */
+
+.chart-visit-list { display: flex; flex-direction: column; gap: 4px; }
+.chart-visit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.chart-visit-row:last-child { border-bottom: none; }
+.chart-visit-when { min-width: 56px; }
+.chart-visit-date { font-size: 11px; font-weight: 600; color: var(--teal-600); text-transform: uppercase; letter-spacing: 0.02em; }
+.chart-visit-time { font-size: 11.5px; color: var(--ink-soft); }
+.chart-visit-body { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.chart-visit-type { font-size: 12.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Recent activity (overview preview) */
+
+.chart-activity-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.chart-activity-list { display: flex; flex-direction: column; }
+.chart-activity-row { display: flex; align-items: flex-start; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+.chart-activity-row:last-child { border-bottom: none; }
+.chart-activity-body { flex: 1; min-width: 0; }
+.chart-activity-title { font-size: 13px; font-weight: 500; color: var(--ink-strong); }
+.chart-activity-detail { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+.chart-activity-when { font-size: 11px; color: var(--ink-soft); white-space: nowrap; margin-top: 1px; }
+
+/* Kind-tinted circles shared by overview preview + timeline */
+
+.chart-kind-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-pill);
+  flex-shrink: 0;
+}
+.chart-kind-circle.is-teal { background: var(--teal-200); color: var(--teal-600); }
+.chart-kind-circle.is-orange { background: var(--orange-200); color: var(--orange-500); }
+
+/* ---------- Timeline tab ---------- */
+
+.chart-timeline { list-style: none; margin: 0; padding: 4px 4px 0; }
+.chart-timeline-item { display: flex; gap: 16px; }
+.chart-timeline-rail { display: flex; flex-direction: column; align-items: center; }
+.chart-timeline-connector { flex: 1; width: 2px; background: var(--line); margin: 4px 0; min-height: 20px; }
+.chart-timeline-content { flex: 1; min-width: 0; padding-bottom: 22px; }
+.chart-timeline-when { font-size: 11px; font-weight: 600; letter-spacing: 0.03em; color: var(--ink-soft); text-transform: uppercase; }
+.chart-timeline-title { font-size: 14px; font-weight: 500; color: var(--ink-strong); margin-top: 3px; }
+.chart-timeline-detail { font-size: 12.5px; color: var(--ink); line-height: 1.5; margin-top: 3px; }
+.chart-timeline-actor { font-size: 11.5px; color: var(--ink-soft); margin-top: 5px; }
+
+/* ---------- Plan of care ---------- */
+
+.chart-poc-callout {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  border-color: var(--yellow-200);
+  background: var(--status-warn-bg);
+}
+.chart-poc-callout-text { font-size: 13px; font-weight: 500; color: var(--ink-strong); flex: 1; min-width: 180px; }
+.chart-poc-callout-sub { font-size: 12px; color: var(--ink-soft); width: 100%; }
+.chart-poc-callout .btn { flex-shrink: 0; }
+
+.chart-poc-section { display: flex; flex-direction: column; gap: 12px; }
+.chart-poc-cert { font-size: 14px; font-weight: 500; color: var(--ink-strong); font-family: var(--font-display); }
+
+.chart-dx-list, .chart-freq-list, .chart-goal-list, .chart-safety-list { display: flex; flex-direction: column; gap: 10px; }
+.chart-dx-row { display: flex; align-items: center; gap: 12px; }
+.chart-dx-primary .chart-dx-code { color: var(--orange-500); }
+.chart-dx-code { font-family: var(--font-display); font-weight: 500; font-size: 13px; color: var(--ink-strong); min-width: 66px; }
+.chart-dx-label { font-size: 13px; color: var(--ink); }
+
+.chart-freq-row { display: flex; align-items: center; gap: 12px; }
+.chart-freq-code { font-family: var(--font-display); font-weight: 500; font-size: 13px; color: var(--teal-600); min-width: 40px; }
+.chart-freq-detail { font-size: 13px; color: var(--ink); }
+
+.chart-goal-row { display: flex; align-items: flex-start; gap: 10px; }
+.chart-goal-row svg { color: var(--orange-400); margin-top: 2px; flex-shrink: 0; }
+.chart-goal-text { font-size: 13px; color: var(--ink); flex: 1; line-height: 1.5; }
+.chart-goal-by { font-size: 11.5px; color: var(--ink-soft); white-space: nowrap; font-weight: 500; }
+
+.chart-safety-row { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink); }
+.chart-safety-row svg { color: var(--status-good); flex-shrink: 0; }
+.chart-safety-row.is-muted { color: var(--ink-soft); }
+.chart-safety-row.is-muted svg { color: var(--gray-300); }
+
+/* ---------- Assessments ---------- */
+
+.chart-assess-list { display: flex; flex-direction: column; }
+.chart-assess-item { border-bottom: 1px solid var(--line); padding: 14px 0; }
+.chart-assess-item:last-child { border-bottom: none; }
+.chart-assess-row { display: flex; align-items: center; gap: 16px; }
+.chart-assess-who { min-width: 200px; flex-shrink: 0; }
+.chart-assess-name { font-size: 13.5px; font-weight: 500; color: var(--ink-strong); }
+.chart-assess-meta { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+.chart-assess-progress { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.chart-assess-progress .progress { flex: 1; }
+.chart-assess-pct { font-size: 12px; font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; width: 34px; text-align: right; flex-shrink: 0; }
+
+.chart-assess-breakdown {
+  margin-top: 14px;
+  margin-left: 4px;
+  padding: 14px 16px;
+  background: var(--surface-sunken);
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.chart-assess-section-row { display: flex; align-items: center; gap: 12px; }
+.chart-assess-section-label { font-size: 12.5px; color: var(--ink); min-width: 210px; flex-shrink: 0; }
+.chart-assess-section-row .progress { flex: 1; }
+.chart-assess-section-count { font-size: 11.5px; color: var(--ink-soft); width: 34px; text-align: right; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.chart-assess-callout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--status-warn);
+  background: var(--status-warn-bg);
+  border-radius: var(--r-xs);
+  padding: 9px 12px;
+  margin-top: 4px;
+}
+.chart-assess-callout svg { flex-shrink: 0; }
+.chart-assess-breakdown .btn { align-self: flex-start; }
+
+/* ---------- Orders ---------- */
+
+.chart-order-list { display: flex; flex-direction: column; padding: 4px 10px; }
+.chart-order-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.chart-order-row:last-child { border-bottom: none; }
+.chart-order-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.chart-order-summary-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.chart-order-summary { font-size: 13.5px; font-weight: 500; color: var(--ink-strong); }
+.chart-order-meta { font-size: 12px; color: var(--ink-soft); }
+
+/* ---------- Medications ---------- */
+
+.chart-med-alert {
+  border-color: var(--yellow-200);
+  background: var(--status-warn-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chart-med-alert-head { display: flex; align-items: center; gap: 8px; }
+.chart-med-alert-head svg { color: var(--status-warn); }
+.chart-med-alert-name { font-size: 14px; font-weight: 500; color: var(--ink-strong); font-family: var(--font-display); }
+.chart-med-alert-note { font-size: 12.5px; color: var(--ink); line-height: 1.55; max-width: 640px; }
+.chart-med-alert-actions { display: flex; gap: 10px; margin-top: 4px; }
+
+.chart-med-highrisk { margin-left: 8px; }
+.chart-med-footer { padding: 12px 20px 16px; font-size: 11.5px; color: var(--ink-soft); border-top: 1px solid var(--line); margin-top: 2px; }
+
+/* ---------- Documents ---------- */
+
+.chart-doc-title { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; color: var(--ink-strong); }
+.chart-doc-title svg { color: var(--teal-500); flex-shrink: 0; }
+.chart-doc-open { text-align: right; opacity: 0; transition: opacity 130ms ease; }
+.chart-doc-row:hover .chart-doc-open { opacity: 1; }

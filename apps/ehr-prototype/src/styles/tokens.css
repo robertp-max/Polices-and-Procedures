@@ -1,0 +1,121 @@
+/* ============================================================
+   Care Indeed Design System — tokens
+   Source: "CI Design System" (10 boards, extracted 2026-08-03).
+   Every raw value below is taken from the design system PDF;
+   aliases map those primitives onto EHR application roles.
+   ============================================================ */
+
+:root {
+  /* ---- Primary · Orange (hue 21) ---- */
+  --orange-600: #421700;
+  --orange-500: #C74601; /* primary CTA, key emphasis — light backgrounds only */
+  --orange-400: #E56E2E;
+  --orange-300: #FFD5BF;
+  --orange-200: #FFEEE5; /* CTA/highlight on dark backgrounds */
+  --orange-100: #FFFAF7;
+
+  /* ---- Secondary · Teal (hue 182) ---- */
+  --teal-600: #004142;
+  --teal-500: #00797D; /* secondary CTA / key text where orange is absent */
+  --teal-400: #06A6AB;
+  --teal-300: #C4F4F5;
+  --teal-200: #E5FEFF;
+  --teal-100: #F7FEFF;
+
+  /* ---- Neutral · warm gray (hue 21) ---- */
+  --gray-600: #1F1C1B; /* headings */
+  --gray-500: #524D4B; /* body text */
+  --gray-400: #74767A; /* secondary text */
+  /* The DS light neutrals are warm (hue 21). On the teal canvas that warmth
+     reads as an orange cast on every surface, so the three light steps are
+     re-struck cool-neutral. Brand warmth stays where it belongs: the orange ramp. */
+  --gray-300: #D4D9DA; /* input borders, placeholder — never body text */
+  --gray-200: #E4E9EA; /* hairlines, subtle accents */
+  --gray-100: #F5F8F9; /* subtle surfaces */
+
+  /* ---- Sentiment (alerts/status only; 300-step never used as text) ---- */
+  --green-300: #00854D;
+  --green-200: #73C5A3;
+  --green-100: #E5F4EE;
+  --yellow-300: #FFC700;
+  --yellow-200: #FFE073;
+  --yellow-100: #FFF9E5;
+  --red-300: #D70101;
+  --red-200: #E97474;
+  --red-100: #FBE6E6;
+
+  /* ---- Typography ---- */
+  --font-display: 'Montserrat', 'Segoe UI', sans-serif; /* headings/subheadings */
+  --font-body: 'Roboto', 'Segoe UI', sans-serif;        /* body copy */
+
+  /* ---- Radius (desktop scale) ---- */
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --r-xl: 32px;
+  --r-pill: 999px;
+
+  /* ---- Elevation (soft, warm-tinted — premium restraint) ---- */
+  --shadow-1: 0 1px 2px rgba(0, 33, 34, 0.04), 0 1px 3px rgba(0, 33, 34, 0.06);
+  --shadow-2: 0 2px 6px rgba(0, 33, 34, 0.05), 0 8px 24px rgba(0, 33, 34, 0.07);
+  --shadow-3: 0 4px 12px rgba(0, 33, 34, 0.08), 0 16px 40px rgba(0, 33, 34, 0.10);
+  --shadow-pop: 0 8px 20px rgba(0, 33, 34, 0.10), 0 20px 48px rgba(0, 33, 34, 0.14);
+
+  /* ============================================================
+     Application role aliases
+     ============================================================ */
+
+  /* Surfaces */
+  --canvas: var(--teal-100);          /* app background — light teal (DS teal 100) */
+  --surface: #FFFFFF;                 /* cards */
+  --surface-sunken: var(--gray-100);
+  --surface-brand-tint: var(--orange-200);
+  --surface-teal-tint: var(--teal-100);
+
+  /* Sidebar (dark teal panel) */
+  --sidebar-bg: var(--teal-600);
+  --sidebar-bg-raised: rgba(255, 255, 255, 0.06);
+  --sidebar-active: rgba(255, 255, 255, 0.10);
+  --sidebar-ink: #FFFFFF;
+  --sidebar-ink-dim: rgba(255, 255, 255, 0.64);
+  --sidebar-ink-faint: rgba(255, 255, 255, 0.42);
+  --sidebar-line: rgba(255, 255, 255, 0.10);
+
+  /* Ink */
+  --ink-strong: var(--gray-600);
+  --ink: var(--gray-500);
+  --ink-soft: var(--gray-400);
+  --ink-inverse: #FFFFFF;
+
+  /* Lines */
+  --line: var(--gray-200);
+  --line-strong: var(--gray-300);
+  --line-brand: var(--orange-300);
+
+  /* Interactive */
+  --accent: var(--orange-500);
+  --accent-hover: var(--orange-600);  /* DS interaction ladder: hover = 600 */
+  --accent-pressed: var(--orange-300);/* DS: pressed fill = 300, ink = 600 */
+  --accent-quiet: var(--orange-200);
+  --link: var(--teal-500);
+  --link-hover: var(--teal-600);
+  --focus-ring: 0 0 0 3px var(--teal-300);
+
+  /* Status roles (icons/borders use 300; fills use 100; text stays gray) */
+  --status-good: var(--green-300);
+  --status-good-bg: var(--green-100);
+  --status-warn: #B58D00;             /* readable warning ink derived from yellow family */
+  --status-warn-icon: var(--yellow-300);
+  --status-warn-bg: var(--yellow-100);
+  --status-bad: var(--red-300);
+  --status-bad-bg: var(--red-100);
+
+  /* Data-viz — categorical pair validated (dataviz six-checks, light surface).
+     #06A6AB carries a contrast WARN → every chart direct-labels its marks.
+     >2 series: fold into gray "Other" or facet. Sequential = teal ramp. */
+  --viz-1: var(--teal-400);
+  --viz-2: var(--orange-400);
+  --viz-other: var(--gray-400);
+  --viz-track: var(--gray-200);
+}

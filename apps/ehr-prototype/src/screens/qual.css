@@ -1,0 +1,152 @@
+/* Quality & compliance dashboard */
+
+.qual-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 1280px) { .qual-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- Two-column layout ---------- */
+
+.qual-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 1180px) { .qual-columns { grid-template-columns: 1fr; } }
+
+.qual-side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.qual-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 12px;
+}
+.qual-card-head-tight { padding: 16px 18px 10px; }
+
+/* ---------- Record integrity rows ---------- */
+
+.qual-integrity-list { padding: 0 10px 12px; display: flex; flex-direction: column; }
+
+.qual-int-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: var(--r-sm);
+  text-align: left;
+  transition: background 130ms ease;
+}
+.qual-int-row:hover { background: var(--gray-100); }
+.qual-int-row:hover .qual-int-go { opacity: 1; transform: none; }
+
+.qual-int-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.qual-int-name { font-size: 13.5px; font-weight: 500; color: var(--ink-strong); }
+.qual-int-blockers { display: flex; flex-wrap: wrap; gap: 6px; }
+.qual-int-clean { font-size: 12px; color: var(--ink-soft); }
+
+.qual-int-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  width: 110px;
+  flex-shrink: 0;
+}
+.qual-int-frac {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+}
+.qual-int-frac span { color: var(--ink-soft); font-weight: 400; }
+.qual-int-meter .progress { width: 100%; }
+
+.qual-int-go {
+  color: var(--teal-500);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 130ms ease, transform 130ms ease;
+  flex-shrink: 0;
+}
+
+/* ---------- Claim holds ---------- */
+
+.qual-holds-list { display: flex; flex-direction: column; padding: 0 10px 14px; }
+
+.qual-hold-row {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: var(--r-sm);
+  text-align: left;
+  transition: background 130ms ease;
+}
+.qual-hold-row:hover { background: var(--gray-100); }
+
+.qual-hold-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.qual-hold-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.qual-hold-name { font-size: 13.5px; font-weight: 500; color: var(--ink-strong); white-space: nowrap; }
+.qual-hold-period { font-size: 11px; color: var(--ink-soft); white-space: nowrap; }
+.qual-hold-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* ---------- QAPI focus areas ---------- */
+
+.qual-focus-list { padding: 0 6px 14px; display: flex; flex-direction: column; }
+
+.qual-focus-row { padding: 11px 12px; border-radius: var(--r-sm); }
+.qual-focus-row + .qual-focus-row { border-top: 1px solid var(--line); }
+
+.qual-focus-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.qual-focus-title { font-size: 13px; font-weight: 500; color: var(--ink-strong); line-height: 1.4; }
+.qual-focus-meta { font-size: 11.5px; color: var(--ink-soft); margin-top: 7px; }
+
+/* ---------- Compliance checks ---------- */
+
+.qual-checks-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+  padding: 6px 14px 18px;
+}
+@media (max-width: 860px) { .qual-checks-grid { grid-template-columns: 1fr; } }
+
+.qual-check-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 10px;
+  border-radius: var(--r-sm);
+  transition: background 130ms ease;
+}
+.qual-check-row:hover { background: var(--gray-100); }
+
+.qual-check-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.qual-check-label { font-size: 13px; font-weight: 500; color: var(--ink-strong); }
+.qual-check-detail { font-size: 12px; color: var(--ink-soft); }
+
+/* ---------- Export drawer ---------- */
+
+.qual-export-list { display: flex; flex-direction: column; gap: 14px; }
+
+.qual-export-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--surface-sunken);
+}
+.qual-export-item svg { color: var(--teal-500); margin-top: 2px; flex-shrink: 0; }
+.qual-export-title { font-size: 13px; font-weight: 500; color: var(--ink-strong); }
+.qual-export-detail { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
