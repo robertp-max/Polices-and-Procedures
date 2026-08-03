@@ -90,6 +90,60 @@ buttons that would file, sign, or submit are visual only or open a review
 drawer. The Brad assist panel is framed throughout as *"Review, don't
 replace"*: it drafts and cites sources, and nothing files without a clinician.
 
+## Later passes (after the initial build)
+
+### Content rebuild from the canonical documents
+
+The Business Plan and Requirements screens were first built from invented
+content. They were rebuilt from the authoritative source the user supplied —
+`Care_Indeed_EHR_Business_Plan_Complete_App_*.zip`, whose `public/` ships the
+real documents as static HTML. (The live site loads the plan in an **iframe**,
+which is why fetching the page URL returns only navigation — read the zip.)
+
+| Screen | Source | Result |
+|---|---|---|
+| Business Plan | `Care_Indeed_Home_Health_Owned_EHR_Business_Plan.html` — Board business plan v2.2, 2026-07-29 | 22 chapters, sticky TOC. Five-year financial cells left empty **exactly as the source ships them** — the source says they are intentionally blank so the board sees evidence rather than invented savings. |
+| Requirements | `Care_Indeed_Home_Health_EHR_Complete_Requirements.html` — Requirements addendum v1.1 | 18-workspace project-management tool: `CI-EHR-SRS-PM-001`, epics, stories, backlog, sprint board, register (42 verbatim shall-statements sampled from 170, labelled as a sample). |
+
+Both keep the rule the user set twice: **content from the source, design from
+our system**. Nothing visual was copied from the source documents.
+
+### Styling pass
+
+- Canvas moved from warm orange to light teal; all card containers are pure
+  white, with inner panels separated by hairlines rather than a fill.
+- The DS light neutrals are all hue 21 — the same hue as the brand orange — so
+  they read as an orange cast against a teal canvas. The three light steps were
+  re-struck cool and the shadows (previously tinted brown) cooled to match.
+  Verified by scanning every rendered element's computed background: the only
+  warm surfaces remaining are semantic status chips and brand accent tiles.
+- The Requirements nav became a true full-height side nav bar flush to the
+  viewport edge (square, no shadow), with the gate status pinned at its top and
+  its scrollbar hidden.
+
+## Deferred — pick up here next session
+
+Verification not yet performed, in rough priority order:
+
+1. **Keyboard and screen-reader pass.** Tab order through the app shell,
+   command palette, patient chart tabs, and the Requirements side nav; visible
+   focus on every interactive element; `aria-current` on nav items; drawer
+   focus trapping and restore-on-close.
+2. **Requirements workspace deep UAT.** Only workspace switching and content
+   distinctness were checked. Each of the 18 views still needs its filters,
+   search, drawers, and empty states exercised.
+3. **Business Plan chapter-by-chapter proofread** against the extract at
+   `scratchpad/bp-extract/business-plan.txt` — spot checks passed, but all 22
+   chapters have not been read line by line.
+4. **Mobile (<900px).** Usable but untuned; the DS mobile radius and type
+   scales are documented in the spec and not yet applied.
+5. **Production build.** Only the dev server has been exercised — `npm run
+   build` has never been run for this app.
+6. **Cross-browser.** Verified in the in-app Chromium preview only. Note
+   `req.css` uses `:has()` for the full-bleed layout.
+7. **Contrast audit.** The palette was validated for charts; body and chip text
+   pairings have not been run through a WCAG checker.
+
 ## Known limitations
 
 - Synthetic dataset is Elena-centric: `integrityChecks`, `elenaTimeline`,
