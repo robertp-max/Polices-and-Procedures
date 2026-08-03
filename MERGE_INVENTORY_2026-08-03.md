@@ -62,8 +62,12 @@ Expected behavior:
 
 - `/reception` route
 - Authenticated default + safeRedirect → `/reception`
-- Find Home Care separate from EHR Prototype
+- Find A Home Care separate from EHR Prototype
 - EHR launcher → `http://127.0.0.1:5194/`
+- Every Reception destination opens in a new browser tab, including command-palette launches
+- Find A Home Care launcher → `https://fahc-provider-portal-git-main-tjs-projects-d809cfa8.vercel.app/provider/login`
+- Journey launcher → `http://127.0.0.1:5193/journey/training?persona=taylor-rn` (the separate Journey app with the Journey/Connect toggle)
+- Governing Body launcher → `/governance`
 
 ### qapi docs (from `qapi-uiux-discovery` / `qapi`)
 

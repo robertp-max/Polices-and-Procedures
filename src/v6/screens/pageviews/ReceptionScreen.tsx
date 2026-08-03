@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Activity,
   ArrowRight,
@@ -33,13 +33,15 @@ type WorkspaceAccent = 'teal' | 'orange' | 'executive' | 'navy' | 'clinical';
 type WorkspaceStatus = 'available' | 'restricted' | 'prototype';
 
 const EHR_PROTOTYPE_URL = 'http://127.0.0.1:5194';
+const FIND_HOME_CARE_URL = 'https://fahc-provider-portal-git-main-tjs-projects-d809cfa8.vercel.app/provider/login';
+const JOURNEY_URL = 'http://127.0.0.1:5193/journey/training?persona=taylor-rn';
 
 interface ReceptionWorkspace {
   id: ReceptionWorkspaceId;
   name: string;
   description: string;
   route: string;
-  external?: boolean;
+  resumeLastRoute?: boolean;
   status: WorkspaceStatus;
   requiredRoles: readonly string[];
   capabilities: readonly string[];
@@ -56,6 +58,7 @@ const WORKSPACES: readonly ReceptionWorkspace[] = [
     name: 'Compliance',
     description: 'Policies, forms, workflows, evidence, eCIgn, QAPI, audit readiness, and Brad.',
     route: '/compliance',
+    resumeLastRoute: true,
     status: 'available',
     requiredRoles: ['Administrator', 'Compliance', 'Supervisor', 'DON', 'QAPI'],
     capabilities: ['Policy library', 'Evidence center', 'Audit mode', 'Brad'],
@@ -67,7 +70,7 @@ const WORKSPACES: readonly ReceptionWorkspace[] = [
     id: 'journey',
     name: 'Journey',
     description: 'Onboarding, training, role paths, certificates, policy attestation, and employee evidence.',
-    route: '/journey?tab=home',
+    route: JOURNEY_URL,
     status: 'available',
     requiredRoles: ['Administrator', 'Employee', 'Clinician', 'Supervisor', 'RN', 'LVN', 'PT', 'OT', 'HHA'],
     capabilities: ['Training path', 'Modules', 'Assessments', 'Certificates'],
@@ -89,9 +92,9 @@ const WORKSPACES: readonly ReceptionWorkspace[] = [
   },
   {
     id: 'find-home-care',
-    name: 'Find Home Care',
+    name: 'Find A Home Care',
     description: 'A separate consumer-facing service finder concept for care needs, location, and intake routing.',
-    route: '/find-home-care',
+    route: FIND_HOME_CARE_URL,
     status: 'prototype',
     requiredRoles: ['Administrator', 'Product', 'Intake', 'Sales'],
     capabilities: ['Care matching', 'Service area', 'Intake lead', 'Family view'],
@@ -104,7 +107,6 @@ const WORKSPACES: readonly ReceptionWorkspace[] = [
     name: 'EHR Prototype',
     description: 'A standalone clinical record concept for chart navigation, documentation, scheduling, and secure tasks.',
     route: EHR_PROTOTYPE_URL,
-    external: true,
     status: 'prototype',
     requiredRoles: ['Administrator', 'Product', 'Clinician', 'RN', 'LVN', 'PT', 'OT'],
     capabilities: ['Charts', 'Visits', 'Orders', 'Messages'],
@@ -254,13 +256,25 @@ function ReceptionHeader({
       </button>
 
       <div className="flex items-center justify-start gap-2 tablet-l:justify-end">
-        <Link className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#66736F] shadow-sm hover:text-[#073F3C]" to="/help" aria-label="Open help">
+        <a
+          className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#66736F] shadow-sm hover:text-[#073F3C]"
+          href="/help"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open help in a new tab"
+        >
           <HelpCircle className="h-5 w-5" aria-hidden />
-        </Link>
+        </a>
         <button className="grid h-11 w-11 place-items-center rounded-full bg-white text-[#66736F] shadow-sm hover:text-[#073F3C]" type="button" aria-label="Notifications">
           <Bell className="h-5 w-5" aria-hidden />
         </button>
-        <Link className="flex min-h-11 max-w-[210px] items-center gap-3 rounded-lg bg-white px-3 py-2 text-left shadow-sm" to="/personal/profile">
+        <a
+          className="flex min-h-11 max-w-[210px] items-center gap-3 rounded-lg bg-white px-3 py-2 text-left shadow-sm"
+          href="/personal/profile"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open profile in a new tab"
+        >
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#E5FEFF] text-[#007970]">
             <User className="h-4 w-4" aria-hidden />
           </span>
@@ -268,7 +282,7 @@ function ReceptionHeader({
             <span className="block truncate text-sm font-medium text-[#14211F]">{userLabel}</span>
             <span className="block truncate text-xs text-[#66736F]">Signed in</span>
           </span>
-        </Link>
+        </a>
       </div>
     </header>
   );
@@ -291,8 +305,10 @@ function WelcomeRail({
         <p className="mt-2 text-sm text-[#66736F]">{role}</p>
       </div>
 
-      <Link
-        to={resumeRoute}
+      <a
+        href={resumeRoute}
+        target="_blank"
+        rel="noopener noreferrer"
         onClick={() => writeRecentRoute('compliance', resumeRoute)}
         className="group grid gap-4 rounded-lg bg-[#073F3C] p-5 text-white shadow-[0_18px_44px_rgba(0,47,48,0.18)] transition hover:-translate-y-1 focus-visible:shadow-[0_0_0_4px_rgba(0,121,112,0.22)]"
       >
@@ -301,17 +317,17 @@ function WelcomeRail({
           <ArrowRight className="h-5 w-5 transition group-hover:translate-x-1" aria-hidden />
         </span>
         <span className="text-sm text-white/78">{resumeRoute}</span>
-      </Link>
+      </a>
 
       <div className="grid gap-2" aria-label="Quick access">
-        <Link className="flex min-h-11 items-center gap-3 rounded-lg bg-[#F7FEFF] px-4 py-3 text-sm font-medium text-[#007970] hover:bg-[#E5FEFF]" to="/iadministrator">
+        <a className="flex min-h-11 items-center gap-3 rounded-lg bg-[#F7FEFF] px-4 py-3 text-sm font-medium text-[#007970] hover:bg-[#E5FEFF]" href="/iadministrator" target="_blank" rel="noopener noreferrer">
           <ShieldCheck className="h-4 w-4" aria-hidden />
           Ask Brad
-        </Link>
-        <Link className="flex min-h-11 items-center gap-3 rounded-lg bg-[#FFFAF7] px-4 py-3 text-sm font-medium text-[#C74600] hover:bg-[#FFF2EA]" to="/my-tasks">
+        </a>
+        <a className="flex min-h-11 items-center gap-3 rounded-lg bg-[#FFFAF7] px-4 py-3 text-sm font-medium text-[#C74600] hover:bg-[#FFF2EA]" href="/my-tasks" target="_blank" rel="noopener noreferrer">
           <CheckCircle2 className="h-4 w-4" aria-hidden />
           My work
-        </Link>
+        </a>
       </div>
 
       <div className="rounded-lg bg-[#F3F2EE] p-4 text-sm leading-relaxed text-[#524D4B]">
@@ -361,7 +377,7 @@ function WorkspaceLauncherCard({
         <span className="min-w-0 truncate text-xs text-[#66736F]">{enabled ? lastRoute : 'Ask an administrator for access'}</span>
         <span className={cx('inline-flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold', enabled ? styles.action : 'bg-[#E5E4E3] text-[#66736F]')}>
           {workspace.cta}
-          <ArrowRight className="h-4 w-4" aria-hidden />
+          <ExternalLink className="h-4 w-4" aria-hidden />
         </span>
       </div>
     </>
@@ -378,28 +394,16 @@ function WorkspaceLauncherCard({
     );
   }
 
-  if (workspace.external) {
-    return (
-      <a
-        href={lastRoute}
-        onClick={() => writeRecentRoute(workspace.id, lastRoute)}
-        className="group min-h-[260px] rounded-lg bg-white p-5 shadow-[0_18px_44px_rgba(0,47,48,0.10)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(0,47,48,0.14)] focus-visible:shadow-[0_0_0_4px_rgba(0,121,112,0.18),0_18px_44px_rgba(0,47,48,0.10)]"
-        rel="noreferrer"
-        target="_blank"
-      >
-        {content}
-      </a>
-    );
-  }
-
   return (
-    <Link
-      to={lastRoute}
+    <a
+      href={lastRoute}
       onClick={() => writeRecentRoute(workspace.id, lastRoute)}
       className="group min-h-[260px] rounded-lg bg-white p-5 shadow-[0_18px_44px_rgba(0,47,48,0.10)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(0,47,48,0.14)] focus-visible:shadow-[0_0_0_4px_rgba(0,121,112,0.18),0_18px_44px_rgba(0,47,48,0.10)]"
+      rel="noopener noreferrer"
+      target="_blank"
     >
       {content}
-    </Link>
+    </a>
   );
 }
 
@@ -410,7 +414,6 @@ function CommandPalette({
   onClose: () => void;
   workspaces: readonly (ReceptionWorkspace & { enabled: boolean; lastRoute: string })[];
 }) {
-  const navigate = useNavigate();
   const [query, setQuery] = useState('');
 
   const results = useMemo(() => {
@@ -430,11 +433,7 @@ function CommandPalette({
     if (!workspace.enabled) return;
     writeRecentRoute(workspace.id, workspace.lastRoute);
     onClose();
-    if (workspace.external) {
-      window.open(workspace.lastRoute, '_blank', 'noopener,noreferrer');
-      return;
-    }
-    navigate(workspace.lastRoute);
+    window.open(workspace.lastRoute, '_blank', 'noopener,noreferrer');
   }
 
   function handleResultKeyDown(event: KeyboardEvent<HTMLButtonElement>, workspace: ReceptionWorkspace & { enabled: boolean; lastRoute: string }) {
@@ -491,7 +490,7 @@ function CommandPalette({
                   <span className="block truncate text-sm font-semibold text-[#073F3C]">{workspace.name}</span>
                   <span className="block truncate text-xs text-[#66736F]">{workspace.lastRoute}</span>
                 </span>
-                <ArrowRight className="h-4 w-4 text-[#66736F]" aria-hidden />
+                <ExternalLink className="h-4 w-4 text-[#66736F]" aria-hidden />
               </button>
             );
           })}
@@ -543,7 +542,7 @@ export function ReceptionScreen() {
     return roleOrdered.map((workspace) => ({
       ...workspace,
       enabled: isWorkspaceAuthorized(workspace, role, isDemo),
-      lastRoute: recentRoutes[workspace.id] ?? workspace.route,
+      lastRoute: workspace.resumeLastRoute ? recentRoutes[workspace.id] ?? workspace.route : workspace.route,
     }));
   }, [isDemo, recentRoutes, role]);
 
@@ -582,9 +581,9 @@ export function ReceptionScreen() {
           Systems nominal
         </span>
         <span className="flex flex-wrap items-center gap-3">
-          <Link className="font-medium text-[#073F3C] hover:text-[#007970]" to="/admin/user-groups">Request access</Link>
-          <Link className="font-medium text-[#073F3C] hover:text-[#007970]" to="/help">Support</Link>
-          <Link className="font-medium text-[#073F3C] hover:text-[#007970]" to="/iadministrator">Brad</Link>
+          <a className="font-medium text-[#073F3C] hover:text-[#007970]" href="/admin/user-groups" target="_blank" rel="noopener noreferrer">Request access</a>
+          <a className="font-medium text-[#073F3C] hover:text-[#007970]" href="/help" target="_blank" rel="noopener noreferrer">Support</a>
+          <a className="font-medium text-[#073F3C] hover:text-[#007970]" href="/iadministrator" target="_blank" rel="noopener noreferrer">Brad</a>
         </span>
       </footer>
       {commandOpen ? (
@@ -599,8 +598,8 @@ export function FindHomeCareScreen() {
     <PrototypeWorkspaceShell
       accent="navy"
       cta="Save intake lead"
-      description="Find Home Care is separate from the EHR prototype. This concept focuses on service discovery, care matching, and non-clinical intake routing."
-      eyebrow="Find Home Care"
+      description="Find A Home Care is separate from the EHR prototype. This concept focuses on service discovery, care matching, and non-clinical intake routing."
+      eyebrow="Find A Home Care"
       icon={Home}
       route="/find-home-care"
       title="Care matching prototype"
@@ -629,7 +628,7 @@ export function EhrPrototypeScreen() {
     <PrototypeWorkspaceShell
       accent="clinical"
       cta="Open demo chart"
-      description="EHR Prototype is a standalone clinical record concept. It is intentionally split from Find Home Care so chart workflows and consumer discovery do not share one product surface."
+      description="EHR Prototype is a standalone clinical record concept. It is intentionally split from Find A Home Care so chart workflows and consumer discovery do not share one product surface."
       eyebrow="EHR Prototype"
       icon={Stethoscope}
       launchUrl={EHR_PROTOTYPE_URL}
@@ -651,7 +650,7 @@ export function EhrPrototypeScreen() {
       </div>
       <section className="grid gap-4 tablet-p:grid-cols-2">
         <PrototypePanel title="Clinical modules" items={['Patient chart navigation', 'Visit documentation', 'Physician orders', 'Secure messaging']} />
-        <PrototypePanel title="Prototype safeguards" items={['Demo records only', 'No PHI preload at Reception', 'Destination auth still required', 'Separated from Find Home Care']} />
+        <PrototypePanel title="Prototype safeguards" items={['Demo records only', 'No PHI preload at Reception', 'Destination auth still required', 'Separated from Find A Home Care']} />
       </section>
     </PrototypeWorkspaceShell>
   );

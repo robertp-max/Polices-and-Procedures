@@ -138,7 +138,7 @@ export const V6_ROUTES = [
   { path: '/community/users/me', hashId: 'personal-profile', template: 'detail', group: 'System', title: 'Community Profile', description: 'Current user community profile (alias).' },
   { path: '/community/users/:userId', hashId: 'personal-profile', template: 'detail', group: 'System', title: 'Community User Profile', description: 'Community user profile for threads and activity linking.' },
   { path: '/community', hashId: 'community', template: 'docs', group: 'System', title: 'Community', description: 'Staff community hub for threads, members directory, and no-PHI discussions. Connects Profile + Threads + Journey achievements.' },
-  { path: '/find-home-care', hashId: 'find-home-care', template: 'prototype', group: 'System', title: 'Find Home Care', description: 'Standalone Find Home Care prototype, separate from the EHR prototype.' },
+  { path: '/find-home-care', hashId: 'find-home-care', template: 'prototype', group: 'System', title: 'Find A Home Care', description: 'Standalone Find A Home Care prototype, separate from the EHR prototype.' },
   { path: '/ehr-prototype', hashId: 'ehr-prototype', template: 'prototype', group: 'System', title: 'EHR Prototype', description: 'Local EHR prototype handoff route; primary launcher opens the live prototype service.' },
   { path: '/community/members', hashId: 'community-members', template: 'matrix', group: 'System', title: 'Community Members', description: 'Member directory using existing profile adapter. Respects visibility.' },
   { path: '/community/threads', hashId: 'community-threads', template: 'docs', group: 'System', title: 'Community Threads', description: 'Thread list and filters for unanswered, flagged, stale.' },

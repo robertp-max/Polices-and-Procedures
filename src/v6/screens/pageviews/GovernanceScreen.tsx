@@ -1,13 +1,18 @@
+import { useMemo } from 'react';
 import { Landmark, FileText, User, Calendar } from 'lucide-react';
 import { MetricGrid, SurfaceCard, toneBarClasses, type MetricTileData, type SurfaceCardData } from '../../components';
-import { /* loadLifecycleSeed */ } from '@/policy/lifecycle/lifecycleSeed';
 import { usePolicyLifecycleStore } from '@/policy/lifecycle';
 import { POLICY_CORPUS, getCorpusPolicy } from '@/policy/data/policyCorpus';
 
 export function GovernanceScreen() {
-  // LIVE from store (reacts to any apply() transitions elsewhere)
-  const countsByState = usePolicyLifecycleStore((s) => s.countsByState());
-  const getEnvelope = usePolicyLifecycleStore((s) => s.getEnvelope);
+  const envelopes = usePolicyLifecycleStore((state) => state.envelopes);
+  const countsByState = useMemo(() => {
+    const counts = { DRAFT: 0, REVIEW: 0, APPROVED: 0, PUBLISHED: 0, ARCHIVED: 0 };
+    Object.values(envelopes).forEach((envelope) => {
+      counts[envelope.state] += 1;
+    });
+    return counts;
+  }, [envelopes]);
 
   // Canonical 5-state counts (real data)
   const dCount = countsByState.DRAFT ?? 0;
@@ -18,7 +23,7 @@ export function GovernanceScreen() {
   // Real sample policy + its envelope (mapping fix)
   const sampleId = POLICY_CORPUS[0]?.id ?? 'GV-GB-001';
   const sampleCorpus = getCorpusPolicy(sampleId);
-  const sampleEnv = getEnvelope(sampleId);
+  const sampleEnv = envelopes[sampleId];
 
   const metrics = [
     { label: 'Council members', value: '—', helper: 'Active voting committee', tone: 'teal' },
@@ -46,7 +51,7 @@ export function GovernanceScreen() {
       body: `${sampleCorpus?.id ?? 'GV-GB-001'} (${sampleCorpus?.title ?? 'Governing Body'}) is in ${sampleEnv?.state ?? 'DRAFT'} state. Owner: ${owner}. Next review due ~${dueLabel}.`,
       icon: FileText,
       progress: sampleEnv?.state === 'DRAFT' ? 10 : 70,
-      status: (sampleEnv?.state === 'REVIEW' ? 'review-required' : 'pending') as any,
+      status: sampleEnv?.state === 'REVIEW' ? 'review-required' : 'pending',
       title: `${sampleCorpus?.id ?? 'GV-GB-001'} — ${sampleEnv?.state ?? 'DRAFT'} (real corpus + lifecycle)`,
       tone: 'orange',
     },
