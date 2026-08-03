@@ -36,6 +36,7 @@ type WorkspaceStatus = 'available' | 'restricted' | 'prototype';
 
 const EHR_PROTOTYPE_URL = 'http://127.0.0.1:5194';
 const FIND_HOME_CARE_PROVIDER_PORTAL_URL = 'https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login';
+const GOVERNING_BODY_PORTAL_ROUTE = '/governance';
 const JOURNEY_URL = 'http://127.0.0.1:5193/journey/training?persona=taylor-rn';
 const CONNECT_URL = 'http://127.0.0.1:5192/';
 
@@ -97,7 +98,7 @@ const WORKSPACES: readonly ReceptionWorkspace[] = [
     id: 'governing-body',
     name: 'Governing Body',
     description: 'Executive oversight, decision docket, readiness work, QAPI review, tabletop exercises, and signatures.',
-    route: FIND_HOME_CARE_PROVIDER_PORTAL_URL,
+    route: GOVERNING_BODY_PORTAL_ROUTE,
     status: 'restricted',
     requiredRoles: ['Administrator', 'Governing Body', 'Executive', 'Owner'],
     capabilities: ['Docket', 'Decisions', 'QAPI review', 'Signatures'],

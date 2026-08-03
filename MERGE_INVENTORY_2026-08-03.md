@@ -68,7 +68,7 @@ Expected behavior:
 - Find A Home Care launcher → `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`
 - Journey launcher → `http://127.0.0.1:5193/journey/training?persona=taylor-rn` (the separate Journey app with the Journey/Connect toggle)
 - Connect launcher → `http://127.0.0.1:5192/` (separate Connect app; no source merge)
-- Governing Body launcher → `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`
+- Governing Body launcher → `/governance` (Governing Body Portal route; not Find A Home Care)
 
 ### qapi docs (from `qapi-uiux-discovery` / `qapi`)
 
