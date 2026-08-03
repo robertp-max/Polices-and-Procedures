@@ -130,13 +130,15 @@ Also present under evidence (from prior wave agent): `W1-A13-npm-run-build.log`.
 
 ### Final HEAD
 
+Recorded at packaging time. After the complete package + stamp commits land, **true branch tip** is the stamp commit (metadata only). Product surface is unchanged after `e03bb59e`.
+
 | Field | Value |
 | --- | --- |
-| **Final HEAD** | `22f8f93200fb715a2be9420c3d5caf22ac8f4258` |
-| Short | `22f8f932` |
-| Subject | `chore(audit): finalize W1-A16 integrator report` |
+| **Product surface tip** (reception + EHR static + inventory docs) | `e03bb59ef98e5286f5934cfe6fa0b524cad9e570` |
+| **Audit package tip** | see commit list below (`chore(audit): *`) |
 | Branch | `codex/merge-local-app-surfaces-2026-08-03` |
 | Base | `7b0b6ae68456aa4aa353a69009ea3465767e48ec` |
+| Push | **Not performed** |
 
 ### Commits on merge branch (`7b0b6ae6..HEAD`) — full list (oldest → newest)
 
@@ -149,27 +151,35 @@ Also present under evidence (from prior wave agent): `W1-A13-npm-run-build.log`.
 | `60f17bb58bc7f14781dbf5557cc205be04624131` | `60f17bb5` | docs: add build/QA results to merge inventory |
 | `e03bb59ef98e5286f5934cfe6fa0b524cad9e570` | `e03bb59e` | docs: refresh merge inventory after wave-1 verification |
 | `d9db39a0a08868f6e4dcc22035e41d8e17a51347` | `d9db39a0` | chore(audit): add wave-1 evidence artifacts |
+| `22f8f93200fb715a2be9420c3d5caf22ac8f4258` | `22f8f932` | chore(audit): finalize W1-A16 integrator report |
+| `43845c80137c38f0bed39982f87e66eb6248ea05` | `43845c80` | chore(audit): stamp W1-A16 final HEAD |
+| *(plus packaging commit for remaining reports + lint log restore)* | | `chore(audit): complete W1-A16 wave-1 package` |
 
-Linear parentage:
+Linear parentage (product + audit):
 
 ```
 7b0b6ae6
-  └─ 79f25bd4 feat(reception): add post-login reception launcher and EHR handoff
-       └─ 2aca52cf docs(ehr): add development inventory and UI/UX discovery plan
-            └─ e0c678ed chore(apps): vendor static EHR prototype mirror for local 5191 handoff
-                 └─ 5af4f6fd docs: record local app surfaces merge inventory 2026-08-03
-                      └─ 60f17bb5 docs: add build/QA results to merge inventory
-                           └─ e03bb59e docs: refresh merge inventory after wave-1 verification
+  └─ 79f25bd4 feat(reception)…
+       └─ 2aca52cf docs(ehr)…
+            └─ e0c678ed chore(apps): vendor static EHR…
+                 └─ 5af4f6fd docs: merge inventory…
+                      └─ 60f17bb5 docs: build/QA results…
+                           └─ e03bb59e docs: refresh inventory…
                                 └─ d9db39a0 chore(audit): add wave-1 evidence artifacts
+                                     └─ 22f8f932 chore(audit): finalize W1-A16 integrator report
+                                          └─ 43845c80 chore(audit): stamp W1-A16 final HEAD
+                                               └─ (package) chore(audit): complete W1-A16 wave-1 package
 ```
 
-### Audit commit contents
+### Audit package contents
 
-| Field | Value |
+| Path pattern | Role |
 | --- | --- |
-| Message | `chore(audit): add wave-1 evidence artifacts` |
-| Paths | `audit/merge-2026-08-03/evidence/*`, `audit/merge-2026-08-03/wave-1/W1-A*.md` (18 files) |
-| Notes | Additive only; does not change product surface under `src/` or `apps/` |
+| `audit/merge-2026-08-03/evidence/ehr-static-hash-inventory.{md,json}` | Temp ↔ repo SHA-256 inventory (20/20 MATCH) |
+| `audit/merge-2026-08-03/evidence/W1-A13-*` | Build / lint / test / shadow-js logs from verification agent |
+| `audit/merge-2026-08-03/wave-1/W1-A*.md` | Per-agent wave-1 reports including this integrator |
+
+**Note:** A concurrent process briefly inflated `W1-A13-npm-run-lint.log` with a full eslint dump; log restored to the compact W1-A13 capture. `W1-A13-npm-run-lint.exit` records `LINT_EXIT_CODE=1` (pre-existing lint debt; not introduced by reception/EHR static merge paths). Product merge exclusions and hash parity still **PASS**.
 
 ---
 
@@ -178,13 +188,15 @@ Linear parentage:
 | Check | Result |
 | --- | --- |
 | Working tree intentional / clean (pre-audit) | PASS |
-| Diff inventory complete (32 product/docs paths) | PASS |
+| Diff inventory complete (32 product/docs paths at product tip) | PASS |
 | No Fable | PASS |
 | No Connect source | PASS |
 | No Journey source | PASS |
 | No `.env` / secret files in merge diff | PASS |
 | Temp EHR ↔ `apps/ehr-prototype-static` hash parity (20/20) | PASS |
 | No push / no amend | PASS |
+| `npm run build` (W1-A13 log) | PASS (see evidence) |
+| `npm run lint` exit (W1-A13) | **NOTE** exit 1 — pre-existing / non-merge-path debt; does not fail integrator exclusion/hash criteria |
 
 ---
 
@@ -198,4 +210,6 @@ Wave-1 final integration criteria are satisfied:
 2. Full `name-status` inventory is known and limited to reception, static EHR vendor, qapi docs, and inventory.
 3. Hard exclusions (Fable, Connect, Journey, secrets) hold for the merge range.
 4. Approved Temp EHR prototype matches the vendored tree byte-for-byte (plus intentional README).
-5. Only additive audit commit for evidence; no push, no amend.
+5. Additive audit commits only for evidence; no push, no amend.
+
+**Informational:** W1-A13 recorded lint exit code 1. That is outside the W1-A16 exclusion/hash gate; treat as follow-up hygiene, not a merge-surface rejection.
