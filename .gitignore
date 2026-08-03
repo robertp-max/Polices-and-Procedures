@@ -12,6 +12,7 @@ do-not-merge/
 # real changes. Never commit these. Type-check with `npm run build`, not
 # raw `tsc <file>` (which ignores noEmit and emits these).
 src/**/*.js
+*.tsbuildinfo
 
 # Agent run litter
 build-*.log

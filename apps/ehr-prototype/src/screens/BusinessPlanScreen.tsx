@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   AlertTriangle, Banknote, Boxes, BotMessageSquare, BookOpen, Building2, CheckCircle2,

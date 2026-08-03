@@ -227,7 +227,6 @@ function NoteSection({ label, body, children }: { label: string; body: string; c
 }
 
 export default function ClinicalScreen() {
-  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<TabKey>('needs-attention')
   const [openNoteId, setOpenNoteId] = useState<string | null>(null)
 

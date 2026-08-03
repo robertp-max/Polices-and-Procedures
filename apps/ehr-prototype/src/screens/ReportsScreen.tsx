@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import {
-  Activity, ArrowRight, BarChart3, CalendarClock, ClipboardCheck, Clock3,
+  Activity, ArrowRight, BarChart3, ClipboardCheck, Clock3,
   GitBranch, HeartPulse, Mail, PillBottle,
 } from 'lucide-react'
 import { Drawer, Sparkline } from '../ui'

@@ -32,6 +32,8 @@ type ReceptionWorkspaceId =
 type WorkspaceAccent = 'teal' | 'orange' | 'executive' | 'navy' | 'clinical';
 type WorkspaceStatus = 'available' | 'restricted' | 'prototype';
 
+const EHR_PROTOTYPE_URL = 'http://127.0.0.1:5194';
+
 interface ReceptionWorkspace {
   id: ReceptionWorkspaceId;
   name: string;
@@ -101,7 +103,7 @@ const WORKSPACES: readonly ReceptionWorkspace[] = [
     id: 'ehr-prototype',
     name: 'EHR Prototype',
     description: 'A standalone clinical record concept for chart navigation, documentation, scheduling, and secure tasks.',
-    route: 'http://127.0.0.1:5191',
+    route: EHR_PROTOTYPE_URL,
     external: true,
     status: 'prototype',
     requiredRoles: ['Administrator', 'Product', 'Clinician', 'RN', 'LVN', 'PT', 'OT'],
@@ -630,6 +632,7 @@ export function EhrPrototypeScreen() {
       description="EHR Prototype is a standalone clinical record concept. It is intentionally split from Find Home Care so chart workflows and consumer discovery do not share one product surface."
       eyebrow="EHR Prototype"
       icon={Stethoscope}
+      launchUrl={EHR_PROTOTYPE_URL}
       route="/ehr-prototype"
       title="Clinical workspace prototype"
     >
@@ -661,6 +664,7 @@ function PrototypeWorkspaceShell({
   description,
   eyebrow,
   icon: Icon,
+  launchUrl,
   route,
   title,
 }: {
@@ -670,6 +674,7 @@ function PrototypeWorkspaceShell({
   description: string;
   eyebrow: string;
   icon: LucideIcon;
+  launchUrl?: string;
   route: string;
   title: string;
 }) {
@@ -697,10 +702,22 @@ function PrototypeWorkspaceShell({
                 <p className="mt-3 text-sm leading-relaxed text-[#66736F]">{description}</p>
               </div>
             </div>
-            <button className={cx('inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold', styles.action)} type="button">
-              {cta}
-              <ExternalLink className="h-4 w-4" aria-hidden />
-            </button>
+            {launchUrl ? (
+              <a
+                className={cx('inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold', styles.action)}
+                href={launchUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {cta}
+                <ExternalLink className="h-4 w-4" aria-hidden />
+              </a>
+            ) : (
+              <button className={cx('inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold', styles.action)} type="button">
+                {cta}
+                <ExternalLink className="h-4 w-4" aria-hidden />
+              </button>
+            )}
           </div>
         </section>
         {children}
