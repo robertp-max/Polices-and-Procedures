@@ -69,7 +69,9 @@
   /* Surfaces */
   --canvas: var(--teal-100);          /* app background — light teal (DS teal 100) */
   --surface: #FFFFFF;                 /* cards */
-  --surface-sunken: var(--gray-100);
+  /* Card containers are pure white; inner panels are separated by hairlines
+     rather than by a fill, so no surface carries a tint. */
+  --surface-sunken: #FFFFFF;
   --surface-brand-tint: var(--orange-200);
   --surface-teal-tint: var(--teal-100);
 
