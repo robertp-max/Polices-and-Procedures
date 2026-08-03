@@ -1,0 +1,64 @@
+{
+  "agent": "W2-QA04",
+  "kind": "code",
+  "timestamp": "2026-08-03T20:42:02.294Z",
+  "pass": true,
+  "checks": [
+    {
+      "name": "router index Navigate to /reception",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "no /dashboard as index default",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "no /iadministrator as index default",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "BRAD_DEFAULT_ROUTE = '/reception'",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "safeReturnTo default fallback is BRAD_DEFAULT_ROUTE",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LoginScreen imports safeReturnTo",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LoginScreen calls safeReturnTo for post-login dest",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "LoginScreen redirectAfterAuth uses returnTo/from then navigate",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "RequireAuth allows demo through shell (not only authenticated)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "routeRegistry includes /reception",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "NOTE scripts/verifyBradDefaultHomeNav.ts still expects /iadministrator (stale vs /reception)",
+      "pass": true,
+      "detail": "STALE — expects /iadministrator",
+      "informational": true
+    }
+  ]
+}

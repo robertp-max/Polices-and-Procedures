@@ -1,0 +1,81 @@
+{
+  "agent": "W2-QA05",
+  "startedAt": "2026-08-03T20:41:33.614Z",
+  "mergeOrigin": "http://127.0.0.1:5201",
+  "checks": [
+    {
+      "id": "reception-reachable",
+      "ok": true,
+      "detail": "On reception: http://127.0.0.1:5201/reception"
+    },
+    {
+      "id": "ehr-prototype-control-visible",
+      "ok": true,
+      "detail": "headingVisible=true; bodyHasLabel=true"
+    },
+    {
+      "id": "find-home-care-control-visible",
+      "ok": true,
+      "detail": "headingVisible=true; bodyHasLabel=true"
+    },
+    {
+      "id": "ehr-launcher-href-5191",
+      "ok": true,
+      "detail": "href=\"http://127.0.0.1:5191\"; target=\"_blank\"; allowed=http://127.0.0.1:5191 | http://127.0.0.1:5191/",
+      "ehrHref": "http://127.0.0.1:5191",
+      "ehrTarget": "_blank",
+      "ehrAnchorCount": 1
+    },
+    {
+      "id": "ehr-launcher-target-blank",
+      "ok": true,
+      "detail": "target=\"_blank\" (expected _blank for external 5191 handoff)",
+      "ehrTarget": "_blank"
+    },
+    {
+      "id": "ehr-href-dom-count",
+      "ok": true,
+      "detail": "a[href=5191]=1; a[href=5191/]=0"
+    },
+    {
+      "id": "find-home-care-separate-route",
+      "ok": true,
+      "detail": "fhcHref=\"/find-home-care\"; fhcTarget=null; ehrHref=\"http://127.0.0.1:5191\"",
+      "fhcHref": "/find-home-care",
+      "fhcTarget": null
+    },
+    {
+      "id": "controls-are-distinct",
+      "ok": true,
+      "detail": "ehrAnchors=1; fhcAnchors=1; distinct=true"
+    }
+  ],
+  "overall": "PASS",
+  "finalUrl": "http://127.0.0.1:5201/reception",
+  "ehrAnchors": [
+    {
+      "href": "http://127.0.0.1:5191",
+      "target": "_blank",
+      "rel": "noreferrer",
+      "text": "PrototypeEHR PrototypeA standalone clinical record concept for chart navigation, documentation, scheduling, and secure tasks.ChartsVisitsOrdersMessageshttp://127.0.0.1:5191Open EHR"
+    }
+  ],
+  "fhcAnchors": [
+    {
+      "href": "/find-home-care",
+      "target": null,
+      "rel": null,
+      "text": "PrototypeFind Home CareA separate consumer-facing service finder concept for care needs, location, and intake routing.Care matchingService areaIntake leadFamily view/find-home-careOpen Finder"
+    }
+  ],
+  "hrefCounts": {
+    "noSlash": 1,
+    "withSlash": 0
+  },
+  "screenshots": [
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA05-reception-ehr-launcher.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA05-ehr-card-href.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA05-find-home-care-card.png"
+  ],
+  "finishedAt": "2026-08-03T20:41:37.648Z"
+}

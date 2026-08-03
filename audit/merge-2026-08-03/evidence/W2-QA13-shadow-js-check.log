@@ -1,0 +1,11 @@
+W2-QA13 shadow JS check
+Date: 2026-08-03T13:41:50.3803510-07:00
+CWD: C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03
+
+=== Find *.js under src/ (excluding node_modules) ===
+JS_COUNT=0
+No *.js files under src/
+
+=== Shadow check summary ===
+SHADOW_COUNT=0
+PASS: zero shadowing compiled .js under src/ with .ts/.tsx siblings

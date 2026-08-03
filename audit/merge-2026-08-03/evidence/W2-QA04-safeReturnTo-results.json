@@ -1,0 +1,86 @@
+{
+  "agent": "W2-QA04",
+  "kind": "safeReturnTo-unit",
+  "pass": true,
+  "checks": [
+    {
+      "name": "null",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "undefined",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "empty",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "whitespace",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "valid deep",
+      "got": "/evidence",
+      "expect": "/evidence",
+      "pass": true
+    },
+    {
+      "name": "query preserved",
+      "got": "/library/p-01?tab=x",
+      "expect": "/library/p-01?tab=x",
+      "pass": true
+    },
+    {
+      "name": "external blocked",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "protocol-relative blocked",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "login loop blocked",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "login subpath blocked",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "backslash host blocked",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "relative blocked",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    },
+    {
+      "name": "BRAD_DEFAULT_ROUTE constant",
+      "got": "/reception",
+      "expect": "/reception",
+      "pass": true
+    }
+  ],
+  "timestamp": "2026-08-03T20:42:38.348Z"
+}

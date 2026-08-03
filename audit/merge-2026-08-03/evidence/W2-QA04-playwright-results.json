@@ -1,0 +1,46 @@
+{
+  "agent": "W2-QA04",
+  "kind": "runtime",
+  "origin": "http://127.0.0.1:5201",
+  "timestamp": "2026-08-03T20:42:02.897Z",
+  "checks": [
+    {
+      "name": "server reachable",
+      "pass": true,
+      "detail": "HTTP 200 http://127.0.0.1:5201"
+    },
+    {
+      "name": "navigate / final URL is /reception (demo/local auth path)",
+      "pass": true,
+      "detail": "http://127.0.0.1:5201/reception"
+    },
+    {
+      "name": "reception surface identity (data-route or visible copy)",
+      "pass": true,
+      "detail": "data-route=/reception"
+    },
+    {
+      "name": "direct /reception pathname",
+      "pass": true,
+      "detail": "http://127.0.0.1:5201/reception"
+    },
+    {
+      "name": "direct reception data-route",
+      "pass": true,
+      "detail": "{\"href\":\"http://127.0.0.1:5201/reception\",\"pathname\":\"/reception\",\"dataRoute\":\"/reception\",\"title\":\"Care Indeed Home Health\"}"
+    }
+  ],
+  "pass": true,
+  "screenshots": [
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA04-root-to-reception.png",
+    "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA04-reception-direct.png"
+  ],
+  "limitations": [],
+  "authProbe": {
+    "href": "http://127.0.0.1:5201/reception",
+    "pathname": "/reception",
+    "dataRoute": "/reception",
+    "title": "Care Indeed Home Health"
+  },
+  "finishedAt": "2026-08-03T20:42:08.805Z"
+}

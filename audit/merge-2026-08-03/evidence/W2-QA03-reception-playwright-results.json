@@ -1,0 +1,85 @@
+{
+  "agent": "W2-QA03",
+  "startedAt": "2026-08-03T20:41:38.354Z",
+  "origin": "http://127.0.0.1:5201",
+  "finalUrl": "http://127.0.0.1:5201/reception",
+  "httpStatus": 200,
+  "consoleErrors": [],
+  "checks": [
+    {
+      "id": "http-status",
+      "ok": true,
+      "detail": "GET /reception → HTTP 200 (informational; identity required separately)"
+    },
+    {
+      "id": "auth-demo-or-session",
+      "ok": true,
+      "detail": "Protected UI reachable without /login: http://127.0.0.1:5201/reception"
+    },
+    {
+      "id": "reception-visible-identity",
+      "ok": true,
+      "detail": "Visible tokens (6/6): [\"Reception\",\"Workspace launcher\",\"Compliance\",\"Journey\",\"Find Home Care\",\"EHR Prototype\"]",
+      "found": [
+        "Reception",
+        "Workspace launcher",
+        "Compliance",
+        "Journey",
+        "Find Home Care",
+        "EHR Prototype"
+      ],
+      "expected": [
+        "Reception",
+        "Workspace launcher",
+        "Compliance",
+        "Journey",
+        "Find Home Care",
+        "EHR Prototype"
+      ]
+    },
+    {
+      "id": "launcher-card-compliance",
+      "ok": true,
+      "detail": "Heading visible: Compliance"
+    },
+    {
+      "id": "launcher-card-journey",
+      "ok": true,
+      "detail": "Heading visible: Journey"
+    },
+    {
+      "id": "launcher-card-find-home-care",
+      "ok": true,
+      "detail": "Heading visible: Find Home Care"
+    },
+    {
+      "id": "launcher-card-ehr-prototype",
+      "ok": true,
+      "detail": "Heading visible: EHR Prototype"
+    },
+    {
+      "id": "workspace-launcher-label",
+      "ok": true,
+      "detail": "Launcher H2 visible"
+    },
+    {
+      "id": "dom-route-markers",
+      "ok": true,
+      "detail": "data-route=/reception count=1; data-template=reception count=1; data-hash-id=reception count=1"
+    },
+    {
+      "id": "ehr-external-href-5191",
+      "ok": true,
+      "detail": "EHR launcher anchor href=http://127.0.0.1:5191 (count=1)"
+    },
+    {
+      "id": "screenshot-written",
+      "ok": true,
+      "detail": "Screenshot path: C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA03-reception.png"
+    }
+  ],
+  "bodySnippet": "Reception\nSECURE WORKSPACE ENTRY\nSearch everything or ask Brad - workspace, policy, task, module, or decision\nCtrl K\nDemo User\nSigned in\n\nWELCOME\n\nGood afternoon\n\nAdministrator\n\nContinue where you left off\n/compliance\nAsk Brad\nMy work\nAuthorization boundary\nSensitive records and executive details load only after destination authorization.\n\nWORKSPACE LAUNCHER\n\nChoose where you are working today\n\nReception keeps orientation light. Counts, patient information, policy content, personnel records, and executive material stay inside authorized products.\n\nAVAILABLE\nCompliance\n\nPolicies, forms, workflows, evidence, eCIgn, QAPI, audit readiness, and Brad.\n\nPolicy library\nEvidence center\nAudit mode\nBrad\n/compliance\nOpen Compliance\nAVAILABLE\nJourney\n\nOnboarding, training, role paths, certificates, policy attestation, and employee evidence.\n\nTraining path\nModules\nAssessments\nCertificates\n/journey?tab=home\nOpen Journey\nAUTHORIZED\nGoverning Body\n\nExecutive oversight, decision docket, readiness work, QAPI review, tabletop exercises, and signatures.\n\nDocket\nDecisions\nQAPI review\nSignatures\n/governance\nEnter Governance\nPROTOTYPE\nFind Home Care\n\nA separate consumer-facing service finder concept for c",
+  "screenshot": "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA03-reception.png",
+  "overall": "PASS",
+  "finishedAt": "2026-08-03T20:41:40.669Z"
+}

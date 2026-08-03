@@ -1,0 +1,247 @@
+{
+  "agent": "W2-QA06",
+  "title": "DefenCIble Route QA",
+  "startedAt": "2026-08-03T20:41:46.078Z",
+  "mergeOrigin": "http://127.0.0.1:5201",
+  "routes": {
+    "evidence": {
+      "finalUrl": "http://127.0.0.1:5201/evidence",
+      "title": "Care Indeed Home Health",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "consoleWarnings": [],
+      "failedRequests": [],
+      "responseStatuses": [
+        {
+          "url": "http://127.0.0.1:5201/api/calendar/evidence/health",
+          "status": 503,
+          "method": "GET",
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:5201/api/calendar/evidence/health",
+          "status": 503,
+          "method": "GET",
+          "resourceType": "fetch"
+        }
+      ],
+      "visibleTextSnippets": [
+        "DEFENCIBLE",
+        "SELECT A PACKET TEMPLATE",
+        "PACKET 2.0",
+        "DRIVE",
+        "PACKETS",
+        "EDIT PACKET",
+        "ECIGN"
+      ],
+      "identityTokensFound": [
+        "DEFENCIBLE",
+        "SELECT A PACKET TEMPLATE",
+        "PACKET 2.0",
+        "DRIVE",
+        "PACKETS",
+        "EDIT PACKET",
+        "ECIGN"
+      ],
+      "hashIdCount": 1,
+      "bodyLength": 794,
+      "bodyPreview": "PROFILE DASHBOARD COMPLIANCE POLICIES TRAINING HELP CENTER DEFENCIBLE DRIVE PACKETS PACKET 2.0 EDIT PACKET ECIGN 1 · SELECT A PACKET TEMPLATE * Choose the packet structure first; you’ll pick the data source next. 1 PATIENT ADMISSION PACKET Full patient admission agreement with standard consents. 2 QAPI QUARTERLY COMMITTEE MEETING Quarterly QAPI committee review with KPIs, PIPs, incidents, and audits. 3 QAPI MONTHLY COMMITTEE MEETING Monthly QAPI review for rolling KPIs, open PIPs, incidents, and complaints. 4 GOVERNING BODY / BOARD MEETING Governance review of operations, financials, complianc",
+      "screenshots": [
+        "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA06-evidence.png"
+      ],
+      "selectors": {
+        "data-hash-id=defensible-2": 1,
+        "data-hash-id=evidence-center": 0,
+        "data-route*evidence": 1,
+        "data-template=evidence": 1
+      }
+    },
+    "evidence-defensible-2": {
+      "finalUrl": "http://127.0.0.1:5201/evidence/defensible-2",
+      "title": "Care Indeed Home Health",
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+        "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      ],
+      "consoleWarnings": [],
+      "failedRequests": [],
+      "responseStatuses": [
+        {
+          "url": "http://127.0.0.1:5201/api/calendar/evidence/health",
+          "status": 503,
+          "method": "GET",
+          "resourceType": "fetch"
+        },
+        {
+          "url": "http://127.0.0.1:5201/api/calendar/evidence/health",
+          "status": 503,
+          "method": "GET",
+          "resourceType": "fetch"
+        }
+      ],
+      "visibleTextSnippets": [
+        "DEFENCIBLE",
+        "SELECT A PACKET TEMPLATE",
+        "PACKET 2.0",
+        "DRIVE",
+        "PACKETS",
+        "EDIT PACKET",
+        "ECIGN"
+      ],
+      "identityTokensFound": [
+        "DEFENCIBLE",
+        "SELECT A PACKET TEMPLATE",
+        "PACKET 2.0",
+        "DRIVE",
+        "PACKETS",
+        "EDIT PACKET",
+        "ECIGN"
+      ],
+      "hashIdCount": 1,
+      "bodyLength": 794,
+      "bodyPreview": "PROFILE DASHBOARD COMPLIANCE POLICIES TRAINING HELP CENTER DEFENCIBLE DRIVE PACKETS PACKET 2.0 EDIT PACKET ECIGN 1 · SELECT A PACKET TEMPLATE * Choose the packet structure first; you’ll pick the data source next. 1 PATIENT ADMISSION PACKET Full patient admission agreement with standard consents. 2 QAPI QUARTERLY COMMITTEE MEETING Quarterly QAPI committee review with KPIs, PIPs, incidents, and audits. 3 QAPI MONTHLY COMMITTEE MEETING Monthly QAPI review for rolling KPIs, open PIPs, incidents, and complaints. 4 GOVERNING BODY / BOARD MEETING Governance review of operations, financials, complianc",
+      "screenshots": [
+        "C:\\AI\\Git\\training\\HomeHealth\\Policies_and_Procedures_V2_worktrees\\merge-local-app-surfaces-2026-08-03\\audit\\merge-2026-08-03\\evidence\\W2-QA06-evidence-defensible-2.png"
+      ],
+      "selectors": {
+        "data-hash-id=defensible-2": 1,
+        "data-hash-id=evidence-center": 0,
+        "data-route*evidence": 1,
+        "data-template=evidence": 1
+      }
+    }
+  },
+  "checks": [
+    {
+      "id": "evidence-not-blank-shell",
+      "ok": true,
+      "detail": "bodyLen=794; url=http://127.0.0.1:5201/evidence",
+      "bodyLen": 794,
+      "finalUrl": "http://127.0.0.1:5201/evidence"
+    },
+    {
+      "id": "evidence-hash-or-identity",
+      "ok": true,
+      "detail": "hashDefensible=1; identityTokens=[\"DEFENCIBLE\",\"SELECT A PACKET TEMPLATE\",\"PACKET 2.0\",\"DRIVE\",\"PACKETS\",\"EDIT PACKET\",\"ECIGN\"]; hasDefensibleNav=true; hasTemplateChrome=true",
+      "hashDefensible": 1,
+      "identityFound": [
+        "DEFENCIBLE",
+        "SELECT A PACKET TEMPLATE",
+        "PACKET 2.0",
+        "DRIVE",
+        "PACKETS",
+        "EDIT PACKET",
+        "ECIGN"
+      ],
+      "hasDefensibleNav": true,
+      "hasTemplateChrome": true,
+      "selectors": {
+        "data-hash-id=defensible-2": 1,
+        "data-hash-id=evidence-center": 0,
+        "data-route*evidence": 1,
+        "data-template=evidence": 1
+      }
+    },
+    {
+      "id": "evidence-defensible-packet-content",
+      "ok": true,
+      "detail": "DefenCIble/packet surface: nav=true; chrome=true; tokens=7; hash=1",
+      "hasDefensibleNav": true,
+      "hasTemplateChrome": true,
+      "identityFound": [
+        "DEFENCIBLE",
+        "SELECT A PACKET TEMPLATE",
+        "PACKET 2.0",
+        "DRIVE",
+        "PACKETS",
+        "EDIT PACKET",
+        "ECIGN"
+      ],
+      "hashDefensible": 1
+    },
+    {
+      "id": "evidence-url-path",
+      "ok": true,
+      "detail": "finalUrl=http://127.0.0.1:5201/evidence; onLogin=false",
+      "finalUrl": "http://127.0.0.1:5201/evidence",
+      "onLogin": false
+    },
+    {
+      "id": "evidence-defensible-2-not-blank-shell",
+      "ok": true,
+      "detail": "bodyLen=794; url=http://127.0.0.1:5201/evidence/defensible-2",
+      "bodyLen": 794,
+      "finalUrl": "http://127.0.0.1:5201/evidence/defensible-2"
+    },
+    {
+      "id": "evidence-defensible-2-hash-or-identity",
+      "ok": true,
+      "detail": "hashDefensible=1; identityTokens=[\"DEFENCIBLE\",\"SELECT A PACKET TEMPLATE\",\"PACKET 2.0\",\"DRIVE\",\"PACKETS\",\"EDIT PACKET\",\"ECIGN\"]; hasDefensibleNav=true; hasTemplateChrome=true",
+      "hashDefensible": 1,
+      "identityFound": [
+        "DEFENCIBLE",
+        "SELECT A PACKET TEMPLATE",
+        "PACKET 2.0",
+        "DRIVE",
+        "PACKETS",
+        "EDIT PACKET",
+        "ECIGN"
+      ],
+      "hasDefensibleNav": true,
+      "hasTemplateChrome": true,
+      "selectors": {
+        "data-hash-id=defensible-2": 1,
+        "data-hash-id=evidence-center": 0,
+        "data-route*evidence": 1,
+        "data-template=evidence": 1
+      }
+    },
+    {
+      "id": "evidence-defensible-2-defensible-packet-content",
+      "ok": true,
+      "detail": "DefenCIble/packet surface: nav=true; chrome=true; tokens=7; hash=1",
+      "hasDefensibleNav": true,
+      "hasTemplateChrome": true,
+      "identityFound": [
+        "DEFENCIBLE",
+        "SELECT A PACKET TEMPLATE",
+        "PACKET 2.0",
+        "DRIVE",
+        "PACKETS",
+        "EDIT PACKET",
+        "ECIGN"
+      ],
+      "hashDefensible": 1
+    },
+    {
+      "id": "evidence-defensible-2-url-path",
+      "ok": true,
+      "detail": "finalUrl=http://127.0.0.1:5201/evidence/defensible-2; onLogin=false",
+      "finalUrl": "http://127.0.0.1:5201/evidence/defensible-2",
+      "onLogin": false
+    }
+  ],
+  "overall": "PASS",
+  "serverProbe": {
+    "origin": "http://127.0.0.1:5201",
+    "evidenceGet": {
+      "status": 200,
+      "ok": true
+    },
+    "defensibleGet": {
+      "status": 200,
+      "ok": true
+    }
+  },
+  "finishedAt": "2026-08-03T20:41:56.450Z",
+  "summary": {
+    "evidenceRouteOk": true,
+    "defensible2RouteOk": true,
+    "criticalChecks": 8,
+    "criticalPassed": 8,
+    "allChecks": 8,
+    "allPassed": 8
+  }
+}
