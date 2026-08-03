@@ -29,8 +29,10 @@ export type V6RouteTemplate =
   | 'packet-studio'
   | 'profiles'
   | 'reference-viewer'
+  | 'reception'
   | 'reports'
-  | 'ai-review';
+  | 'ai-review'
+  | 'prototype';
 
 export interface V6RouteDefinition {
   description: string;
@@ -42,6 +44,7 @@ export interface V6RouteDefinition {
 }
 
 export const V6_ROUTES = [
+  { path: '/reception', hashId: 'reception', template: 'reception', group: 'System', title: 'Reception', description: 'Secure post-login workspace launcher for Care Indeed products.' },
   { path: '/dashboard', hashId: 'dashboard', template: 'dashboard', group: 'Overview', title: 'Dashboard', description: 'Overview command surface.' },
   { path: '/clinicians', hashId: 'clinicians', template: 'profiles', group: 'Overview', title: 'Clinicians', description: 'Clinician roster with caseload and credential posture.' },
   { path: '/clinicians/:clinicianId', hashId: 'clinician-detail', template: 'detail', group: 'Overview', title: 'Clinician Detail', description: 'Clinician credential, caseload, training, and documentation detail.' },
@@ -135,6 +138,8 @@ export const V6_ROUTES = [
   { path: '/community/users/me', hashId: 'personal-profile', template: 'detail', group: 'System', title: 'Community Profile', description: 'Current user community profile (alias).' },
   { path: '/community/users/:userId', hashId: 'personal-profile', template: 'detail', group: 'System', title: 'Community User Profile', description: 'Community user profile for threads and activity linking.' },
   { path: '/community', hashId: 'community', template: 'docs', group: 'System', title: 'Community', description: 'Staff community hub for threads, members directory, and no-PHI discussions. Connects Profile + Threads + Journey achievements.' },
+  { path: '/find-home-care', hashId: 'find-home-care', template: 'prototype', group: 'System', title: 'Find Home Care', description: 'Standalone Find Home Care prototype, separate from the EHR prototype.' },
+  { path: '/ehr-prototype', hashId: 'ehr-prototype', template: 'prototype', group: 'System', title: 'EHR Prototype', description: 'Local EHR prototype handoff route; primary launcher opens the live prototype service.' },
   { path: '/community/members', hashId: 'community-members', template: 'matrix', group: 'System', title: 'Community Members', description: 'Member directory using existing profile adapter. Respects visibility.' },
   { path: '/community/threads', hashId: 'community-threads', template: 'docs', group: 'System', title: 'Community Threads', description: 'Thread list and filters for unanswered, flagged, stale.' },
   // Lightweight CES Command Center report placeholders (read-only nav targets). No big tables.

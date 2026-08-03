@@ -33,7 +33,7 @@ import { type V6RouteDefinition } from '../routing/routeRegistry';
 import { type Tone } from '../tokens';
 import { cx } from '../utils/classNames';
 import { BoardLane, DataTable, MetricGrid, ProgressMeter, SurfaceCard, ToneTag, VeilDrawer, VeilModal, toneBarClasses, toneSurfaceClasses, toneGlassSurfaceClasses, type BoardCardData, type BoardLaneData, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../components';
-import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, ForgotPasswordScreen, ResetPasswordScreen, SetupAccountScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen } from './pageviews';
+import { AdminGroupsScreen, AdminPermissionsScreen, AdminRolesScreen, AdminUsersScreen, AdminCommunityProfilesScreen, AdmissionPacketPreviewScreen, EcignWorkspaceScreen, EventsBoardScreen, FormsLibraryScreen, FrameworkScreen, GenericReferenceScreen, MasterControlsScreen, MyTasksScreen, PolicyAreaNav, PolicyDetailScreen, WorkflowsScreen, WorkflowDetailScreen, AppendixFScreen, JourneyAdminScreen, JourneyOverviewScreen, NewHireScreen, UserGuideScreen, ModulePlayerScreen, SupervisorScreen, OnboardingV2DashboardScreen, OnboardingV2ActivateScreen, OnboardingV2BatchesScreen, OnboardingV2BatchScreen, OnboardingV2AuditScreen, OnboardingV2GovernanceScreen, PolicyLifecycleScreen, PolicyLifecycleDetailScreen, PolicyApprovalsScreen, HubstaffScreen, SystemDocsScreen, HelpCenterScreen, GovernanceScreen, SurveyorViewerScreen, LoginScreen, ForgotPasswordScreen, ResetPasswordScreen, SetupAccountScreen, MobileIncidentScreen, NotFoundScreen, PersonalProfileScreen, CommunityScreen, ComplianceHomeScreen, ReceptionScreen, FindHomeCareScreen, EhrPrototypeScreen } from './pageviews';
 import { workspaceCompactTabClass, workspaceTabActiveClass, workspaceTabClass, workspaceTabInactiveClass, workspaceTabNavClass } from './pageviews/workspaceTabChrome';
 import { StaticCardWatermark } from './pageviews/StaticCardWatermark';
 
@@ -1667,6 +1667,9 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
 
   let child: ReactNode = null;
   switch (route.hashId) {
+    case 'reception':
+      child = <ReceptionScreen />;
+      break;
     case 'admin-groups':
       child = <AdminGroupsScreen />;
       break;
@@ -1717,6 +1720,12 @@ export function RepresentativeScreen({ route }: { route: RouteLike }) {
       break;
     case 'community':
       child = <CommunityScreen />;
+      break;
+    case 'find-home-care':
+      child = <FindHomeCareScreen />;
+      break;
+    case 'ehr-prototype':
+      child = <EhrPrototypeScreen />;
       break;
     case 'community-members':
       child = <CommunityScreen />;
@@ -1977,6 +1986,7 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'admin-roles',
     'admin-permissions',
     'admin-users',
+    'reception',
     'achc-crosswalk',
     'achc-survey',
     'hh-evidence-map',
@@ -2032,6 +2042,8 @@ export function isRepresentativeRoute(route: RouteLike): boolean {
     'report-help-center-usage',
     'report-community-to-ces',
     'community-threads',
+    'find-home-care',
+    'ehr-prototype',
     'journey-overview',
     'journey-v1',
     'module-player',

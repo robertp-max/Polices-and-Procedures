@@ -64,6 +64,7 @@ export function V6Shell() {
     /^\/forms\/[^/]+\/print\/?$/.test(pathname);
   const isPersonalProfileRoute = pathname === '/personal/profile' || pathname.startsWith('/personal/profile/') || pathname.startsWith('/community/users');
   const isDashboardRoute = /(^|\/)dashboard(\/|$)/.test(pathname);
+  const isReceptionRoute = pathname === '/reception';
   // ?embed=1 renders the route content with no shell chrome — used when a
   // screen embeds another route in an iframe (e.g. policy appendices modal
   // showing an actual form workspace).
@@ -73,12 +74,12 @@ export function V6Shell() {
     pathname !== '/library' &&
     pathname !== '/library/policies' &&
     !pathname.includes('/print');
-  const isChromeFreeRoute = isPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || isPolicyDetailRoute;
+  const isChromeFreeRoute = isPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isReceptionRoute || isEmbedRequest || isPolicyDetailRoute;
   // Keep the dock visible during a guided tour so its nav targets stay anchorable.
   const showDock = !isChromeFreeRoute && (!pathname.startsWith('/iadministrator') || bradLanding || tourActive);
   const showRouteChrome = !isChromeFreeRoute;
   // Policy detail gets zero shell padding (for clean header flush to top) but keeps scroll.
-  const suppressShellPadding = isDashboardRoute || isPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || pathname.startsWith('/iadministrator') || isPolicyDetailRoute;
+  const suppressShellPadding = isDashboardRoute || isReceptionRoute || isPlayerRoute || isDocumentPrintRoute || isPersonalProfileRoute || isEmbedRequest || pathname.startsWith('/iadministrator') || isPolicyDetailRoute;
   const constrainRouteWidth = showRouteChrome && !suppressShellPadding;
   const panelTop = '0px';
   const panelHeight = '100vh';

@@ -3,10 +3,10 @@
    When an unauthenticated user is bounced to /login, the intended destination
    may be carried as ?returnTo=<path> (or the legacy ?from=). After a successful
    login we return the user there — but ONLY if it is a safe, internal,
-   same-origin path. Everything else falls back to Brad (the authenticated
+   same-origin path. Everything else falls back to Reception (the authenticated
    default landing page). This prevents open-redirect / login-loop bugs. */
 
-export const BRAD_DEFAULT_ROUTE = '/compliance';
+export const BRAD_DEFAULT_ROUTE = '/reception';
 
 /**
  * Validate a candidate redirect target. Returns the candidate if it is a safe

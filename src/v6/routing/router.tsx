@@ -35,7 +35,7 @@ export const v6Router = createBrowserRouter([
     ),
     errorElement: <RouteErrorBoundary />,
     children: [
-      { index: true, element: <Navigate replace to="/compliance" /> },
+      { index: true, element: <Navigate replace to="/reception" /> },
       ...shellRoutes.map((route) => ({
         path: routeToChildPath(route.path),
         element: routeElement(route),
