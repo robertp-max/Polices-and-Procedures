@@ -11,6 +11,7 @@ import OrdersScreen from './screens/OrdersScreen'
 import QualityScreen from './screens/QualityScreen'
 import BillingScreen from './screens/BillingScreen'
 import ReportsScreen from './screens/ReportsScreen'
+import DomainScreen from './screens/DomainScreen'
 import BusinessPlanScreen from './screens/BusinessPlanScreen'
 import RequirementsScreen from './screens/RequirementsScreen'
 
@@ -30,6 +31,9 @@ export default function App() {
         <Route path="/quality" element={<QualityScreen />} />
         <Route path="/billing" element={<BillingScreen />} />
         <Route path="/reports" element={<ReportsScreen />} />
+        {/* Navigation covers every requirement domain; areas that are not built
+            yet resolve here rather than silently redirecting. */}
+        <Route path="/domain/:domainId" element={<DomainScreen />} />
         <Route path="*" element={<Navigate to="/today" replace />} />
       </Route>
       <Route element={<DocShell />}>

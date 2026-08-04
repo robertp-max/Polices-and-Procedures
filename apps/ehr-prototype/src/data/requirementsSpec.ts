@@ -1,8 +1,22 @@
 // Canonical content for the Requirements pageview.
 //
-// Source: Care_Indeed_Home_Health_EHR_Complete_Requirements.html
-// "Business plan · Requirements addendum · Version 1.1 · July 29, 2026"
-// (extracted to requirements.txt, read in full before authoring this file).
+// TWO SOURCES, and it matters which is which:
+//
+// (A) Requirement statements, domains, gates, ADRs, architecture, traceability
+//     and sources come from Care_Indeed_Home_Health_EHR_Complete_Requirements.html
+//     — "Business plan · Requirements addendum · Version 1.1 · July 29, 2026"
+//     (extracted to requirements.txt, read in full before authoring this file).
+//
+// (B) The programme INVENTORY COUNTS (planning tasks, planning buckets, target
+//     elements, workflow-step backlog, blocker total) and the BL-0x blocker
+//     write-ups come from the requirements *workspace* of the same source app —
+//     `app/requirements/requirements-program-data.ts`, `requirements-data.ts`,
+//     `requirements-audit-data.ts`, `requirements-pm-model.ts` — and are rendered
+//     on its live /requirements page. Several are DERIVED at runtime there
+//     (e.g. the 5,350 task total is `planningTasks.length`), so they exist on the
+//     rendered page and in the program data but appear as no literal in the
+//     addendum HTML. Do not "correct" them by deleting them: they are sourced,
+//     just not from source (A). Cite (B) for them, never (A).
 //
 // This module is presentational-agnostic: plain typed data only. All visual
 // design lives in RequirementsScreen.tsx / req.css using the existing
