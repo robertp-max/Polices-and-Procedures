@@ -7,10 +7,12 @@ A premium, CI-brand-faithful redesign of the Home Health EHR prototype.
 
 ```bash
 npm install
-npm run dev   # http://localhost:5194
+npm run dev   # http://127.0.0.1:5194/
 ```
 
-Or from the repo root via the Claude launch config `ehr-prototype` (port 5194).
+This directory is the canonical editable EHR app. It runs independently on
+strict port 5194; the compiled app in `../ehr-prototype-static/` is a preserved
+port-5191 fallback, not the Reception target or editable source.
 
 ## What's inside
 

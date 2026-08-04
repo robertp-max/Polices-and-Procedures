@@ -29,7 +29,9 @@ Or from inside this folder:
 npx --yes serve . -l 5191
 ```
 
-Reception launcher opens `http://127.0.0.1:5191/` as the EHR handoff URL.
+This mirror is a fallback only. Reception opens the canonical editable EHR app
+at `http://127.0.0.1:5194/`; port 5191 remains available only when the static
+snapshot itself needs to be inspected.
 
 ## Contents
 

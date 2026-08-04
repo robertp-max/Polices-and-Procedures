@@ -18,6 +18,10 @@ src/**/*.js
 build-*.log
 agent-tools/
 
+# Reconciliation run output; keep the durable Markdown reports only.
+audit/recon-2026-08-03/agents/*.log
+audit/recon-2026-08-03/agents/*.exit
+
 # Environment & secrets
 .env
 .env.*.local

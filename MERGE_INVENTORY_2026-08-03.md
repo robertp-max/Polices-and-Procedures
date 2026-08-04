@@ -1,5 +1,34 @@
 # Merge Inventory - 2026-08-03
 
+## Final reconciliation closure
+
+This section supersedes earlier point-in-time QA counts and open findings in this
+inventory. The reconciliation was performed only in the dedicated merge
+worktree on `codex/merge-local-app-surfaces-2026-08-03`.
+
+| Closure item | Result |
+| --- | --- |
+| Reception and training working-tree changes | Committed in `36b605c8` |
+| Governance test and lint failures | Fixed in `86c76969` |
+| Compliance discovery for Registry, Vendor, and Contractor management | Added in `6f96ce92` |
+| Canonical EHR design-system tooling | Added and verified in `b52ab20f` |
+| Latest committed EHR requirements correction | Applied in `07859aa5` |
+| Root build | **PASS** - 3,357 modules |
+| Full tests | **PASS** - 94 files, 1,045 tests |
+| Full lint | **PASS** - 0 errors, 725 warnings |
+| EHR `npm run verify` | **PASS** - 0 errors and 0 warnings across 50 files |
+| EHR production build | **PASS** - 1,641 modules |
+| Browser: Compliance discovery and three management routes | **PASS** - correct headings, no horizontal overflow |
+| Browser: Reception launchers | **PASS** - five corrected destinations, all `target="_blank"` |
+| Browser: merge-copy EHR on isolated QA port 5203 | **PASS** - Today, Design System, MVP Policy, and COR domain; zero browser errors |
+| Compiled JavaScript shadows under `src/` | **0** |
+
+The canonical editable EHR is `apps/ehr-prototype/` on port 5194. The
+`apps/ehr-prototype-static/` app on port 5191 is an isolated inspection
+fallback and is not the Reception target. Vendor and Contractor management
+remain intentionally UI/mock-client implementations; production APIs were not
+part of this merge.
+
 ## Merge branch result
 
 | Field | Value |
@@ -7,8 +36,9 @@
 | Branch | `codex/merge-local-app-surfaces-2026-08-03` |
 | Base | `onboarding_specialized` @ `7b0b6ae6` |
 | Safety branch | `safety/onboarding_specialized-2026-08-03` @ `7b0b6ae6` |
+| Reconciliation safety branch | `safety/recon-fix-start-20260803` @ `dae8e24b` |
 | Merge worktree | `C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03` |
-| Method | Approved file copies plus additive cherry-picks from committed remote branches; the current `EHR_Prototype/apps/ehr-prototype` working tree was added later by explicit user request; dirty root checkout was not used |
+| Method | Additive commits and committed Git history only during final reconciliation; dirty root and the separate Fable filesystem worktree were not used as sources |
 
 ### Commits on merge branch
 
@@ -23,21 +53,29 @@
 | `25f2ff25` | feat(ehr-prototype): CI-branded Home Health EHR design prototype |
 | `09483a5c` | style(ehr-prototype): white card containers, cool neutrals, edge side nav |
 | `e2b1e4c8` | docs(ehr-prototype): bring UAT report current, park remaining checks |
+| `36b605c8` | fix(reception): preserve launcher and training accessibility updates |
+| `86c76969` | fix(governance): close current test and lint gates |
+| `6f96ce92` | feat(compliance): surface management workspaces |
+| `b52ab20f` | feat(ehr-prototype): add live design system tooling |
+| `07859aa5` | docs(ehr-prototype): correct requirements review misattribution |
 
 ### Build / QA snapshot (merge worktree)
 
 | Check | Result |
 | --- | --- |
 | `npm run build` (`tsc -b && vite build`) | **PASS** |
-| `npm run lint` | **PASS** — 0 errors; 712 warnings (legacy debt plus 4 EHR hook warnings) |
-| `npm test` | **PASS** — 72 files, 792 tests |
-| `apps/ehr-prototype`: `npm run build` | **PASS** — Vite 6.4.3, 1,634 modules |
+| `npm run lint` | **PASS** - 0 errors; 725 warnings (existing warning debt) |
+| `npm test -- --run` | **PASS** - 94 files, 1,045 tests |
+| `apps/ehr-prototype`: `npm run verify` | **PASS** - 0 errors and 0 warnings across 50 files |
+| `apps/ehr-prototype`: `npm run build` | **PASS** - Vite 6.4.3, 1,641 modules |
 | Journey: direct ESLint / `vinext build` / route tests | **PASS** — 0 lint errors, production build, 7/7 tests |
-| Browser: Journey → Connect | **PASS** — desktop/mobile no switch overlap; opens `http://127.0.0.1:5192/` |
+| Browser: Journey to Connect | **PASS** - desktop/mobile no switch overlap; opens the separate Connect app |
 | Browser: Reception → EHR | **PASS** — launcher present; EHR dashboard renders on `http://127.0.0.1:5194/` with no console errors |
+| Browser: Compliance discovery | **PASS** - Registry, Vendor, and Contractor cards and destination routes render |
+| Browser: merge-copy EHR | **PASS** - verified on isolated QA port 5203 with zero error logs and no horizontal overflow |
 | Sibling `src/**/*.js` shadows | None |
 | Secrets in `apps/ehr-prototype-static` | None found |
-| Latest `EHR_Prototype` working-tree overlay | **Included by user request** — 3 modified and 9 untracked app files copied exactly |
+| Canonical EHR source | `apps/ehr-prototype/`; latest committed requirements correction `07859aa5` plus merge-specific MVP rails |
 | Connect / Journey sources in diff | **Not included** |
 | Drive health `http://127.0.0.1:5188/api/calendar/evidence/health` | HTTP 200, `ok: true`, `drive.reachable: true` (env on main) |
 | EHR source app `http://127.0.0.1:5194/` | Production build passed; Reception launcher target |
@@ -66,8 +104,8 @@ Expected behavior:
 - EHR launcher → `http://127.0.0.1:5194/`
 - Every Reception destination opens in a new browser tab, including command-palette launches
 - Find A Home Care launcher → `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`
-- Journey launcher → `http://127.0.0.1:5193/journey/training?persona=taylor-rn` (the separate Journey app with the Journey/Connect toggle)
-- Connect launcher → `http://127.0.0.1:5192/` (separate Connect app; no source merge)
+- Journey launcher -> `http://127.0.0.1:5193/journey?persona=taylor-rn` (the separate Journey app with the Journey/Connect toggle)
+- Connect launcher -> `http://127.0.0.1:5192/?view=home` (separate Connect app; no source merge)
 - Governing Body launcher → `/governance` (latest Governing Body V3 Executive Readiness portal; not Find A Home Care)
 
 ### qapi docs (from `qapi-uiux-discovery` / `qapi`)
@@ -85,17 +123,17 @@ No full `git merge qapi` (branch history diverges from base).
 - Isolated static assets only; no auth/API/shared-state wiring
 - Serve: `npx --yes serve apps/ehr-prototype-static -l 5191`
 
-### Full EHR prototype source (committed branch plus current working tree)
+### Canonical interactive EHR source
 
-- Source: `origin/EHR_Prototype`, commits `6f0f8b7c`, `49c54ebe`, and `828e37c6`
-- Current working-tree source: `C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\EHR_Prototype\apps\ehr-prototype`
-- Merge-branch cherry-picks: `25f2ff25`, `09483a5c`, and `e2b1e4c8`
 - Destination: `apps/ehr-prototype/`
-- Uncommitted overlay included exactly: requirements provenance updates; requirements-derived navigation; expanded prototype shell; planned-domain screen/styles; accessibility, component, requirements-review, and UI/UX framework docs; app-local agent guidance
+- Owner Git lineage: `EHR_Prototype`; committed app imports `25f2ff25`, `09483a5c`, and `e2b1e4c8`
+- Latest committed owner correction: `07859aa5` (source commit `64f9dbb2`)
+- Merge-specific additions: business-plan and requirements surfaces, Wizard-of-Oz MVP policy rails, domain navigation, and live design-system tooling
 - Standalone Vite app with no policy-runtime auth, API, or shared-state wiring
 - Dev URL: `http://127.0.0.1:5194/`
 - Reception workspace card and `/ehr-prototype` CTA both launch port 5194
-- Production build verified; UAT handoff is `apps/ehr-prototype/docs/UAT-REPORT.md`
+- Production build and design verification passed; UAT handoff is `apps/ehr-prototype/docs/UAT-REPORT.md`
+- Final reconciliation did not copy from or modify the separate Fable filesystem worktree
 
 ### Governing Body V3 Executive Readiness portal (from latest governance worktree)
 
@@ -117,7 +155,7 @@ Latest correction verification:
 | `npx vitest run src/v6/screens/governance/v33` | **PASS** - 20 files, 240 tests |
 | `npx vitest run --config vitest.server.config.ts server/routes/governanceComplianceEvidence.test.ts server/routes/governanceReferences.test.ts server/routes/governanceTabletopPackets.test.ts server/governance` | **PASS** - 8 files, 39 tests |
 | Browser: `http://127.0.0.1:5201/reception` | **PASS** - Reception lists Journey, Connect, Governing Body, Find A Home Care, and EHR Prototype |
-| Browser: Reception launcher URLs | **PASS** - Governing Body -> `/governance`, Find A Home Care -> `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`, Journey -> `http://127.0.0.1:5193/journey/training?persona=taylor-rn`, Connect -> `http://127.0.0.1:5192/`, EHR -> `http://127.0.0.1:5194/`; all target `_blank` |
+| Browser: Reception launcher URLs | **PASS** - Governing Body -> `/governance`, Find A Home Care -> `https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login`, Journey -> `http://127.0.0.1:5193/journey?persona=taylor-rn`, Connect -> `http://127.0.0.1:5192/?view=home`, EHR -> `http://127.0.0.1:5194/`; all target `_blank` |
 | Browser: `http://127.0.0.1:5201/governance` | **PASS** - latest V3 home rendered with `Executive Readiness Office` and `My Compliance` |
 | Browser: `http://127.0.0.1:5201/governance#compliance/tabletop` | **PASS** - rendered `Governing Body Boardroom Simulation`, `Tabletop Hub`, and `Workflow Coverage` |
 | Browser: `http://127.0.0.1:5201/governance/academy/modules/GB-001` | **PASS** - normalized to `#compliance/training/module/GB-001` and rendered the V3 training module |
@@ -127,7 +165,7 @@ Latest correction verification:
 
 | Item | Reason |
 | --- | --- |
-| Unrelated files outside `EHR_Prototype/apps/ehr-prototype` | The user authorized the current EHR app snapshot only; no other files from that worktree were copied. |
+| Separate Fable `EHR_Prototype` filesystem worktree | Not modified or used as a source during final reconciliation; committed Git history only |
 | Dirty root checkout bulk untracked | Unrelated litter; merge done only in worktree |
 | Main dirty `src/auth/apiClient.ts` (larger) / tests | Not reception-approved set |
 | Connect repo (`...\connect`) | Separate Sites source; Journey toggle stays there |
@@ -160,8 +198,8 @@ Code already present on base: `server/googleDrive.ts`, `server/googleDriveAuth.t
 | Reception (preview) | `http://127.0.0.1:5179/reception` | reception_area worktree |
 | EHR source app | `http://127.0.0.1:5194/` | `apps/ehr-prototype`; Reception launcher target |
 | EHR static mirror | `http://127.0.0.1:5191/` | `apps/ehr-prototype-static`; preserved fallback |
-| Connect | `http://127.0.0.1:5192/` | Separate repo |
-| Journey | `http://127.0.0.1:5193/journey/training?persona=taylor-rn` | Separate repo |
+| Connect | `http://127.0.0.1:5192/?view=home` | Separate repo; Reception target |
+| Journey | `http://127.0.0.1:5193/journey?persona=taylor-rn` | Separate repo; Reception target |
 | qapi preview | `http://127.0.0.1:5187/compliance` | **Not** working Drive |
 
 ## Compliance latest-source refresh
@@ -176,6 +214,8 @@ Compliance lineage in `codex/governing-body-v3-executive-readiness-os`:
 
 Only the Compliance screen was taken from `9de7f2e0`; that commit's unrelated
 bulk Employee Journey payload was intentionally excluded.
+Reconciliation commit `6f96ce92` added prominent Registry, Vendor, and
+Contractor discovery cards to Compliance Home, with focused route tests.
 
 ## Connect / Journey (external, not in this branch)
 
@@ -201,8 +241,9 @@ addressable in the URL.
 
 ## Confirmation
 
-- **The current `EHR_Prototype/apps/ehr-prototype` working-tree snapshot was included by explicit user request**, including its 3 modified and 9 untracked app files. No files outside that app directory were copied.
-- Merge performed only in the dedicated merge worktree; dirty root checkout was not staged.
+- Final reconciliation used the dedicated merge worktree and additive commits only; the dirty root checkout was not staged.
+- The separate Fable `EHR_Prototype` filesystem worktree was not modified or used as a source during final reconciliation. Only committed Git history was consulted for the latest owner correction.
+- Connect and Journey remain separate repositories; this branch contains launch URLs only.
 
 ## Wave-1 inventory verification (2026-08-03, W1-A15)
 
