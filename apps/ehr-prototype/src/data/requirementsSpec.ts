@@ -862,7 +862,7 @@ export const PLANNING_BUCKETS: PlanningBucket[] = [
 export const TASKS_TOTAL = 5350
 
 export const TASKS_NOTE =
-  'The source states a corpus total of 5,350 planning tasks distributed across 15 planning buckets (14 increments plus one unscheduled-backlog bucket) but does not enumerate individual task records in the reviewed corpus. No task-level rows are fabricated here — the 15 buckets below are real; per-bucket counts and task text are not yet decomposed at this planning baseline.'
+  'The live requirements workspace computes a planning-task corpus of 5,350 items across 15 planning buckets (14 increments plus one unscheduled-backlog bucket). That total is a runtime inventory figure from the requirements program data — not a single static sentence in the Requirements addendum HTML extract. No task-level rows are fabricated here: the 15 buckets below are real; per-bucket counts and task text are not yet decomposed at this planning baseline.'
 
 // ---------- Sprint board (planning-sequence columns; blockers, not "done") ----------
 

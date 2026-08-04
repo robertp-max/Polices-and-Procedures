@@ -83,13 +83,16 @@ function RequirementsRail({ active, onSelect }: { active: WorkspaceKey; onSelect
                   type="button"
                   className={'req-rail-item' + (active === item.key ? ' is-active' : '')}
                   onClick={() => onSelect(item.key)}
-                  aria-current={active === item.key}
+                  aria-current={active === item.key ? 'page' : undefined}
+                  aria-label={item.count != null ? `${item.label}, ${item.count.toLocaleString()}` : item.label}
                 >
                   <span className="req-rail-item-text">
-                    <span className="req-rail-item-label">{item.label}</span>
-                    <span className="req-rail-item-sub">{item.sublabel}</span>
+                    <span className="req-rail-item-label" aria-hidden="true">{item.label}</span>
+                    <span className="req-rail-item-sub" aria-hidden="true">{item.sublabel}</span>
                   </span>
-                  {item.count != null ? <span className="req-rail-badge req-mono">{item.count.toLocaleString()}</span> : null}
+                  {item.count != null ? (
+                    <span className="req-rail-badge req-mono" aria-hidden="true">{item.count.toLocaleString()}</span>
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -105,6 +108,7 @@ function RequirementsRail({ active, onSelect }: { active: WorkspaceKey; onSelect
             type="button"
             role="tab"
             aria-selected={active === item.key}
+            aria-label={item.label}
             className={'req-chip-strip-item' + (active === item.key ? ' is-active' : '')}
             onClick={() => onSelect(item.key)}
           >

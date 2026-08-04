@@ -160,6 +160,7 @@ export default function PatientsScreen() {
                       aria-label={`Open chart for ${p.firstName} ${p.lastName}`}
                       onClick={() => navigate(`/patients/${p.id}`)}
                       onKeyDown={e => {
+                        if (e.target !== e.currentTarget) return
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault()
                           navigate(`/patients/${p.id}`)

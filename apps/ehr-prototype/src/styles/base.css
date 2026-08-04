@@ -242,7 +242,7 @@ input, select, textarea { font: inherit; color: var(--ink-strong); }
   flex-shrink: 0;
 }
 .avatar-teal { background: var(--teal-500); }
-.avatar-apricot { background: var(--orange-400); }
+.avatar-apricot { background: var(--avatar-apricot); }
 .avatar-plum { background: var(--avatar-plum); }
 .avatar-sage { background: var(--avatar-sage); }
 .avatar-sand { background: var(--avatar-sand); }

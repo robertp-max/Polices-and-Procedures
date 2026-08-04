@@ -44,10 +44,12 @@
   --red-200: #E97474;
   --red-100: #FBE6E6;
 
-  /* ---- Avatar identity tones (non-brand, fixed assignment per patient) ---- */
+  /* ---- Avatar identity tones (non-brand, fixed assignment per patient) ----
+     Backgrounds chosen so white initials clear ~4.5:1 (A11Y M5). */
   --avatar-plum: #8A5A83;
-  --avatar-sage: #6E8B6B;
-  --avatar-sand: #B08D57;
+  --avatar-sage: #4F6B4C;
+  --avatar-sand: #8A6A38;
+  --avatar-apricot: #B84A12;
 
   /* ---- Typography ---- */
   --font-display: 'Montserrat', 'Segoe UI', sans-serif; /* headings/subheadings */
@@ -107,12 +109,15 @@
   --accent-quiet: var(--orange-200);
   --link: var(--teal-500);
   --link-hover: var(--teal-600);
-  --focus-ring: 0 0 0 3px var(--teal-300);
+  /* Dual-layer focus ring: dark ring for light surfaces (≥3:1), inner white
+     halo so it also remains visible on dark teal sidebar / rails. */
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink-strong);
+  --focus-ring-on-dark: 0 0 0 2px var(--teal-600), 0 0 0 4px var(--teal-300);
 
   /* Status roles (icons/borders use 300; fills use 100; text stays gray) */
-  --status-good: var(--green-300);
+  --status-good: #006B3F;             /* darkened for ≥4.5:1 on green-100 */
   --status-good-bg: var(--green-100);
-  --status-warn: #B58D00;             /* readable warning ink derived from yellow family */
+  --status-warn: #8A6A00;             /* darkened for ≥4.5:1 on yellow-100 */
   --status-warn-icon: var(--yellow-300);
   --status-warn-bg: var(--yellow-100);
   --status-bad: var(--red-300);

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { AlertTriangle, CheckCircle2, CircleDashed, Clock3, XCircle } from 'lucide-react'
 import './ui.css'
 
@@ -10,7 +10,7 @@ export function StatCard(props: {
   value: ReactNode
   sub: string
   accent?: 'teal' | 'orange' | 'good' | 'warn' | 'bad'
-  meter?: { pct: number }
+  meter?: { pct: number; label?: string }
 }) {
   const accentVar = {
     teal: 'var(--teal-400)',
@@ -26,7 +26,13 @@ export function StatCard(props: {
         <span className="card-kicker">{props.kicker}</span>
       </div>
       <div className="stat-card-value">{props.value}</div>
-      {props.meter ? <ProgressBar pct={props.meter.pct} color={accentVar} /> : null}
+      {props.meter ? (
+        <ProgressBar
+          pct={props.meter.pct}
+          color={accentVar}
+          label={props.meter.label ?? `${props.kicker} ${Math.round(props.meter.pct)}%`}
+        />
+      ) : null}
       <div className="stat-card-sub">{props.sub}</div>
     </div>
   )
@@ -34,9 +40,16 @@ export function StatCard(props: {
 
 /* ---------- Progress ---------- */
 
-export function ProgressBar({ pct, color }: { pct: number; color?: string }) {
+export function ProgressBar({ pct, color, label }: { pct: number; color?: string; label?: string }) {
   return (
-    <div className="progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+    <div
+      className="progress"
+      role="progressbar"
+      aria-valuenow={pct}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={label ?? `Progress ${Math.round(pct)}%`}
+    >
       <div className="progress-fill" style={{ width: `${pct}%`, ['--progress-color' as string]: color }} />
     </div>
   )
@@ -70,7 +83,7 @@ const TONE_STYLE: Record<StatusTone, { bg: string; fg: string; icon: ReactNode }
   good: { bg: 'var(--status-good-bg)', fg: 'var(--status-good)', icon: <CheckCircle2 size={12} strokeWidth={2} /> },
   warn: { bg: 'var(--status-warn-bg)', fg: 'var(--status-warn)', icon: <AlertTriangle size={12} strokeWidth={2} /> },
   bad: { bg: 'var(--status-bad-bg)', fg: 'var(--status-bad)', icon: <XCircle size={12} strokeWidth={2} /> },
-  neutral: { bg: 'var(--gray-100)', fg: 'var(--gray-400)', icon: <CircleDashed size={12} strokeWidth={2} /> },
+  neutral: { bg: 'var(--gray-100)', fg: 'var(--ink-soft)', icon: <CircleDashed size={12} strokeWidth={2} /> },
   progress: { bg: 'var(--teal-200)', fg: 'var(--teal-600)', icon: <Clock3 size={12} strokeWidth={2} /> },
 }
 
@@ -128,22 +141,70 @@ export function EmptyState({ icon, title, sub }: { icon: ReactNode; title: strin
   )
 }
 
-/* ---------- Drawer ---------- */
+/* ---------- Drawer (modal: trap + Escape + restore focus) ---------- */
 
 export function Drawer({ open, onClose, title, sub, children }: {
   open: boolean; onClose: () => void; title: ReactNode; sub?: ReactNode; children: ReactNode
 }) {
+  const panelRef = useRef<HTMLElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
+  const titleId = useId()
+
+  useEffect(() => {
+    if (!open) return
+    triggerRef.current = document.activeElement as HTMLElement | null
+    const t = window.setTimeout(() => closeRef.current?.focus(), 0)
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+      if (event.key !== 'Tab' || !panelRef.current) return
+      const focusable = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter(el => !el.hasAttribute('disabled') && el.tabIndex !== -1)
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKey)
+    return () => {
+      window.clearTimeout(t)
+      document.removeEventListener('keydown', onKey)
+      triggerRef.current?.focus?.()
+    }
+  }, [open, onClose])
+
   if (!open) return null
   return (
     <>
       <div className="drawer-scrim" onClick={onClose} />
-      <aside className="drawer" role="dialog" aria-modal="true">
+      <aside
+        ref={panelRef}
+        className="drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+      >
         <div className="drawer-head">
           <div>
-            <div className="card-title" style={{ fontSize: 17 }}>{title}</div>
+            <div className="card-title" id={titleId} style={{ fontSize: 17 }}>{title}</div>
             {sub ? <div className="screen-sub">{sub}</div> : null}
           </div>
-          <button className="icon-btn" aria-label="Close" onClick={onClose}>
+          <button ref={closeRef} className="icon-btn" aria-label="Close" onClick={onClose}>
             <XCircle size={19} strokeWidth={1.75} />
           </button>
         </div>

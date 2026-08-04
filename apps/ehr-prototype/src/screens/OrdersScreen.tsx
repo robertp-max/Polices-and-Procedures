@@ -204,6 +204,7 @@ export default function OrdersScreen() {
                     aria-label={`Open order detail for ${o.summary}`}
                     onClick={() => openOrder(o)}
                     onKeyDown={e => {
+                      if (e.target !== e.currentTarget) return
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()
                         openOrder(o)

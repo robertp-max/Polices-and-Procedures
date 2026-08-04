@@ -167,9 +167,11 @@ export default function BillingScreen() {
                     key={claim.id}
                     className="is-clickable"
                     tabIndex={0}
+                    role="button"
                     aria-label={`Open claim detail for ${p.firstName} ${p.lastName}, ${claim.period}`}
                     onClick={() => openDrawer(claim)}
                     onKeyDown={e => {
+                      if (e.target !== e.currentTarget) return
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault()
                         openDrawer(claim)

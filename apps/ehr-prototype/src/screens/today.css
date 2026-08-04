@@ -150,7 +150,7 @@
 }
 
 .queue-row.is-done .queue-title { text-decoration: line-through; color: var(--ink-soft); }
-.queue-row.is-done .queue-detail { color: var(--gray-300); }
+.queue-row.is-done .queue-detail { color: var(--ink-soft); }
 
 .queue-due { font-size: 11.5px; font-weight: 500; color: var(--ink-soft); white-space: nowrap; }
 

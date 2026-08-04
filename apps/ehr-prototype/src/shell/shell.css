@@ -20,6 +20,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+.shell-sidebar :focus-visible {
+  box-shadow: var(--focus-ring-on-dark);
+}
 .shell-sidebar::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 .shell-logo { padding: 2px 8px 18px; }

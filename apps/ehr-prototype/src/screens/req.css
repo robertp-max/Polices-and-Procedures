@@ -37,6 +37,9 @@
 
 /* Deep-teal side nav bar — same language as the clinical AppShell sidebar:
    flush to the edge, full height, square corners. Not a floating panel. */
+.req-rail :focus-visible {
+  box-shadow: var(--focus-ring-on-dark);
+}
 .req-rail {
   position: sticky;
   top: 0;

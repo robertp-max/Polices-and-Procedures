@@ -19,6 +19,7 @@ const DESTINATIONS = [
   { to: '/reports', label: 'Reports', icon: TrendingUp, hint: 'Insights' },
   { to: '/business-plan', label: 'Business Plan', icon: ClipboardList, hint: 'Mode' },
   { to: '/requirements', label: 'Requirements', icon: ClipboardList, hint: 'Mode' },
+  { to: '/design-system', label: 'Design system', icon: LayoutDashboard, hint: 'Tokens & components' },
 ]
 
 export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -26,6 +27,8 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
   const [query, setQuery] = useState('')
   const [cursor, setCursor] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -47,12 +50,43 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
   }, [query])
 
   useEffect(() => {
-    if (open) {
-      setQuery('')
-      setCursor(0)
-      setTimeout(() => inputRef.current?.focus(), 0)
+    if (!open) return
+    triggerRef.current = document.activeElement as HTMLElement | null
+    setQuery('')
+    setCursor(0)
+    const t = window.setTimeout(() => inputRef.current?.focus(), 0)
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        onClose()
+        return
+      }
+      if (event.key !== 'Tab' || !panelRef.current) return
+      const focusable = Array.from(
+        panelRef.current.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      )
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
     }
-  }, [open])
+
+    document.addEventListener('keydown', onKey)
+    return () => {
+      window.clearTimeout(t)
+      document.removeEventListener('keydown', onKey)
+      triggerRef.current?.focus?.()
+    }
+  }, [open, onClose])
 
   useEffect(() => { setCursor(0) }, [query])
 
@@ -62,7 +96,14 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
 
   return (
     <div className="cp-scrim" onMouseDown={onClose}>
-      <div className="cp" role="dialog" aria-label="Search" onMouseDown={e => e.stopPropagation()}>
+      <div
+        ref={panelRef}
+        className="cp"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+        onMouseDown={e => e.stopPropagation()}
+      >
         <div className="cp-input">
           <Search size={16} strokeWidth={1.75} aria-hidden />
           <input
@@ -72,19 +113,21 @@ export function CommandPalette({ open, onClose }: { open: boolean; onClose: () =
             aria-label="Search patients and screens"
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => {
-              if (e.key === 'Escape') onClose()
-              if (e.key === 'ArrowDown') { e.preventDefault(); setCursor(c => Math.min(c + 1, results.length - 1)) }
+              if (e.key === 'ArrowDown') { e.preventDefault(); setCursor(c => Math.min(c + 1, Math.max(results.length - 1, 0))) }
               if (e.key === 'ArrowUp') { e.preventDefault(); setCursor(c => Math.max(c - 1, 0)) }
               if (e.key === 'Enter' && results[cursor]) go(results[cursor].to)
             }}
           />
           <kbd>esc</kbd>
         </div>
-        <div className="cp-results">
+        <div className="cp-results" role="listbox" aria-label="Search results">
           {results.length === 0 && <div className="cp-empty">No matches — try a patient name or MRN.</div>}
           {results.map((r, i) => (
             <button
               key={r.kind + r.key}
+              type="button"
+              role="option"
+              aria-selected={i === cursor}
               className={'cp-row' + (i === cursor ? ' is-cursor' : '')}
               onMouseEnter={() => setCursor(i)}
               onClick={() => go(r.to)}
