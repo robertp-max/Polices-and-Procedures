@@ -1,5 +1,5 @@
 /* Domain screen — honest destination for navigation areas the requirements
-   define but the prototype has not implemented. */
+   define but the prototype has not implemented. Prefix: .dom- */
 
 .dom-notice {
   display: flex;
@@ -21,7 +21,10 @@
   flex-shrink: 0;
 }
 
-.dom-notice-body { flex: 1; min-width: 0; }
+.dom-notice-body {
+  flex: 1;
+  min-width: 0;
+}
 
 .dom-notice-head {
   display: flex;
@@ -36,9 +39,15 @@
   line-height: 1.6;
   color: var(--ink);
   max-width: 74ch;
+  margin: 0;
 }
 
-.dom-notice-areas { margin-top: 14px; }
+.dom-notice-areas {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
 .dom-notice-areas-label {
   display: block;
   font-size: 10px;
@@ -46,9 +55,58 @@
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  margin-bottom: 7px;
+  margin-bottom: 10px;
 }
-.dom-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.dom-area-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dom-area-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-xs);
+}
+
+.dom-area-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-strong);
+  min-width: 0;
+}
+
+.dom-area-link {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.dom-area-link:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+.dom-area-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.dom-req-card {
+  padding: 0;
+  overflow: hidden;
+}
 
 .dom-section-head {
   display: flex;
@@ -68,10 +126,14 @@
 }
 
 .dom-req {
-  padding: 15px 0;
+  padding: 16px 0;
   border-top: 1px solid var(--line);
 }
-.dom-req:first-child { border-top: none; padding-top: 4px; }
+
+.dom-req:first-child {
+  border-top: none;
+  padding-top: 4px;
+}
 
 .dom-req-top {
   display: flex;
@@ -90,6 +152,7 @@
   border-radius: 5px;
   padding: 2px 7px;
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .dom-req-title {
@@ -97,6 +160,8 @@
   font-weight: 500;
   font-size: 14px;
   color: var(--ink-strong);
+  flex: 1;
+  min-width: 12ch;
 }
 
 .dom-req-text {
@@ -104,15 +169,17 @@
   line-height: 1.6;
   color: var(--ink);
   max-width: 82ch;
+  margin: 0;
 }
 
 .dom-req-acceptance {
   font-size: 12.5px;
   line-height: 1.55;
   color: var(--ink-soft);
-  margin-top: 7px;
+  margin: 8px 0 0;
   max-width: 82ch;
 }
+
 .dom-req-acceptance-label {
   display: inline-block;
   font-size: 10px;
@@ -128,5 +195,6 @@
   color: var(--ink-soft);
   padding: 14px 20px 18px;
   border-top: 1px solid var(--line);
-  margin-top: 4px;
+  margin: 4px 0 0;
+  line-height: 1.5;
 }
