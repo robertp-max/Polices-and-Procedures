@@ -63,7 +63,7 @@ const highlights: readonly HighlightCardData[] = [
     eyebrow: 'Blockers',
     badge: 'Needs review',
     title: 'Missing Evidence & Stuck Tasks',
-    badgeColor: 'bg-[#FFF0E5] text-[#F06923]',
+    badgeColor: 'bg-[#FFF0E5] text-[#C2410C]',
     body: 'See what cannot be certified yet because required files, forms, signatures, approvals, or minutes are missing.',
   },
   {
@@ -83,7 +83,7 @@ const highlights: readonly HighlightCardData[] = [
     eyebrow: 'Sign-offs',
     badge: 'Pending',
     title: 'Approvals & eCign Status',
-    badgeColor: 'bg-[#FFF0E5] text-[#F06923]',
+    badgeColor: 'bg-[#FFF0E5] text-[#C2410C]',
     body: 'Find unsigned packets, pending approvals, expired signature requests, missing dual-capacity sign-offs, and records waiting for certification.',
   },
   {
@@ -159,13 +159,13 @@ function HighlightCard({ card }: { card: HighlightCardData }) {
   return (
     <article className={`flex h-full flex-col p-8 ${HOME_SURFACE_CLASS} ${HOME_SURFACE_HOVER_CLASS}`}>
       <div className="mb-5 flex items-start justify-between gap-4">
-        <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#F06923]">{card.eyebrow}</span>
+        <span className="font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#C2410C]">{card.eyebrow}</span>
         <span className={`rounded-[8px] px-2.5 py-1 font-montserrat text-[9px] font-bold uppercase tracking-wider ${card.badgeColor ?? 'bg-[#E5FEFF] text-[#007970]'}`}>
           {card.badge}
         </span>
       </div>
       <h3 className="mb-3 font-montserrat text-lg font-semibold leading-snug text-[#007970]">{card.title}</h3>
-      <p className="flex-1 font-roboto text-[14px] leading-relaxed text-[#747470]">{card.body}</p>
+      <p className="flex-1 font-roboto text-[14px] leading-relaxed text-[#3D3D3A]">{card.body}</p>
     </article>
   );
 }
@@ -188,7 +188,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
       <section className={`ci-page-hero relative w-full overflow-hidden p-10 md:p-14 ${HOME_SURFACE_CLASS}`}>
         <StaticCardWatermark />
         <div className="relative z-10">
-          <span className="mb-4 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#F06923]">
+          <span className="mb-4 block font-montserrat text-[11px] font-bold uppercase tracking-widest text-[#C2410C]">
             CES Overview
           </span>
           <h1 className="mb-6 max-w-3xl font-montserrat text-4xl font-bold leading-tight tracking-tight text-[#007970] md:text-5xl">
@@ -196,7 +196,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
             <br />
             Compliance Execution Sprint
           </h1>
-          <p className="mb-10 max-w-3xl font-roboto text-lg font-light leading-relaxed text-[#747470]">
+          <p className="mb-10 max-w-3xl font-roboto text-lg font-light leading-relaxed text-[#3D3D3A]">
             A focused workspace for completing compliance work before it becomes a survey risk. Track mandated events, workflow tasks, evidence, forms, minutes, approvals, sign-offs, blockers, and audit readiness in one sprint view.
           </p>
 
@@ -221,10 +221,10 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
       <section className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-6">
         {stats.map((stat) => (
           <div key={stat.label} className={`flex min-h-[140px] flex-col justify-center p-6 text-center md:p-8 ${HOME_SURFACE_CLASS}`}>
-            <span className={`mb-2 block font-montserrat font-bold ${stat.strong ? 'text-xl text-[#007970]' : 'text-3xl text-[#F06923]'}`}>
+            <span className={`mb-2 block font-montserrat font-bold ${stat.strong ? 'text-xl text-[#007970]' : 'text-3xl text-[#C2410C]'}`}>
               {stat.value}
             </span>
-            <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#A0A0A0]">{stat.label}</span>
+            <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#474742]">{stat.label}</span>
           </div>
         ))}
       </section>
@@ -260,7 +260,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
                 className="group flex w-full items-center justify-between rounded-xl border border-[#E5E4E3] bg-[#FAFAF7] px-5 py-3.5 text-left font-montserrat text-[13px] font-semibold text-[#52404B] transition-colors hover:border-[#007970] hover:bg-[#F7FEFF]"
               >
                 {label}
-                <ArrowRight className="h-3.5 w-3.5 text-[#A0A0A0] transition-colors group-hover:text-[#007970]" aria-hidden />
+                <ArrowRight className="h-3.5 w-3.5 text-[#474742] transition-colors group-hover:text-[#007970]" aria-hidden />
               </Link>
             ))}
           </div>
@@ -270,7 +270,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
           <ShieldCheck className="pointer-events-none absolute -bottom-10 -right-10 h-[280px] w-[280px] text-[#007970] opacity-[0.05]" aria-hidden />
           <div className="relative z-10">
             <h2 className="mb-4 font-montserrat text-3xl font-bold text-[#007970]">Ready to close the sprint?</h2>
-            <p className="mb-10 max-w-xl font-roboto text-base leading-relaxed text-[#747470]">
+            <p className="mb-10 max-w-xl font-roboto text-base leading-relaxed text-[#3D3D3A]">
               Review blockers, confirm evidence, complete sign-offs, and certify the sprint when every required item is defensible.
             </p>
             <Link
@@ -282,7 +282,7 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
             </Link>
           </div>
           <div className="relative z-10 mt-8 border-t border-[#E5E4E3] pt-12">
-            <p className="font-roboto text-[11px] leading-relaxed text-[#A0A0A0]">
+            <p className="font-roboto text-[11px] leading-relaxed text-[#474742]">
               Built for fast, defensible compliance execution: no scattered spreadsheets, no missing sign-offs, no last-minute scrambling.
             </p>
           </div>
@@ -314,7 +314,7 @@ function CalendarView() {
           <h1 className="font-montserrat text-2xl font-bold text-[#52404B]">
             CES Calendar <span className="font-semibold text-[#007970]">Jun 2026</span>
           </h1>
-          <p className="mt-1 font-roboto text-sm text-[#747470]">Teal events are ready; orange events need owner action.</p>
+          <p className="mt-1 font-roboto text-sm text-[#3D3D3A]">Teal events are ready; orange events need owner action.</p>
         </div>
 
         <div className="flex flex-col gap-4 xl:items-end">
@@ -336,7 +336,7 @@ function CalendarView() {
                 <button
                   key={month}
                   type="button"
-                  className={`rounded-full px-2.5 py-1.5 font-montserrat text-[10px] font-bold transition-colors ${month === 'JUN' ? 'bg-[#007970] text-white' : 'text-[#A0A0A0] hover:text-[#52404B]'}`}
+                  className={`rounded-full px-2.5 py-1.5 font-montserrat text-[10px] font-bold transition-colors ${month === 'JUN' ? 'bg-[#007970] text-white' : 'text-[#474742] hover:text-[#52404B]'}`}
                 >
                   {month}
                 </button>
@@ -347,7 +347,7 @@ function CalendarView() {
                 <button
                   key={year}
                   type="button"
-                  className={`rounded-full px-3 py-1.5 font-montserrat text-[10px] font-bold transition-colors ${year === '2026' ? 'bg-[#007970] text-white' : 'text-[#A0A0A0] hover:text-[#52404B]'}`}
+                  className={`rounded-full px-3 py-1.5 font-montserrat text-[10px] font-bold transition-colors ${year === '2026' ? 'bg-[#007970] text-white' : 'text-[#474742] hover:text-[#52404B]'}`}
                 >
                   {year}
                 </button>
@@ -360,7 +360,7 @@ function CalendarView() {
       <div className="flex flex-1 flex-col bg-[#FAFAF7]">
         <div className="grid grid-cols-7 border-b border-[#E5E4E3] bg-white">
           {days.map((day) => (
-            <div key={day} className="py-4 text-center font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#A0A0A0]">
+            <div key={day} className="py-4 text-center font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#474742]">
               {day}
             </div>
           ))}
@@ -372,7 +372,7 @@ function CalendarView() {
             const events = isValid ? eventsByDay.get(dayNum) ?? [] : [];
             return (
               <div key={dayNum} className="group flex flex-col gap-1.5 overflow-hidden bg-white p-3 transition-colors hover:bg-[#F7FEFF]">
-                {isValid ? <span className="mb-1 font-montserrat text-sm font-semibold text-[#747470]">{dayNum}</span> : null}
+                {isValid ? <span className="mb-1 font-montserrat text-sm font-semibold text-[#3D3D3A]">{dayNum}</span> : null}
                 {events.slice(0, 2).map((event) => (
                   <Link
                     key={event.id ?? `${event.label}-${event.day}`}
@@ -384,7 +384,7 @@ function CalendarView() {
                   </Link>
                 ))}
                 {events.length > 2 ? (
-                  <span className="font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#A0A0A0]">
+                  <span className="font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#474742]">
                     +{events.length - 2} more
                   </span>
                 ) : null}
@@ -432,14 +432,14 @@ function ControlRegisterView() {
             {controls.length > 0 ? (
               controls.map((control) => (
                 <tr key={control.id} className="border-b border-[#E5E4E3] transition-colors hover:bg-[#FAFAF7]">
-                  <td className="whitespace-nowrap px-6 py-4 font-montserrat font-semibold text-[#747470]">{control.id}</td>
+                  <td className="whitespace-nowrap px-6 py-4 font-montserrat font-semibold text-[#3D3D3A]">{control.id}</td>
                   <td className="min-w-[320px] px-6 py-4">{control.name}</td>
-                  <td className="min-w-[190px] px-6 py-4 text-[#747470]">{control.category}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-[#747470]">{control.domain}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-[#747470]">{control.risk}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-[#747470]">{control.status}</td>
+                  <td className="min-w-[190px] px-6 py-4 text-[#3D3D3A]">{control.category}</td>
+                  <td className="whitespace-nowrap px-6 py-4 text-[#3D3D3A]">{control.domain}</td>
+                  <td className="whitespace-nowrap px-6 py-4 text-[#3D3D3A]">{control.risk}</td>
+                  <td className="whitespace-nowrap px-6 py-4 text-[#3D3D3A]">{control.status}</td>
                   <td className="whitespace-nowrap px-6 py-4">
-                    <div className={`flex items-center gap-1.5 font-montserrat text-[10px] font-bold uppercase tracking-wider ${control.readiness === 'Blocked' || control.readiness === 'Documentation missing' ? 'text-[#F06923]' : 'text-[#007970]'}`}>
+                    <div className={`flex items-center gap-1.5 font-montserrat text-[10px] font-bold uppercase tracking-wider ${control.readiness === 'Blocked' || control.readiness === 'Documentation missing' ? 'text-[#C2410C]' : 'text-[#007970]'}`}>
                       {control.readiness === 'Blocked' || control.readiness === 'Documentation missing' ? <XCircle className="h-3.5 w-3.5" aria-hidden /> : <ShieldCheck className="h-3.5 w-3.5" aria-hidden />}
                       {control.readiness}
                     </div>
@@ -448,7 +448,7 @@ function ControlRegisterView() {
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center font-roboto text-sm text-[#747470]">
+                <td colSpan={7} className="px-6 py-12 text-center font-roboto text-sm text-[#3D3D3A]">
                   Loading live control register data...
                 </td>
               </tr>
@@ -481,7 +481,7 @@ function WorkspaceShell({
                 className={`min-h-11 whitespace-nowrap rounded-full px-8 py-3 text-[11px] font-bold uppercase tracking-widest transition-all duration-200 ${
                   isActive
                     ? 'bg-[#F06923] text-white shadow-[0_10px_24px_rgba(240,105,35,0.22)]'
-                    : 'bg-white text-[#A0A0A0] hover:bg-[#FFF2EB] hover:text-[#F06923]'
+                    : 'bg-white text-[#474742] hover:bg-[#FFF2EB] hover:text-[#C2410C]'
                 }`}
                 aria-current={isActive ? 'page' : undefined}
               >
@@ -514,11 +514,11 @@ function DriveView() {
     <div className="mx-auto w-full max-w-5xl space-y-8">
       <div>
         <h2 className="font-montserrat text-2xl font-semibold text-[#52404B]">Google Drive Evidence</h2>
-        <p className="mt-1 font-roboto text-sm text-[#747470]">Folders are color-coded by event domain; documents file flat inside each event.</p>
+        <p className="mt-1 font-roboto text-sm text-[#3D3D3A]">Folders are color-coded by event domain; documents file flat inside each event.</p>
       </div>
 
       <div className="flex items-center rounded-full border border-[#E5E4E3] bg-[#FAFAF7] p-2">
-        <Search className="ml-4 mr-2 h-5 w-5 text-[#A0A0A0]" aria-hidden />
+        <Search className="ml-4 mr-2 h-5 w-5 text-[#474742]" aria-hidden />
         <input
           type="text"
           placeholder="Search CES Evidence Drive"
@@ -540,7 +540,7 @@ function DriveView() {
               <span className="absolute left-0 top-0 h-4 w-1/2 rounded-br-lg border-b-[4px] border-r-[4px]" style={{ borderColor: folder.color }} />
             </span>
             <span className="mt-2 font-montserrat text-lg font-bold text-[#52404B]">{folder.title}</span>
-            <span className="rounded border border-[#E5E4E3] bg-[#FAFAF7] px-3 py-1 font-montserrat text-[10px] font-bold uppercase text-[#747470]">
+            <span className="rounded border border-[#E5E4E3] bg-[#FAFAF7] px-3 py-1 font-montserrat text-[10px] font-bold uppercase text-[#3D3D3A]">
               {folder.files}
             </span>
           </button>
@@ -564,7 +564,7 @@ function CreatePacketView() {
     <div className="mx-auto w-full max-w-5xl space-y-12">
       <div className="text-center">
         <h2 className="font-montserrat text-[13px] font-bold uppercase tracking-[0.15em] text-[#52404B]">1 &bull; Select a packet template *</h2>
-        <p className="mt-3 font-roboto text-sm text-[#747470]">Choose the packet structure first; you&apos;ll pick the data source next.</p>
+        <p className="mt-3 font-roboto text-sm text-[#3D3D3A]">Choose the packet structure first; you&apos;ll pick the data source next.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -574,13 +574,13 @@ function CreatePacketView() {
             type="button"
             className="flex min-h-[220px] flex-col rounded-[24px] border border-[#E5E4E3] bg-white p-8 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#F06923]/30 hover:shadow-md"
           >
-            <span className="mb-6 flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E4E3] font-montserrat text-sm font-semibold text-[#A0A0A0]">
+            <span className="mb-6 flex h-10 w-10 items-center justify-center rounded-full border border-[#E5E4E3] font-montserrat text-sm font-semibold text-[#474742]">
               {template.num}
             </span>
             <span className="mb-3 font-montserrat text-sm font-semibold uppercase leading-relaxed tracking-wide text-[#52404B]">
               {template.title}
             </span>
-            <span className="font-roboto text-sm leading-relaxed text-[#747470]">{template.desc}</span>
+            <span className="font-roboto text-sm leading-relaxed text-[#3D3D3A]">{template.desc}</span>
           </button>
         ))}
       </div>
@@ -592,7 +592,7 @@ function EditPacketView() {
   return (
     <div className="mx-auto w-full max-w-5xl">
       <div className="rounded-[26px] border border-[#E5E4E3] bg-[#FAFAF7] p-8">
-        <label htmlFor="compliance-packet-id" className="mb-3 block font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#A0A0A0]">
+        <label htmlFor="compliance-packet-id" className="mb-3 block font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#474742]">
           Packet ID
         </label>
         <div className="flex flex-col gap-4 md:flex-row md:items-center">
@@ -631,23 +631,23 @@ function EcignView() {
           </span>
           <div>
             <h2 className="font-montserrat text-3xl font-bold text-[#52404B]">eCign Tracking</h2>
-            <p className="mt-2 font-roboto text-sm text-[#747470]">Track packets assigned to you, copied to you, or created by you.</p>
-            <p className="mt-1 font-roboto text-[12px] text-[#A0A0A0]">Signed in as TJ Padilla &bull; super_admin</p>
+            <p className="mt-2 font-roboto text-sm text-[#3D3D3A]">Track packets assigned to you, copied to you, or created by you.</p>
+            <p className="mt-1 font-roboto text-[12px] text-[#474742]">Signed in as TJ Padilla &bull; super_admin</p>
           </div>
         </div>
         <div className="rounded-2xl border border-[#E5E4E3] bg-[#FAFAF7] p-5 md:text-right">
           <div className="mb-1 flex items-center gap-3 md:justify-end">
             <span className="font-montserrat text-sm font-semibold text-[#52404B]">Create custom eCign packet</span>
-            <span className="rounded bg-[#FFF0E5] px-2 py-0.5 font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#F06923]">Coming Soon</span>
+            <span className="rounded bg-[#FFF0E5] px-2 py-0.5 font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#C2410C]">Coming Soon</span>
           </div>
-          <p className="font-roboto text-xs text-[#A0A0A0]">Send a custom packet outside a CES event.</p>
+          <p className="font-roboto text-xs text-[#474742]">Send a custom packet outside a CES event.</p>
         </div>
       </section>
 
       <section className="grid grid-cols-2 gap-4 md:grid-cols-6">
         {stats.map(([label, value]) => (
           <div key={label} className="rounded-[24px] border border-[#E5E4E3] bg-white p-6 shadow-sm">
-            <span className="mb-3 block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#A0A0A0]">{label}</span>
+            <span className="mb-3 block font-montserrat text-[10px] font-bold uppercase tracking-wider text-[#474742]">{label}</span>
             <span className="font-montserrat text-3xl font-semibold text-[#007970]">{value}</span>
           </div>
         ))}
@@ -656,22 +656,22 @@ function EcignView() {
       <section className="space-y-6 rounded-[24px] border border-[#E5E4E3] bg-white p-6 shadow-sm">
         <div className="flex flex-wrap gap-2">
           {['My action needed', 'Waiting on others', 'Copied to me', 'Created by me', 'All open', 'Completed'].map((tab, index) => (
-            <button key={tab} type="button" className={`rounded-full px-5 py-2.5 font-montserrat text-[12px] font-bold transition-colors ${index === 0 ? 'bg-[#E5FEFF] text-[#007970]' : 'bg-[#FAFAF7] text-[#747470] hover:bg-[#E5E4E3]'}`}>
+            <button key={tab} type="button" className={`rounded-full px-5 py-2.5 font-montserrat text-[12px] font-bold transition-colors ${index === 0 ? 'bg-[#E5FEFF] text-[#007970]' : 'bg-[#FAFAF7] text-[#3D3D3A] hover:bg-[#E5E4E3]'}`}>
               {tab}
             </button>
           ))}
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
           <div className="relative md:col-span-4">
-            <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#A0A0A0]" aria-hidden />
+            <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-[#474742]" aria-hidden />
             <input type="text" placeholder="Search packet ID, title, signer, event, workflow, status" className="w-full rounded-xl border border-[#E5E4E3] bg-[#FAFAF7] py-3.5 pl-12 pr-4 font-roboto text-sm text-[#52404B] transition-colors focus:border-[#007970] focus:outline-none" />
           </div>
           {['All relationships', 'All sources', 'All statuses', 'Any due date'].map((label) => (
             <div key={label} className="relative md:col-span-2">
-              <select className="w-full appearance-none rounded-xl border border-[#E5E4E3] bg-[#FAFAF7] py-3.5 pl-4 pr-10 font-roboto text-sm text-[#747470] focus:outline-none">
+              <select className="w-full appearance-none rounded-xl border border-[#E5E4E3] bg-[#FAFAF7] py-3.5 pl-4 pr-10 font-roboto text-sm text-[#3D3D3A] focus:outline-none">
                 <option>{label}</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A0A0A0]" aria-hidden />
+              <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#474742]" aria-hidden />
             </div>
           ))}
         </div>
@@ -683,13 +683,13 @@ function EcignView() {
             <div className="flex-1 space-y-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="font-roboto text-sm text-[#52404B]">{index === 0 ? 'mokppmzr_8205360708e47231' : 'mokpsgk3_8d7940c7ebc08ab0'}</span>
-                <span className="rounded bg-[#FFF0E5] px-2 py-0.5 font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#F06923]">Pending My Signature</span>
+                <span className="rounded bg-[#FFF0E5] px-2 py-0.5 font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#C2410C]">Pending My Signature</span>
                 <span className="rounded bg-[#E5FEFF] px-2 py-0.5 font-montserrat text-[9px] font-bold uppercase tracking-wider text-[#007970]">Assigned to me</span>
               </div>
 
               <div>
                 <h3 className="mb-1 font-montserrat text-lg font-bold text-[#52404B]">EN-FM-011</h3>
-                <p className="font-roboto text-sm text-[#A0A0A0]">Context: No context label</p>
+                <p className="font-roboto text-sm text-[#474742]">Context: No context label</p>
               </div>
 
               <div className="grid grid-cols-1 gap-6 pt-2 md:grid-cols-3">
@@ -702,8 +702,8 @@ function EcignView() {
                   ['Last activity', index === 0 ? 'Apr 29, 4:54 PM' : 'Apr 29, 4:57 PM'],
                 ].map(([label, value]) => (
                   <div key={`${label}-${value}`}>
-                    <p className="mb-0.5 font-roboto text-[11px] text-[#A0A0A0]">{label}</p>
-                    <p className="font-roboto text-sm text-[#747470]">{value}</p>
+                    <p className="mb-0.5 font-roboto text-[11px] text-[#474742]">{label}</p>
+                    <p className="font-roboto text-sm text-[#3D3D3A]">{value}</p>
                   </div>
                 ))}
               </div>

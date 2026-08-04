@@ -164,6 +164,19 @@ Code already present on base: `server/googleDrive.ts`, `server/googleDriveAuth.t
 | Journey | `http://127.0.0.1:5193/journey/training?persona=taylor-rn` | Separate repo |
 | qapi preview | `http://127.0.0.1:5187/compliance` | **Not** working Drive |
 
+## Compliance latest-source refresh
+
+The `/compliance` execution workspace was refreshed from the latest committed
+Compliance lineage in `codex/governing-body-v3-executive-readiness-os`:
+
+- `src/v6/screens/pageviews/ComplianceHomeScreen.tsx` from `9de7f2e0`, including
+  its later WCAG contrast pass.
+- Canonical master-control registry from `bb35dfa2`.
+- Deterministic control-readiness engine from `15743682`.
+
+Only the Compliance screen was taken from `9de7f2e0`; that commit's unrelated
+bulk Employee Journey payload was intentionally excluded.
+
 ## Connect / Journey (external, not in this branch)
 
 - Connect: branch `connect` @ `305ae2e`; local change `app/community-app.tsx` → Journey on 5193. Keep in Connect repo only.
