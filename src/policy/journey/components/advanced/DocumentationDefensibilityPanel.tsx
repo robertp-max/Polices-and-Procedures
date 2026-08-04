@@ -40,7 +40,7 @@ const colors = {
   redSoft: '#FEF3F2',
   blueSoft: '#EEF6FF',
   ink: '#1E293B',
-  muted: '#64748B',
+  muted: '#475569',
   line: '#E2E8F0',
   page: '#F7FBFB',
   white: '#FFFFFF',

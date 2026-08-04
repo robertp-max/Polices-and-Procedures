@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Activity,
@@ -37,8 +37,8 @@ type WorkspaceStatus = 'available' | 'restricted' | 'prototype';
 const EHR_PROTOTYPE_URL = 'http://127.0.0.1:5194';
 const FIND_HOME_CARE_PROVIDER_PORTAL_URL = 'https://fahc-provider-portal-rti5nksmma-uc.a.run.app/provider/login';
 const GOVERNING_BODY_PORTAL_ROUTE = '/governance';
-const JOURNEY_URL = 'http://127.0.0.1:5193/journey/training?persona=taylor-rn';
-const CONNECT_URL = 'http://127.0.0.1:5192/';
+const JOURNEY_URL = 'http://127.0.0.1:5193/journey?persona=taylor-rn';
+const CONNECT_URL = 'http://127.0.0.1:5192/?view=home';
 
 interface ReceptionWorkspace {
   id: ReceptionWorkspaceId;
@@ -412,6 +412,7 @@ function WorkspaceLauncherCard({
 
   return (
     <a
+      aria-label={`${workspace.cta}: ${workspace.name} (opens in a new tab)`}
       href={lastRoute}
       onClick={() => writeRecentRoute(workspace.id, lastRoute)}
       className="group min-h-[260px] rounded-lg bg-white p-5 shadow-[0_18px_44px_rgba(0,47,48,0.10)] transition hover:-translate-y-1 hover:shadow-[0_24px_58px_rgba(0,47,48,0.14)] focus-visible:shadow-[0_0_0_4px_rgba(0,121,112,0.18),0_18px_44px_rgba(0,47,48,0.10)]"
@@ -445,18 +446,9 @@ function CommandPalette({
     });
   }, [query, workspaces]);
 
-  function openWorkspace(workspace: ReceptionWorkspace & { enabled: boolean; lastRoute: string }) {
-    if (!workspace.enabled) return;
+  function recordWorkspaceOpen(workspace: ReceptionWorkspace & { enabled: boolean; lastRoute: string }) {
     writeRecentRoute(workspace.id, workspace.lastRoute);
     onClose();
-    window.open(workspace.lastRoute, '_blank', 'noopener,noreferrer');
-  }
-
-  function handleResultKeyDown(event: KeyboardEvent<HTMLButtonElement>, workspace: ReceptionWorkspace & { enabled: boolean; lastRoute: string }) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      openWorkspace(workspace);
-    }
   }
 
   return (
@@ -482,23 +474,12 @@ function CommandPalette({
             value={query}
           />
         </label>
-        <div className="grid max-h-[60vh] gap-2 overflow-auto" role="listbox" aria-label="Reception command results">
+        <ul className="grid max-h-[60vh] list-none gap-2 overflow-auto" aria-label="Reception command results">
           {results.map((workspace) => {
             const styles = accentStyles[workspace.accent];
             const Icon = workspace.icon;
-            return (
-              <button
-                key={workspace.id}
-                type="button"
-                className={cx(
-                  'grid min-h-16 grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg px-3 py-2 text-left transition',
-                  workspace.enabled ? 'hover:bg-[#F3F2EE]' : 'cursor-not-allowed opacity-60',
-                )}
-                disabled={!workspace.enabled}
-                onClick={() => openWorkspace(workspace)}
-                onKeyDown={(event) => handleResultKeyDown(event, workspace)}
-                role="option"
-              >
+            const resultContent = (
+              <>
                 <span className={cx('grid h-10 w-10 place-items-center rounded-lg', styles.panel, styles.text)}>
                   <Icon className="h-5 w-5" aria-hidden />
                 </span>
@@ -507,10 +488,34 @@ function CommandPalette({
                   <span className="block truncate text-xs text-[#66736F]">{workspace.lastRoute}</span>
                 </span>
                 <ExternalLink className="h-4 w-4 text-[#66736F]" aria-hidden />
-              </button>
+              </>
+            );
+
+            return (
+              <li key={workspace.id}>
+                {workspace.enabled ? (
+                  <a
+                    aria-label={`Open ${workspace.name} in a new tab`}
+                    className="grid min-h-16 grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-[#F3F2EE]"
+                    href={workspace.lastRoute}
+                    onClick={() => recordWorkspaceOpen(workspace)}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {resultContent}
+                  </a>
+                ) : (
+                  <div
+                    aria-disabled="true"
+                    className="grid min-h-16 cursor-not-allowed grid-cols-[auto_1fr_auto] items-center gap-3 rounded-lg px-3 py-2 text-left opacity-60"
+                  >
+                    {resultContent}
+                  </div>
+                )}
+              </li>
             );
           })}
-        </div>
+        </ul>
       </section>
     </div>
   );
@@ -721,7 +726,7 @@ function PrototypeWorkspaceShell({
               <a
                 className={cx('inline-flex min-h-11 items-center gap-2 rounded-lg px-4 text-sm font-semibold', styles.action)}
                 href={launchUrl}
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 target="_blank"
               >
                 {cta}

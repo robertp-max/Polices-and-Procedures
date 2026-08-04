@@ -389,7 +389,11 @@ export function QapiTrainingPanel({ moduleId, onComplete, onEvidence }: Props) {
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div
+          className="min-h-0 flex-1 overflow-y-auto p-6"
+          tabIndex={0}
+          aria-label="QAPI lesson content"
+        >
           <div className="mx-auto grid max-w-[1500px] gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
             <main className="space-y-5">
               <section className="overflow-hidden rounded-lg border border-hairline bg-white shadow-rest">

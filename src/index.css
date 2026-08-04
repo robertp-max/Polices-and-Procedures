@@ -297,6 +297,20 @@
   --input: var(--ci-subdued-border);
 }
 
+.advanced-training-wcag {
+  --brand-orange: #C74601;
+  --ci-orange: #C74601;
+  --ci-brand-orange: #C74601;
+}
+
+.advanced-training-wcag .text-brand-orange {
+  color: #C74601 !important;
+}
+
+.advanced-training-wcag .bg-brand-orange {
+  background-color: #C74601 !important;
+}
+
 html {
   min-height: 100%;
   background-color: #FAFAFA;

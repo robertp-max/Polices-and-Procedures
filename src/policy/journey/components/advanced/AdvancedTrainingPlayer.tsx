@@ -119,7 +119,7 @@ export const AdvancedTrainingPlayer: React.FC<AdvancedTrainingPlayerProps> = ({
 
   if (variant === 'plan_of_care') {
     return (
-      <div style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+      <div className="advanced-training-wcag" style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
         <PlanOfCareTrainingPanel moduleId={moduleId} onComplete={handleDomainComplete} onEvidence={onEvidence} />
       </div>
     );
@@ -127,7 +127,7 @@ export const AdvancedTrainingPlayer: React.FC<AdvancedTrainingPlayerProps> = ({
 
   if (variant === 'qapi_board') {
     return (
-      <div style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="advanced-training-wcag" style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <QapiTrainingPanel moduleId={moduleId} onComplete={handleDomainComplete} onEvidence={onEvidence} />
       </div>
     );
@@ -135,7 +135,7 @@ export const AdvancedTrainingPlayer: React.FC<AdvancedTrainingPlayerProps> = ({
 
   if (variant === 'documentation_lab') {
     return (
-      <div style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="advanced-training-wcag" style={{ height: '100%', minHeight: 720, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <DocumentationDefensibilityPanel moduleId={moduleId} onComplete={handleDomainComplete} onEvidence={onEvidence} />
       </div>
     );
@@ -146,14 +146,14 @@ export const AdvancedTrainingPlayer: React.FC<AdvancedTrainingPlayerProps> = ({
   // render it edge-to-edge with no player chrome at all.
   if (variant === 'oasis_lab') {
     return (
-      <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="advanced-training-wcag" style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <OasisSocTrainingPanel moduleId={moduleId} onComplete={handleDomainComplete} />
       </div>
     );
   }
 
   return (
-    <div style={{ border: '1px solid #e5e7eb', borderRadius: 16, overflow: 'hidden', background: 'white', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className="advanced-training-wcag" style={{ border: '1px solid #e5e7eb', borderRadius: 16, overflow: 'hidden', background: 'white', height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Shared Header */}
       <div style={headerStyle}>
         <div>
