@@ -1,0 +1,135 @@
+.mvp-policy { gap: 34px; }
+
+.mvp-policy-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 8px 0 26px;
+  border-bottom: 1px solid var(--line);
+}
+
+.mvp-policy-title {
+  max-width: 780px;
+  margin-top: 12px;
+  font-size: 38px;
+  line-height: 1.18;
+  color: var(--teal-600);
+}
+
+.mvp-policy-lead {
+  max-width: 820px;
+  margin-top: 15px;
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+.mvp-policy-status { height: 28px; flex-shrink: 0; }
+
+.mvp-policy-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-block: 1px solid var(--line);
+}
+
+.mvp-policy-meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+  padding: 16px 18px;
+  border-left: 1px solid var(--line);
+}
+
+.mvp-policy-meta > div:first-child { border-left: 0; }
+.mvp-policy-meta span { font-size: 10px; text-transform: uppercase; color: var(--ink-soft); }
+.mvp-policy-meta strong { font-size: 13px; color: var(--ink-strong); }
+
+.mvp-policy-section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.mvp-policy-section-head h2,
+.mvp-handoff h2,
+.mvp-boundary h2 { margin-top: 5px; font-size: 20px; }
+
+.mvp-rail-list { border-top: 1px solid var(--line); }
+
+.mvp-rail {
+  display: grid;
+  grid-template-columns: 34px 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mvp-rail-number { font-family: var(--font-display); font-size: 12px; color: var(--ink-soft); }
+.mvp-rail-icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: var(--r-xs);
+  background: var(--teal-200);
+  color: var(--teal-600);
+}
+
+.mvp-rail-copy { min-width: 0; }
+.mvp-rail-title-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.mvp-rail-title-row h3 { font-size: 15px; }
+.mvp-rail-title-row span { font-size: 10.5px; color: var(--teal-600); }
+.mvp-rail-copy p { margin-top: 3px; font-size: 13px; color: var(--ink); }
+.mvp-rail-copy small { display: block; margin-top: 4px; font-size: 11.5px; color: var(--ink-soft); }
+
+.mvp-policy-lower {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.mvp-handoff ol { list-style: none; margin: 18px 0 0; padding: 0; border-top: 1px solid var(--line); }
+.mvp-handoff li { display: grid; grid-template-columns: 28px 1fr; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.mvp-handoff li > span { color: var(--orange-500); font-family: var(--font-display); font-weight: 600; }
+.mvp-handoff li strong { font-size: 13px; color: var(--ink-strong); }
+.mvp-handoff li p { margin-top: 2px; font-size: 12.5px; color: var(--ink); }
+
+.mvp-boundary {
+  padding: 22px;
+  border: 1px solid var(--orange-300);
+  border-radius: var(--r-sm);
+  background: var(--orange-100);
+}
+
+.mvp-boundary > svg { color: var(--orange-500); margin-bottom: 12px; }
+.mvp-boundary p { margin-top: 10px; font-size: 13px; line-height: 1.6; color: var(--ink); }
+.mvp-boundary ul { display: grid; gap: 8px; list-style: none; margin: 16px 0 0; padding: 0; }
+.mvp-boundary li { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ink-strong); }
+.mvp-boundary li svg { flex-shrink: 0; color: var(--teal-500); }
+
+@media (max-width: 820px) {
+  .mvp-policy-head { flex-direction: column; }
+  .mvp-policy-title { font-size: 30px; }
+  .mvp-policy-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mvp-policy-meta > div:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
+  .mvp-policy-meta > div:nth-child(4) { border-top: 1px solid var(--line); }
+  .mvp-rail { grid-template-columns: 32px 40px minmax(0, 1fr); }
+  .mvp-rail .btn { grid-column: 3; justify-self: start; }
+  .mvp-policy-lower { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 520px) {
+  .mvp-policy-meta { grid-template-columns: 1fr; }
+  .mvp-policy-meta > div { border-left: 0; border-top: 1px solid var(--line); }
+  .mvp-policy-meta > div:first-child { border-top: 0; }
+  .mvp-rail { grid-template-columns: 32px minmax(0, 1fr); align-items: start; }
+  .mvp-rail-icon { grid-column: 1; grid-row: 2; }
+  .mvp-rail-copy { grid-column: 2; }
+  .mvp-rail .btn { grid-column: 2; }
+}

@@ -21,8 +21,9 @@ import {
   Siren, Stethoscope, TrendingUp, UserCheck, Users,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { IntegrationTargetId } from './integrationTargets'
 
-export type NavStatus = 'built' | 'planned'
+export type NavStatus = 'built' | 'planned' | 'substitute'
 
 export interface NavItem {
   /** Route path. Planned areas use /domain/:domainId. */
@@ -32,6 +33,8 @@ export interface NavItem {
   /** Requirement domain id from REGISTER_DOMAINS (requirementsSpec.ts). */
   domainId?: string
   status: NavStatus
+  /** Existing Care Indeed system used as the authoritative MVP rail. */
+  integrationId?: IntegrationTargetId
   /** Count badge — synthetic workload, shown only for built areas. */
   badge?: number
 }
@@ -52,7 +55,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/patients', label: 'Patients', icon: Users, domainId: 'PAT', status: 'built' },
       { to: '/intake', label: 'Referral & intake', icon: Inbox, domainId: 'REF', status: 'built', badge: 6 },
       { to: '/schedule', label: 'Schedule', icon: CalendarDays, domainId: 'SCH', status: 'built' },
-      { to: planned('COR'), label: 'Messages', icon: MessagesSquare, domainId: 'COR', status: 'planned' },
+      { to: '/mvp-policy#connect', label: 'Messages', icon: MessagesSquare, domainId: 'COR', status: 'substitute', integrationId: 'connect' },
     ],
   },
   {
@@ -88,8 +91,8 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Records',
     items: [
-      { to: planned('DOC'), label: 'Documents & signatures', icon: FolderOpen, domainId: 'DOC', status: 'planned' },
-      { to: planned('FRM'), label: 'Forms library', icon: FileStack, domainId: 'FRM', status: 'planned' },
+      { to: '/mvp-policy#ecign', label: 'Documents & signatures', icon: FolderOpen, domainId: 'DOC', status: 'substitute', integrationId: 'ecign' },
+      { to: '/mvp-policy#forms', label: 'Forms library', icon: FileStack, domainId: 'FRM', status: 'substitute', integrationId: 'forms' },
       { to: planned('DOC'), label: 'Legal evidence', icon: Scale, domainId: 'DOC', status: 'planned' },
     ],
   },
@@ -108,7 +111,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: planned('FHR'), label: 'Interoperability', icon: Network, domainId: 'FHR', status: 'planned' },
       { to: planned('AIG'), label: 'AI governance', icon: Bot, domainId: 'AIG', status: 'planned' },
       { to: planned('SEC'), label: 'Security & reliability', icon: ShieldCheck, domainId: 'SEC', status: 'planned' },
-      { to: planned('TPR'), label: 'Vendors & BAAs', icon: Handshake, domainId: 'TPR', status: 'planned' },
+      { to: '/mvp-policy#vendorBaaControl', label: 'Vendors & BAAs', icon: Handshake, domainId: 'TPR', status: 'substitute', integrationId: 'vendorBaaControl' },
       { to: planned('MIG'), label: 'Migration & adoption', icon: ArrowRightLeft, domainId: 'MIG', status: 'planned' },
       { to: planned('TRC'), label: 'Traceability', icon: GitBranch, domainId: 'TRC', status: 'planned' },
       { to: '/design-system', label: 'Design system', icon: Palette, domainId: 'UIX', status: 'built' },
@@ -122,4 +125,5 @@ export const NAV_COUNTS = {
   total: ALL_NAV_ITEMS.length,
   built: ALL_NAV_ITEMS.filter(i => i.status === 'built').length,
   planned: ALL_NAV_ITEMS.filter(i => i.status === 'planned').length,
+  substitute: ALL_NAV_ITEMS.filter(i => i.status === 'substitute').length,
 }

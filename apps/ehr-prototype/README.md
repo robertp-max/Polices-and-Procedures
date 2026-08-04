@@ -20,12 +20,27 @@ Or from the repo root via the Claude launch config `ehr-prototype` (port 5194).
   primary, teal `#00797D` secondary, warm hue-21 neutrals, green/yellow/red
   sentiment (no blue anywhere), Montserrat medium headings, Roboto body,
   pill buttons, 8–32px radius scale.
-- **Modes** (top bar): Business Plan · Requirements · Prototype (the EHR).
+- **Modes** (top bar): Business Plan · Requirements · MVP Policy · Prototype (the EHR).
 - **EHR screens**: Today, Patients, Patient chart (8 tabs), Referral & intake
   pipeline, Schedule, Clinical documentation, Orders, Quality & compliance,
   Billing, Reports.
 - **Brad clinical assist**: "Review, don't replace" — drafts and flags are
   always routed through clinician review; nothing files without a signature.
+
+## Wizard-of-Oz MVP
+
+Open `http://127.0.0.1:5194/#/mvp-policy` for the substitution policy and
+handoff register. The EHR remains the clinical facade while existing Care
+Indeed systems retain authority for their records:
+
+- Signatures → eCign (`/forms/CL-FM-029/esign` on the Policy Suite)
+- Forms → Forms Library (`/forms` on the Policy Suite)
+- Messages → Connect (`http://127.0.0.1:5192/`)
+- Vendor BAAs → Master Control `CTRL-042`
+
+These are new-tab handoffs, not copied implementations. The owning rail keeps
+its record, permissions, status, and audit evidence; the EHR may retain a
+reference only after an accepted response exists.
 
 ## Structure
 

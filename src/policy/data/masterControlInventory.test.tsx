@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { fireEvent } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
@@ -199,6 +199,18 @@ describe('master control dossiers', () => {
     expect(screen.getByText('Template-only / no-PHI warning')).toBeTruthy();
     fireEvent.click(screen.getByText('Documentation'));
     expect(screen.getByText('Template/control documentation only. Do not store PHI in seed data. Completed patient copies attach later as runtime evidence only.')).toBeTruthy();
+  });
+
+  it('opens the requested vendor BAA dossier from a control deep link', async () => {
+    render(
+      <MemoryRouter initialEntries={['/compliance/master-controls?control=CTRL-042&source=ehr-mvp']}>
+        <MasterControlsScreen />
+      </MemoryRouter>,
+    );
+
+    const dossier = await screen.findByRole('dialog', { name: /CTRL-042 control dossier/i });
+    expect(dossier).toBeTruthy();
+    expect(within(dossier).getByText('Business Associate Agreement (BAA) Inventory & Lifecycle')).toBeTruthy();
   });
 
   it('expands HIPAA NPP and Advance Directive required-document cards inline', async () => {

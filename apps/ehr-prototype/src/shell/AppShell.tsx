@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Bell, MessagesSquare, Plus, Search, ShieldCheck, BadgeCheck } from 'lucide-react'
+import { Bell, MessagesSquare, Plus, Search, ShieldCheck, BadgeCheck, ExternalLink } from 'lucide-react'
 import { notifications } from '../data/clinical'
 import { NAV_COUNTS, NAV_GROUPS } from '../data/navigation'
+import { getIntegrationHref } from '../data/integrationTargets'
 import { CommandPalette } from './CommandPalette'
 import './shell.css'
 
@@ -11,6 +12,7 @@ import './shell.css'
 const MODES = [
   { to: '/business-plan', label: 'Business Plan' },
   { to: '/requirements', label: 'Requirements' },
+  { to: '/mvp-policy', label: 'MVP Policy' },
   { to: '/today', label: 'Prototype' },
 ]
 
@@ -36,6 +38,8 @@ export function AppShell() {
     ? '/business-plan'
     : location.pathname.startsWith('/requirements')
       ? '/requirements'
+      : location.pathname.startsWith('/mvp-policy')
+        ? '/mvp-policy'
       : '/today'
 
   useEffect(() => {
@@ -66,26 +70,53 @@ export function AppShell() {
           {NAV_GROUPS.map(group => (
             <div className="shell-nav-group" key={group.label}>
               <div className="shell-nav-label">{group.label}</div>
-              {group.items.map(item => (
-                <NavLink
-                  key={item.label + item.to}
-                  to={item.to}
-                  end={item.to.startsWith('/domain/')}
-                  className={({ isActive }) =>
-                    'shell-nav-item'
-                    + (isActive ? ' is-active' : '')
-                    + (item.status === 'planned' ? ' is-planned' : '')
-                  }
-                  title={item.status === 'planned' ? `${item.label} — planned, not built` : item.label}
-                >
-                  <item.icon size={17} strokeWidth={1.75} aria-hidden />
-                  <span className="shell-nav-text">{item.label}</span>
-                  {item.badge ? <span className="shell-nav-badge">{item.badge}</span> : null}
-                  {item.status === 'planned' && (
-                    <span className="shell-nav-planned" aria-label="planned, not built">planned</span>
-                  )}
-                </NavLink>
-              ))}
+              {group.items.map(item => {
+                const content = (
+                  <>
+                    <item.icon size={17} strokeWidth={1.75} aria-hidden />
+                    <span className="shell-nav-text">{item.label}</span>
+                    {item.badge ? <span className="shell-nav-badge">{item.badge}</span> : null}
+                    {item.status === 'planned' && (
+                      <span className="shell-nav-planned" aria-label="planned, not built">planned</span>
+                    )}
+                    {item.status === 'substitute' && (
+                      <span className="shell-nav-planned shell-nav-rail" aria-label="connected MVP rail">rail</span>
+                    )}
+                    {item.integrationId ? <ExternalLink size={12} strokeWidth={2} aria-hidden /> : null}
+                  </>
+                )
+
+                if (item.integrationId) {
+                  return (
+                    <a
+                      key={item.label + item.to}
+                      href={getIntegrationHref(item.integrationId)}
+                      className="shell-nav-item is-substitute"
+                      title={`${item.label} — opens ${item.integrationId === 'connect' ? 'Connect' : 'the Policy Suite'} in a new tab`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {content}
+                    </a>
+                  )
+                }
+
+                return (
+                  <NavLink
+                    key={item.label + item.to}
+                    to={item.to}
+                    end={item.to.startsWith('/domain/')}
+                    className={({ isActive }) =>
+                      'shell-nav-item'
+                      + (isActive ? ' is-active' : '')
+                      + (item.status === 'planned' ? ' is-planned' : '')
+                    }
+                    title={item.status === 'planned' ? `${item.label} — planned, not built` : item.label}
+                  >
+                    {content}
+                  </NavLink>
+                )
+              })}
             </div>
           ))}
         </nav>
@@ -97,7 +128,7 @@ export function AppShell() {
               <div className="shell-env-title">Design prototype</div>
               <div className="shell-env-sub">
                 Synthetic data only · no PHI<br />
-                {NAV_COUNTS.built} of {NAV_COUNTS.total} areas built
+                {NAV_COUNTS.built} built · {NAV_COUNTS.substitute} connected rails
               </div>
             </div>
           </div>
@@ -132,9 +163,16 @@ export function AppShell() {
               ))}
             </div>
 
-            <button className="icon-btn" aria-label="Messages">
+            <a
+              className="icon-btn"
+              aria-label="Messages — open Connect in a new tab"
+              title="Open Connect messages"
+              href={getIntegrationHref('connect')}
+              target="_blank"
+              rel="noreferrer"
+            >
               <MessagesSquare size={18} strokeWidth={1.75} />
-            </button>
+            </a>
 
             <div className="shell-bell" ref={bellRef}>
               <button

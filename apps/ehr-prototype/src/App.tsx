@@ -13,6 +13,7 @@ import BillingScreen from './screens/BillingScreen'
 import ReportsScreen from './screens/ReportsScreen'
 import BusinessPlanScreen from './screens/BusinessPlanScreen'
 import RequirementsScreen from './screens/RequirementsScreen'
+import MvpPolicyScreen from './screens/MvpPolicyScreen'
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
       <Route element={<DocShell />}>
         <Route path="/business-plan" element={<BusinessPlanScreen />} />
         <Route path="/requirements" element={<RequirementsScreen />} />
+        <Route path="/mvp-policy" element={<MvpPolicyScreen />} />
       </Route>
     </Routes>
   )

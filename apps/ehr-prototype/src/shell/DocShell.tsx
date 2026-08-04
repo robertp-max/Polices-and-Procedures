@@ -5,13 +5,18 @@ import './doc-shell.css'
 const MODES = [
   { to: '/business-plan', label: 'Business Plan' },
   { to: '/requirements', label: 'Requirements' },
+  { to: '/mvp-policy', label: 'MVP Policy' },
   { to: '/today', label: 'Prototype' },
 ]
 
 export function DocShell() {
   const location = useLocation()
   const navigate = useNavigate()
-  const active = location.pathname.startsWith('/requirements') ? '/requirements' : '/business-plan'
+  const active = location.pathname.startsWith('/requirements')
+    ? '/requirements'
+    : location.pathname.startsWith('/mvp-policy')
+      ? '/mvp-policy'
+      : '/business-plan'
 
   return (
     <div className="doc-shell">

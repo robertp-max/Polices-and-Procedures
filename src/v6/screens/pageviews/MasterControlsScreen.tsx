@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ChevronDown, ClipboardCheck, FileSignature, FolderOpen, History, ShieldCheck, X } from 'lucide-react';
 import { DataTable, MetricGrid, SurfaceCard, ToneTag, type DataTableColumn, type MetricTileData, type SurfaceCardData } from '../../components';
 import { hasRequiredDocumentationBody, loadMasterControlInventorySeed } from '@/policy/data/masterControlInventory';
@@ -93,8 +94,10 @@ function buildMetrics(items: readonly MasterControlItem[]): readonly MetricTileD
 }
 
 export function MasterControlsScreen() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<readonly MasterControlItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const requestedControlId = searchParams.get('control')?.trim().toUpperCase() ?? null;
 
   useEffect(() => {
     let mounted = true;
@@ -105,8 +108,29 @@ export function MasterControlsScreen() {
     return () => { mounted = false; };
   }, []);
 
+  useEffect(() => {
+    if (!requestedControlId || items.length === 0) return;
+    if (items.some((item) => item.id.toUpperCase() === requestedControlId)) {
+      setSelectedId(requestedControlId);
+    }
+  }, [items, requestedControlId]);
+
   const rows = useMemo(() => items.map(toRow), [items]);
   const selected = useMemo(() => items.find((item) => item.id === selectedId) ?? null, [items, selectedId]);
+
+  const openDossier = (controlId: string) => {
+    setSelectedId(controlId);
+    const next = new URLSearchParams(searchParams);
+    next.set('control', controlId);
+    setSearchParams(next, { replace: true });
+  };
+
+  const closeDossier = () => {
+    setSelectedId(null);
+    const next = new URLSearchParams(searchParams);
+    next.delete('control');
+    setSearchParams(next, { replace: true });
+  };
 
   return (
     <section className="grid gap-xl" data-hash-id="master-controls" data-route="/compliance/master-controls">
@@ -118,7 +142,7 @@ export function MasterControlsScreen() {
             columns={masterControlColumns}
             label="Master controls inventory matrix"
             rows={rows}
-            onRowClick={(row) => setSelectedId(row.controlId)}
+            onRowClick={(row) => openDossier(row.controlId)}
           />
         </div>
 
@@ -129,7 +153,7 @@ export function MasterControlsScreen() {
         </aside>
       </section>
 
-      {selected && <ControlDossierModal control={selected} onClose={() => setSelectedId(null)} />}
+      {selected && <ControlDossierModal control={selected} onClose={closeDossier} />}
     </section>
   );
 }

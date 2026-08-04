@@ -182,6 +182,23 @@ bulk Employee Journey payload was intentionally excluded.
 - Connect: branch `connect` @ `305ae2e`; local change `app/community-app.tsx` → Journey on 5193. Keep in Connect repo only.
 - Journey: branch `codex/journey-connect-toggle-2026-08-03` @ `1909dc5`; reciprocal toolbar toggle targets local Connect on 5192 and the verified Sites deployment as its hosted fallback. Changes remain in the Journey repo only.
 
+## EHR Wizard-of-Oz MVP substitution policy
+
+The EHR source app now includes `#/mvp-policy` and an explicit substitution
+registry. The EHR supplies clinical context and opens the existing authoritative
+rail in a new tab; it does not copy completion state or fabricate an integration.
+
+| EHR capability | Authoritative rail | Verified local target |
+| --- | --- | --- |
+| Documents and signatures | eCign | `http://127.0.0.1:5201/forms/CL-FM-029/esign?source=ehr-mvp` |
+| Forms library | Policy Suite Forms | `http://127.0.0.1:5201/forms?source=ehr-mvp` |
+| Messages | Connect | `http://127.0.0.1:5192/` |
+| Vendor BAAs | Master Control Registry | `http://127.0.0.1:5201/compliance/master-controls?control=CTRL-042&source=ehr-mvp` |
+
+`MasterControlsScreen` accepts a `control` query parameter so the vendor BAA
+handoff opens the `CTRL-042` dossier directly and keeps the selected dossier
+addressable in the URL.
+
 ## Confirmation
 
 - **The current `EHR_Prototype/apps/ehr-prototype` working-tree snapshot was included by explicit user request**, including its 3 modified and 9 untracked app files. No files outside that app directory were copied.
