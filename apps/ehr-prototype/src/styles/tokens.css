@@ -44,6 +44,11 @@
   --red-200: #E97474;
   --red-100: #FBE6E6;
 
+  /* ---- Avatar identity tones (non-brand, fixed assignment per patient) ---- */
+  --avatar-plum: #8A5A83;
+  --avatar-sage: #6E8B6B;
+  --avatar-sand: #B08D57;
+
   /* ---- Typography ---- */
   --font-display: 'Montserrat', 'Segoe UI', sans-serif; /* headings/subheadings */
   --font-body: 'Roboto', 'Segoe UI', sans-serif;        /* body copy */

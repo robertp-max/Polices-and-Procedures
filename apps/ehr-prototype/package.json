@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite --port 5194 --strictPort",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify:design": "node scripts/verify-design.mjs",
+    "new:screen": "node scripts/new-screen.mjs",
+    "verify": "tsc --noEmit -p . && node scripts/verify-design.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.474.0",

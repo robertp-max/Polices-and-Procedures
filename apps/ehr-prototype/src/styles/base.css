@@ -243,9 +243,9 @@ input, select, textarea { font: inherit; color: var(--ink-strong); }
 }
 .avatar-teal { background: var(--teal-500); }
 .avatar-apricot { background: var(--orange-400); }
-.avatar-plum { background: #8A5A83; }
-.avatar-sage { background: #6E8B6B; }
-.avatar-sand { background: #B08D57; }
+.avatar-plum { background: var(--avatar-plum); }
+.avatar-sage { background: var(--avatar-sage); }
+.avatar-sand { background: var(--avatar-sand); }
 .avatar-lg { width: 52px; height: 52px; font-size: 17px; }
 .avatar-sm { width: 26px; height: 26px; font-size: 10px; }
 

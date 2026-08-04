@@ -14,6 +14,8 @@ import ReportsScreen from './screens/ReportsScreen'
 import BusinessPlanScreen from './screens/BusinessPlanScreen'
 import RequirementsScreen from './screens/RequirementsScreen'
 import MvpPolicyScreen from './screens/MvpPolicyScreen'
+import DomainScreen from './screens/DomainScreen'
+import DesignSystemScreen from './screens/DesignSystemScreen'
 
 export default function App() {
   return (
@@ -31,6 +33,9 @@ export default function App() {
         <Route path="/quality" element={<QualityScreen />} />
         <Route path="/billing" element={<BillingScreen />} />
         <Route path="/reports" element={<ReportsScreen />} />
+        {/* Planned navigation areas resolve to their requirement domain
+            rather than silently redirecting to Today. */}
+        <Route path="/domain/:domainId" element={<DomainScreen />} />
         <Route path="*" element={<Navigate to="/today" replace />} />
       </Route>
       <Route element={<DocShell />}>
@@ -38,6 +43,8 @@ export default function App() {
         <Route path="/requirements" element={<RequirementsScreen />} />
         <Route path="/mvp-policy" element={<MvpPolicyScreen />} />
       </Route>
+      {/* Developer surface — full-width, outside both shells. */}
+      <Route path="/design-system" element={<DesignSystemScreen />} />
     </Routes>
   )
 }
