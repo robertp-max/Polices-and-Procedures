@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  CalendarDays, ClipboardList, FileSignature, Inbox, LayoutDashboard, Receipt,
+  CalendarDays, ClipboardList, FileSignature, FileStack, FolderOpen, Handshake,
+  Inbox, LayoutDashboard, MessagesSquare, Receipt,
   Search, ShieldCheck, Stethoscope, TrendingUp, User, Users,
 } from 'lucide-react'
 import { patients } from '../data/patients'
@@ -13,6 +14,7 @@ const DESTINATIONS = [
   { to: '/patients', label: 'Patients', icon: Users, hint: 'Roster' },
   { to: '/intake', label: 'Referral & intake', icon: Inbox, hint: 'Pipeline' },
   { to: '/schedule', label: 'Schedule', icon: CalendarDays, hint: 'Week view' },
+  { to: '/messages', label: 'Messages', icon: MessagesSquare, hint: 'Threads' },
   { to: '/clinical', label: 'Clinical', icon: Stethoscope, hint: 'Documentation' },
   { to: '/episodes', label: 'Episodes', icon: ClipboardList, hint: 'Certification' },
   { to: '/oasis', label: 'OASIS assessments', icon: ClipboardList, hint: 'Time points' },
@@ -23,6 +25,10 @@ const DESTINATIONS = [
   { to: '/qapi', label: 'QAPI programme', icon: ShieldCheck, hint: 'PIPs' },
   { to: '/billing', label: 'Billing', icon: Receipt, hint: 'Claims' },
   { to: '/authorizations', label: 'Authorizations', icon: Receipt, hint: 'Units' },
+  { to: '/documents', label: 'Documents & signatures', icon: FolderOpen, hint: 'Signature queue' },
+  { to: '/forms', label: 'Forms library', icon: FileStack, hint: 'Catalog' },
+  { to: '/legal-evidence', label: 'Legal evidence', icon: ShieldCheck, hint: 'Packages' },
+  { to: '/vendors', label: 'Vendors & BAAs', icon: Handshake, hint: 'Third parties' },
   { to: '/reports', label: 'Reports', icon: TrendingUp, hint: 'Insights' },
   { to: '/business-plan', label: 'Business Plan', icon: ClipboardList, hint: 'Mode' },
   { to: '/requirements', label: 'Requirements', icon: ClipboardList, hint: 'Mode' },

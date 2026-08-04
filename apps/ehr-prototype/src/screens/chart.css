@@ -247,3 +247,12 @@
 .chart-doc-title svg { color: var(--teal-500); flex-shrink: 0; }
 .chart-doc-open { text-align: right; opacity: 0; transition: opacity 130ms ease; }
 .chart-doc-row:hover .chart-doc-open { opacity: 1; }
+
+/* Cross-nav continue blocks */
+.chart-related { margin-top: 12px; }
+.chart-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

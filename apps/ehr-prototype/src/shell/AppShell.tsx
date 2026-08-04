@@ -128,7 +128,7 @@ export function AppShell() {
               <div className="shell-env-title">Design prototype</div>
               <div className="shell-env-sub">
                 Synthetic data only · no PHI<br />
-                {NAV_COUNTS.built} built · {NAV_COUNTS.substitute} connected rails
+                {NAV_COUNTS.built} built · {NAV_COUNTS.planned} planned
               </div>
             </div>
           </div>

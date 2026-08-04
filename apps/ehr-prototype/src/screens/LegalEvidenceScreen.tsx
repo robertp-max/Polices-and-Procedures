@@ -23,6 +23,7 @@ import {
   Stamp,
 } from 'lucide-react'
 import { elena, getPatient } from '../data/patients'
+import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, EmptyState, PatientAvatar, ProgressBar, StatCard, StatusChip } from '../ui'
 import type { StatusTone } from '../ui'
 import './leg.css'
@@ -505,9 +506,9 @@ export default function LegalEvidenceScreen() {
           </div>
         </div>
         <div className="screen-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/mvp-policy#ecign')}>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/documents')}>
             <Signature size={15} strokeWidth={2} aria-hidden />
-            eCign rail
+            Documents & signatures
           </button>
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/requirements')}>
             <BookOpenCheck size={15} strokeWidth={2} aria-hidden />
@@ -527,6 +528,8 @@ export default function LegalEvidenceScreen() {
           Production requires authorized DOC requirements, independent hash verification, and evidence gates.
         </span>
       </div>
+
+      <RelatedNav route="/legal-evidence" />
 
       <div className="leg-stats">
         <StatCard
@@ -1133,9 +1136,9 @@ export default function LegalEvidenceScreen() {
                   <StatusChip tone="neutral">N/A</StatusChip>
                 </li>
               </ul>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/mvp-policy#ecign')}>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/documents')}>
                 <Signature size={13} strokeWidth={2} aria-hidden />
-                Open eCign rail design
+                Open signature queue
               </button>
             </div>
           ) : null}

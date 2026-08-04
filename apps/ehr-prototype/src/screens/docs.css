@@ -1,0 +1,174 @@
+/* Documents & signatures */
+
+.docs-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--surface-brand-tint);
+  color: var(--ink);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.docs-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 1280px) {
+  .docs-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.docs-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.9fr);
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 1100px) {
+  .docs-workspace { grid-template-columns: 1fr; }
+}
+
+.docs-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px 10px;
+}
+.docs-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 420px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+.docs-search input {
+  border: 0;
+  outline: none;
+  width: 100%;
+  background: transparent;
+  color: var(--ink-strong);
+  font-size: 13.5px;
+}
+.docs-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.docs-filter {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.docs-filter.is-active {
+  border-color: var(--teal-400);
+  background: var(--teal-200);
+  color: var(--teal-600);
+}
+
+.docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 10px 14px;
+}
+.docs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  text-align: left;
+}
+.docs-row:hover { background: var(--gray-100); }
+.docs-row.is-selected {
+  background: var(--teal-100);
+  border-color: var(--teal-300);
+}
+.docs-row-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.docs-row-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.docs-id {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.docs-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-strong);
+  font-family: var(--font-display);
+}
+.docs-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.docs-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  color: var(--ink-strong);
+}
+.docs-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--gray-300);
+}
+.docs-go { color: var(--teal-500); flex-shrink: 0; }
+
+.docs-inspector { padding: 18px 20px; position: sticky; top: 12px; }
+.docs-detail { display: flex; flex-direction: column; gap: 14px; }
+.docs-detail-title { font-size: 17px; }
+.docs-patient {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--gray-100);
+  text-align: left;
+}
+.docs-patient:hover { background: var(--teal-100); border-color: var(--teal-300); }
+.docs-patient strong { display: block; color: var(--ink-strong); }
+.docs-patient span span { display: block; font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.docs-patient svg:last-child { margin-left: auto; color: var(--teal-500); }
+
+.docs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.docs-grid > div {
+  padding: 12px;
+  border-radius: var(--r-sm);
+  background: var(--gray-100);
+}
+.docs-grid strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--ink-strong);
+}
+.docs-related-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.docs-actions { display: flex; justify-content: flex-end; }
+.docs-footnote { margin: 0; font-size: 12px; color: var(--ink-soft); line-height: 1.4; }

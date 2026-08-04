@@ -1,0 +1,57 @@
+/* Shared related-workspace chip strip */
+
+.relnav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.relnav-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+.relnav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.relnav-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-strong);
+  background: var(--gray-100);
+  color: var(--teal-600);
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: background 130ms ease, border-color 130ms ease, color 130ms ease;
+}
+.relnav-chip:hover {
+  background: var(--teal-100);
+  border-color: var(--teal-300);
+  color: var(--teal-600);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .relnav-chip { transition: none; }
+}

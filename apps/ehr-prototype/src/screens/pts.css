@@ -137,3 +137,12 @@
 
 .pts-cm-name { font-size: 13px; color: var(--ink); white-space: nowrap; }
 .pts-cm-role { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+
+/* Cross-nav continue blocks */
+.pts-related { margin-top: 12px; }
+.pts-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

@@ -188,3 +188,12 @@
   font-variant-numeric: tabular-nums;
   margin-top: 2px;
 }
+
+/* Cross-nav continue blocks */
+.rep-related { margin-top: 12px; }
+.rep-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

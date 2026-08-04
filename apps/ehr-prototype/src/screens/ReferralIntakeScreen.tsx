@@ -6,6 +6,9 @@ import {
 } from 'lucide-react'
 import { referrals } from '../data/clinical'
 import type { Referral } from '../data/types'
+import { useNavigate } from 'react-router-dom'
+import { EPISODES } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, StatCard, StatusChip } from '../ui'
 import type { StatusTone } from '../ui'
 import './intake.css'
@@ -83,7 +86,9 @@ function eligibilityFor(stage: Stage): EligItem[] {
 }
 
 export default function ReferralIntakeScreen() {
+  const navigate = useNavigate()
   const [selected, setSelected] = useState<Referral | null>(null)
+  const pendingSoc = EPISODES.find(e => e.status === 'pending-soc')
 
   const columns = useMemo(
     () => COLUMN_ORDER.map(stage => ({ stage, items: referrals.filter(r => r.stage === stage) })),
@@ -110,6 +115,8 @@ export default function ReferralIntakeScreen() {
           </button>
         </div>
       </div>
+
+      <RelatedNav route="/intake" />
 
       <div className="intake-stats">
         <StatCard
@@ -264,6 +271,18 @@ export default function ReferralIntakeScreen() {
             <div className={'intake-sla-note intake-sla-note-' + slaToneWord(selected)}>
               <Clock3 size={14} strokeWidth={1.75} aria-hidden />
               {slaNoteText(selected)}
+            </div>
+
+            <div className="intake-related">
+              <span className="card-kicker">Continue in</span>
+              <div className="intake-related-actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate('/schedule') }}>Schedule SOC</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate('/authorizations') }}>Authorizations</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate('/patients') }}>Patients</button>
+                {(pendingSoc?.related ?? []).map(r => (
+                  <button key={r.to + r.label} type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate(r.to) }}>{r.label}</button>
+                ))}
+              </div>
             </div>
 
             <div className="intake-drawer-actions">

@@ -7,6 +7,8 @@ import {
 import { orders } from '../data/clinical'
 import { getPatient } from '../data/patients'
 import type { Order } from '../data/types'
+import { WORK_QUEUE } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, PatientAvatar, StatCard, StatusChip, Tabs } from '../ui'
 import type { StatusTone } from '../ui'
 import './ord.css'
@@ -127,12 +129,16 @@ export default function OrdersScreen() {
           <div className="screen-sub">4 open · 1 signature overdue soon</div>
         </div>
         <div className="screen-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/documents')}>Signature queue</button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/legal-evidence')}>Legal evidence</button>
           <button className="btn btn-primary">
             <Plus size={15} strokeWidth={2.25} aria-hidden />
             New order
           </button>
         </div>
       </div>
+
+      <RelatedNav route="/orders" />
 
       <div className="ord-stats">
         <StatCard
@@ -368,6 +374,22 @@ export default function OrdersScreen() {
                   ) : (
                     <div className="ord-contact-detail">Contact details not on file</div>
                   )}
+                </div>
+              </section>
+
+              <section className="ord-drawer-section">
+                <div className="card-kicker">Continue in</div>
+                <div className="ord-related-actions">
+                  {(WORK_QUEUE.find(w => w.id === 'wq-2')?.related ?? [
+                    { to: '/documents', label: 'Signature queue' },
+                    { to: '/legal-evidence', label: 'Order packages' },
+                  ]).map(r => (
+                    <button key={r.to + r.label} type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate(r.to) }}>{r.label}</button>
+                  ))}
+                  {selected.category === 'medication' ? (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate('/medications') }}>Medications</button>
+                  ) : null}
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate('/documents') }}>Documents</button>
                 </div>
               </section>
 

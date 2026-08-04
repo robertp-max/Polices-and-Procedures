@@ -242,3 +242,28 @@
 .visit-time svg { color: var(--gray-300); }
 .visit-patient { font-size: 13.5px; font-weight: 500; color: var(--ink-strong); }
 .visit-type { font-size: 11.5px; color: var(--ink-soft); margin-bottom: 2px; }
+
+.queue-go-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--r-xs);
+  color: var(--teal-500);
+  flex-shrink: 0;
+}
+.queue-go-btn .queue-go { opacity: 0; }
+.queue-row:hover .queue-go-btn .queue-go { opacity: 1; transform: none; }
+.queue-go-btn:focus-visible .queue-go { opacity: 1; transform: none; }
+
+.today-related {
+  padding: 4px 20px 18px;
+  border-top: 1px solid var(--line);
+  margin-top: 4px;
+}
+.today-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

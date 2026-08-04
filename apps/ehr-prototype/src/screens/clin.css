@@ -152,3 +152,12 @@
 }
 
 .clin-note-footnote { font-size: 11.5px; color: var(--ink-soft); }
+
+/* Cross-nav continue blocks */
+.clin-related { margin-top: 12px; }
+.clin-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

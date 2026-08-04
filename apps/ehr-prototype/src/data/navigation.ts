@@ -1,9 +1,11 @@
 /**
  * Application navigation, derived from the requirements register.
  *
- * Honesty rule: `built` items must have a real route + screen. `substitute`
- * points at existing Care Indeed rails. Remaining gaps stay `planned` only
- * when no first-pass pageview exists yet.
+ * Honesty rule: `built` items must have a real route + screen.
+ * External "rails" (Connect / Policy Suite / eCign) are no longer used as
+ * nav destinations — those surfaces are first-class in-app prototypes that
+ * may still *mention* external systems as future integrations.
+ * Remaining gaps stay `planned` only when no pageview exists yet.
  */
 import {
   Activity, ArrowRightLeft, Award, Bot, Building2, CalendarDays, ClipboardList,
@@ -41,7 +43,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/patients', label: 'Patients', icon: Users, domainId: 'PAT', status: 'built' },
       { to: '/intake', label: 'Referral & intake', icon: Inbox, domainId: 'REF', status: 'built', badge: 6 },
       { to: '/schedule', label: 'Schedule', icon: CalendarDays, domainId: 'SCH', status: 'built' },
-      { to: '/mvp-policy#connect', label: 'Messages', icon: MessagesSquare, domainId: 'COR', status: 'substitute', integrationId: 'connect' },
+      { to: '/messages', label: 'Messages', icon: MessagesSquare, domainId: 'COR', status: 'built', badge: 3 },
     ],
   },
   {
@@ -77,8 +79,8 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'Records',
     items: [
-      { to: '/mvp-policy#ecign', label: 'Documents & signatures', icon: FolderOpen, domainId: 'DOC', status: 'substitute', integrationId: 'ecign' },
-      { to: '/mvp-policy#forms', label: 'Forms library', icon: FileStack, domainId: 'FRM', status: 'substitute', integrationId: 'forms' },
+      { to: '/documents', label: 'Documents & signatures', icon: FolderOpen, domainId: 'DOC', status: 'built', badge: 2 },
+      { to: '/forms', label: 'Forms library', icon: FileStack, domainId: 'FRM', status: 'built' },
       { to: '/legal-evidence', label: 'Legal evidence', icon: Scale, domainId: 'DOC', status: 'built' },
     ],
   },
@@ -97,7 +99,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/interoperability', label: 'Interoperability', icon: Network, domainId: 'FHR', status: 'built' },
       { to: '/ai-governance', label: 'AI governance', icon: Bot, domainId: 'AIG', status: 'built' },
       { to: '/security', label: 'Security & reliability', icon: ShieldCheck, domainId: 'SEC', status: 'built' },
-      { to: '/mvp-policy#vendorBaaControl', label: 'Vendors & BAAs', icon: Handshake, domainId: 'TPR', status: 'substitute', integrationId: 'vendorBaaControl' },
+      { to: '/vendors', label: 'Vendors & BAAs', icon: Handshake, domainId: 'TPR', status: 'built', badge: 2 },
       { to: '/migration', label: 'Migration & adoption', icon: ArrowRightLeft, domainId: 'MIG', status: 'built' },
       { to: '/traceability', label: 'Traceability', icon: GitBranch, domainId: 'TRC', status: 'built' },
       { to: '/design-system', label: 'Design system', icon: Palette, domainId: 'UIX', status: 'built' },

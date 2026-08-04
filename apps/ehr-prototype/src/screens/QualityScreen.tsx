@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import { patients } from '../data/patients'
 import { claims, integrityChecks } from '../data/clinical'
+import { QAPI_PIPS, WORK_QUEUE } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, PatientAvatar, ProgressBar, Sparkline, StatCard, StatusChip } from '../ui'
 import type { StatusTone } from '../ui'
 import './qual.css'
@@ -76,12 +78,16 @@ export default function QualityScreen() {
           <div className="screen-sub">Survey-ready posture · August</div>
         </div>
         <div className="screen-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/qapi')}>QAPI programme</button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/legal-evidence')}>Legal evidence</button>
           <button className="btn btn-secondary" onClick={() => setExportOpen(true)}>
             <Download size={15} strokeWidth={2} aria-hidden />
             Export QAPI packet
           </button>
         </div>
       </div>
+
+      <RelatedNav route="/quality" />
 
       <div className="qual-stats">
         <StatCard
@@ -223,6 +229,17 @@ export default function QualityScreen() {
                 </div>
               ))}
             </div>
+            <div className="qual-related">
+              <span className="card-kicker">Continue in</span>
+              <div className="qual-related-actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/qapi')}>QAPI programme</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/cms-quality')}>CMS quality</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/legal-evidence')}>Evidence</button>
+                {(QAPI_PIPS[0]?.related ?? WORK_QUEUE.find(w => w.id === 'wq-6')?.related ?? []).slice(0, 2).map(r => (
+                  <button key={r.to + r.label} type="button" className="btn btn-secondary btn-sm" onClick={() => navigate(r.to)}>{r.label}</button>
+                ))}
+              </div>
+            </div>
           </section>
         </div>
       </div>
@@ -260,6 +277,14 @@ export default function QualityScreen() {
         title="Export QAPI packet"
         sub="Preview only — nothing is transmitted in this prototype."
       >
+        <div className="qual-related" style={{ marginBottom: 14 }}>
+          <span className="card-kicker">Continue in</span>
+          <div className="qual-related-actions">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setExportOpen(false); navigate('/qapi') }}>QAPI</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setExportOpen(false); navigate('/data-exports') }}>Data exports</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setExportOpen(false); navigate('/legal-evidence') }}>Legal evidence</button>
+          </div>
+        </div>
         <div className="qual-export-list">
           <div className="qual-export-item">
             <FileCheck2 size={15} strokeWidth={1.75} aria-hidden />

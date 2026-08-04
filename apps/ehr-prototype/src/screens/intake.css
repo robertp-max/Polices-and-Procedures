@@ -208,3 +208,12 @@
   border-top: 1px solid var(--line);
 }
 .intake-closed-chip { height: 28px; padding: 0 12px; font-size: 12px; }
+
+/* Cross-nav continue blocks */
+.intake-related { margin-top: 12px; }
+.intake-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

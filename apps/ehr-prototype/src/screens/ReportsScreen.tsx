@@ -4,6 +4,9 @@ import {
   Activity, ArrowRight, BarChart3, ClipboardCheck, Clock3,
   GitBranch, HeartPulse, Mail, PillBottle,
 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { WORK_QUEUE } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, Sparkline } from '../ui'
 import './rep.css'
 
@@ -160,6 +163,7 @@ const REPORTS: ReportDef[] = [
 ]
 
 export default function ReportsScreen() {
+  const navigate = useNavigate()
   const [openReport, setOpenReport] = useState<ReportDef | null>(null)
   const [scorecardOpen, setScorecardOpen] = useState(false)
 
@@ -171,12 +175,15 @@ export default function ReportsScreen() {
           <div className="screen-sub">Operational and clinical intelligence</div>
         </div>
         <div className="screen-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/data-exports')}>Data exports</button>
           <button className="btn btn-secondary">
             <Mail size={15} strokeWidth={2} aria-hidden />
             Schedule email digest
           </button>
         </div>
       </div>
+
+      <RelatedNav route="/reports" />
 
       <section className="card rep-hero" aria-label="Agency scorecard">
         <div className="rep-hero-head">
@@ -262,6 +269,15 @@ export default function ReportsScreen() {
                 </div>
               ))}
             </div>
+            <div className="rep-related">
+              <span className="card-kicker">Continue in</span>
+              <div className="rep-related-actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenReport(null); navigate('/data-exports') }}>Data exports</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenReport(null); navigate('/qapi') }}>QAPI</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenReport(null); navigate('/cms-quality') }}>CMS quality</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenReport(null); navigate(WORK_QUEUE.find(w => w.id === 'wq-1')?.href ?? '/oasis') }}>OASIS review</button>
+              </div>
+            </div>
             <span className="chip chip-neutral">All figures synthetic — design prototype</span>
           </>
         ) : null}
@@ -282,6 +298,14 @@ export default function ReportsScreen() {
             <p className="rep-drawer-text">{k.sub}</p>
           </div>
         ))}
+        <div className="rep-related">
+          <span className="card-kicker">Continue in</span>
+          <div className="rep-related-actions">
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setScorecardOpen(false); navigate('/data-exports') }}>Exports</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setScorecardOpen(false); navigate('/quality') }}>Quality</button>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setScorecardOpen(false); navigate('/cms-quality') }}>CMS quality</button>
+          </div>
+        </div>
         <span className="chip chip-neutral">All figures synthetic — design prototype</span>
       </Drawer>
     </div>

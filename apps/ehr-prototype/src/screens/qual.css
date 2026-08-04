@@ -150,3 +150,12 @@
 .qual-export-item svg { color: var(--teal-500); margin-top: 2px; flex-shrink: 0; }
 .qual-export-title { font-size: 13px; font-weight: 500; color: var(--ink-strong); }
 .qual-export-detail { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+
+/* Cross-nav continue blocks */
+.qual-related { margin-top: 12px; }
+.qual-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

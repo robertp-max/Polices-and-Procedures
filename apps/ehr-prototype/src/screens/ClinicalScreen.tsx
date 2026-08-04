@@ -5,6 +5,8 @@ import {
   ArrowRight, FileSignature, FileText, Pill, Sparkles,
 } from 'lucide-react'
 import { getPatient } from '../data/patients'
+import { WORK_QUEUE } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, EmptyState, PatientAvatar, StatusChip, Tabs } from '../ui'
 import type { StatusTone } from '../ui'
 import './clin.css'
@@ -227,6 +229,8 @@ function NoteSection({ label, body, children }: { label: string; body: string; c
 }
 
 export default function ClinicalScreen() {
+  const navigate = useNavigate()
+  const medTask = WORK_QUEUE.find(w => w.id === 'wq-1')
   const [activeTab, setActiveTab] = useState<TabKey>('needs-attention')
   const [openNoteId, setOpenNoteId] = useState<string | null>(null)
 
@@ -247,12 +251,21 @@ export default function ClinicalScreen() {
           <div className="screen-sub">3 notes need attention</div>
         </div>
         <div className="screen-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/medications')}>
+            <Pill size={15} strokeWidth={2} aria-hidden />
+            Medications
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/oasis')}>
+            OASIS
+          </button>
           <button className="btn btn-primary" onClick={() => setOpenNoteId('raymond-pt-note')}>
             <FileSignature size={15} strokeWidth={2} aria-hidden />
             Start visit documentation
           </button>
         </div>
       </div>
+
+      <RelatedNav route="/clinical" />
 
       <Tabs items={TABS} active={activeTab} onChange={key => setActiveTab(key as TabKey)} />
 
@@ -293,6 +306,19 @@ export default function ClinicalScreen() {
             </NoteSection>
             <NoteSection label="Assessment" body={openPreview.assessment} />
             <NoteSection label="Plan" body={openPreview.plan} />
+
+            <div className="clin-related">
+              <span className="card-kicker">Continue in</span>
+              <div className="clin-related-actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenNoteId(null); navigate('/medications') }}>Medications</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenNoteId(null); navigate('/oasis') }}>OASIS</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenNoteId(null); navigate('/documents') }}>Documents</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenNoteId(null); navigate(medTask?.href ?? '/orders') }}>Orders</button>
+                {openPatient ? (
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenNoteId(null); navigate(`/patients/${openPatient.id}`) }}>Chart</button>
+                ) : null}
+              </div>
+            </div>
 
             <div className="clin-note-footer">
               {openPreview.signed ? (

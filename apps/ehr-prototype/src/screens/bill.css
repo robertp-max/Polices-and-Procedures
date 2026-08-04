@@ -111,3 +111,12 @@
   font-size: 12px;
   color: var(--ink-soft);
 }
+
+/* Cross-nav continue blocks */
+.bill-related { margin-top: 12px; }
+.bill-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

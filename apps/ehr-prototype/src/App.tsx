@@ -29,6 +29,10 @@ import CmsQualityScreen from './screens/CmsQualityScreen'
 import CompetencyScreen from './screens/CompetencyScreen'
 import EmergencyPrepScreen from './screens/EmergencyPrepScreen'
 import LegalEvidenceScreen from './screens/LegalEvidenceScreen'
+import MessagesScreen from './screens/MessagesScreen'
+import DocumentsScreen from './screens/DocumentsScreen'
+import FormsLibraryScreen from './screens/FormsLibraryScreen'
+import VendorsBaaScreen from './screens/VendorsBaaScreen'
 import DataExportsScreen from './screens/DataExportsScreen'
 import UsersAccessScreen from './screens/UsersAccessScreen'
 import OrgMasterScreen from './screens/OrgMasterScreen'
@@ -68,6 +72,10 @@ export default function App() {
         <Route path="/reports" element={<ReportsScreen />} />
         <Route path="/data-exports" element={<DataExportsScreen />} />
         <Route path="/legal-evidence" element={<LegalEvidenceScreen />} />
+        <Route path="/messages" element={<MessagesScreen />} />
+        <Route path="/documents" element={<DocumentsScreen />} />
+        <Route path="/forms" element={<FormsLibraryScreen />} />
+        <Route path="/vendors" element={<VendorsBaaScreen />} />
         <Route path="/users-access" element={<UsersAccessScreen />} />
         <Route path="/org-master" element={<OrgMasterScreen />} />
         <Route path="/interoperability" element={<InteroperabilityScreen />} />

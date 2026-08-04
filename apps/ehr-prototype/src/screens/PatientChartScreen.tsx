@@ -11,7 +11,9 @@ import { getPatient } from '../data/patients'
 import {
   assessments, documents, elenaTimeline, integrityChecks, medications, orders, weekVisits,
 } from '../data/clinical'
+import { EPISODES } from '../data/workspace'
 import { PatientBanner } from '../components/PatientBanner'
+import { RelatedNav } from '../components/RelatedNav'
 import { EmptyState, PatientAvatar, ProgressBar, ProgressRing, StatusChip, Tabs } from '../ui'
 import type { StatusTone } from '../ui'
 import './chart.css'
@@ -139,6 +141,7 @@ export default function PatientChartScreen() {
   const planOrder = patientOrders.find(o => o.category === 'plan-of-care')
   const needsReviewMed = patientMeds.find(m => m.status === 'needs-review')
   const otherMeds = patientMeds.filter(m => m.id !== needsReviewMed?.id)
+  const episode = EPISODES.find(e => e.patientId === id)
 
   const tabItems = TAB_KEYS.map(key => ({
     key,
@@ -169,11 +172,27 @@ export default function PatientChartScreen() {
         cta={id === 'pt-elena' ? { label: 'Continue SOC', to: '/patients/pt-elena/assessments' } : undefined}
       />
 
+      <RelatedNav route="/patients" />
+
       <Tabs items={tabItems} active={activeTab} onChange={key => navigate(`/patients/${id}/${key}`)} />
 
       <div className="chart-tabpanel">
         {activeTab === 'overview' && (
           <>
+            <div className="chart-related card card-pad">
+              <span className="card-kicker">Continue in{episode ? ` · episode ${episode.period}` : ''}</span>
+              <div className="chart-related-actions">
+                {(episode?.related ?? [
+                  { to: '/schedule', label: 'Schedule' },
+                  { to: '/clinical', label: 'Clinical' },
+                  { to: '/orders', label: 'Orders' },
+                  { to: '/billing', label: 'Billing' },
+                ]).map(r => (
+                  <button key={r.to + r.label} type="button" className="btn btn-secondary btn-sm" onClick={() => navigate(r.to)}>{r.label}</button>
+                ))}
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/work-queue')}>Work queue</button>
+              </div>
+            </div>
             <div className="chart-overview-grid">
               <section className="card card-pad" aria-label="Care team">
                 <div className="chart-card-head">

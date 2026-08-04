@@ -135,3 +135,12 @@
 /* ---------- Drawer actions ---------- */
 
 .ord-drawer-actions { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
+
+/* Cross-nav continue blocks */
+.ord-related { margin-top: 12px; }
+.ord-related-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

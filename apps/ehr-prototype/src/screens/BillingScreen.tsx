@@ -8,6 +8,8 @@ import {
 import type { Claim } from '../data/types'
 import { claims } from '../data/clinical'
 import { getPatient } from '../data/patients'
+import { AUTHORIZATIONS, WORK_QUEUE } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, PatientAvatar, StatCard, StatusChip } from '../ui'
 import type { StatusTone } from '../ui'
 import './bill.css'
@@ -29,13 +31,16 @@ const STATUS_TONE: Record<Claim['status'], StatusTone> = {
 }
 
 // Known hold reasons map to the workflow area that resolves them.
-function holdResolution(hold: string, patientId: string): { note: string; to: string } | null {
+function holdResolution(hold: string, _patientId: string): { note: string; to: string } | null {
   const h = hold.toLowerCase()
   if (h.includes('signature') || h.includes('poc')) {
     return { note: 'Resolve in Orders', to: '/orders' }
   }
   if (h.includes('oasis')) {
-    return { note: 'Resolve in Assessments', to: `/patients/${patientId}/assessments` }
+    return { note: 'Resolve in OASIS', to: '/oasis' }
+  }
+  if (h.includes('auth') || h.includes('unit')) {
+    return { note: 'Check authorizations', to: '/authorizations' }
   }
   return null
 }
@@ -97,6 +102,8 @@ export default function BillingScreen() {
           <div className="screen-sub">PDGM · August cycle</div>
         </div>
         <div className="screen-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/authorizations')}>Authorizations</button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/beneficiary-notices')}>Notices</button>
           <button className="btn btn-secondary">
             <Download size={15} strokeWidth={2} aria-hidden />
             Export 837
@@ -107,6 +114,8 @@ export default function BillingScreen() {
           </button>
         </div>
       </div>
+
+      <RelatedNav route="/billing" />
 
       <div className="bill-stats">
         <StatCard
@@ -289,6 +298,22 @@ export default function BillingScreen() {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="bill-drawer-section">
+              <div className="card-kicker">Continue in</div>
+              <div className="bill-related-actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/authorizations') }}>Authorizations</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/oasis') }}>OASIS</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/beneficiary-notices') }}>Beneficiary notices</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/orders') }}>Orders</button>
+                {(WORK_QUEUE.find(w => w.patientId === selected.patientId && w.domain === 'RCM') ?? WORK_QUEUE.find(w => w.id === 'wq-3'))?.related.map(r => (
+                  <button key={r.to + r.label} type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate(r.to) }}>{r.label}</button>
+                ))}
+                {AUTHORIZATIONS.find(a => a.patientId === selected.patientId) ? (
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/authorizations') }}>Auth units</button>
+                ) : null}
+              </div>
             </div>
 
             <hr className="divider" />

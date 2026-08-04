@@ -6,6 +6,8 @@ import {
 } from 'lucide-react'
 import { elena, getPatient } from '../data/patients'
 import { bradSuggestions, nextBestActions, todayVisits } from '../data/clinical'
+import { WORK_QUEUE } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
 import { PatientBanner } from '../components/PatientBanner'
 import { StatCard, StatusChip } from '../ui'
 import './today.css'
@@ -43,10 +45,19 @@ const VISIT_STATUS_LABEL = {
   'missed': 'Missed',
 } as const
 
+/** Map local NBA ids → shared WORK_QUEUE destinations when titles align. */
+function actionHref(actionId: string): string {
+  if (actionId === 'act-1') return WORK_QUEUE.find(w => w.id === 'wq-1')?.href ?? '/oasis'
+  if (actionId === 'act-2') return WORK_QUEUE.find(w => w.id === 'wq-2')?.href ?? '/orders'
+  if (actionId === 'act-3') return '/medications'
+  return '/work-queue'
+}
+
 export default function TodayScreen() {
   const navigate = useNavigate()
   const [done, setDone] = useState<Record<string, boolean>>({})
   const doneCount = nextBestActions.filter(a => done[a.id]).length
+  const openQueue = WORK_QUEUE.filter(w => w.status !== 'done')
 
   return (
     <div className="screen">
@@ -56,6 +67,9 @@ export default function TodayScreen() {
           <div className="screen-sub">Monday, August 3 · 4 visits today · 1 SOC episode needs attention</div>
         </div>
         <div className="screen-actions">
+          <button className="btn btn-secondary" onClick={() => navigate('/work-queue')}>
+            Work queue
+          </button>
           <button className="btn btn-secondary" onClick={() => navigate('/schedule')}>
             <CalendarClock size={15} strokeWidth={2} aria-hidden />
             My schedule
@@ -70,6 +84,8 @@ export default function TodayScreen() {
         patient={elena}
         cta={{ label: 'Continue SOC', to: '/patients/pt-elena/assessments' }}
       />
+
+      <RelatedNav route="/today" />
 
       <section className="card slice" aria-label="Live vertical slice">
         <div className="slice-lead">
@@ -134,7 +150,9 @@ export default function TodayScreen() {
               <div className="card-kicker">Clinical work queue</div>
               <h2 className="card-title" style={{ fontSize: 17 }}>Next best actions</h2>
             </div>
-            <span className="chip chip-neutral">{doneCount}/{nextBestActions.length} complete</span>
+            <button type="button" className="btn-inline" onClick={() => navigate('/work-queue')}>
+              Full queue ({openQueue.length}) <ArrowRight size={13} strokeWidth={2.25} aria-hidden />
+            </button>
           </div>
           <div className="today-queue-list">
             {nextBestActions.map(a => (
@@ -152,9 +170,40 @@ export default function TodayScreen() {
                   {a.blocking ? <span className="queue-blocking">{a.blocking}</span> : null}
                 </span>
                 <span className="queue-due">{a.due}</span>
-                <ArrowRight className="queue-go" size={15} strokeWidth={2} aria-hidden />
+                <button
+                  type="button"
+                  className="queue-go-btn"
+                  aria-label={`Open ${a.title}`}
+                  onClick={e => {
+                    e.preventDefault()
+                    navigate(actionHref(a.id))
+                  }}
+                >
+                  <ArrowRight className="queue-go" size={15} strokeWidth={2} aria-hidden />
+                </button>
               </label>
             ))}
+          </div>
+          <div className="today-related">
+            <span className="card-kicker">Continue in</span>
+            <div className="today-related-actions">
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/work-queue')}>
+                Work queue
+              </button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/messages')}>
+                Messages
+              </button>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/schedule')}>
+                Schedule
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => navigate(WORK_QUEUE[0]?.href ?? '/oasis')}
+              >
+                {WORK_QUEUE[0]?.title ?? 'SOC OASIS'}
+              </button>
+            </div>
           </div>
         </section>
 

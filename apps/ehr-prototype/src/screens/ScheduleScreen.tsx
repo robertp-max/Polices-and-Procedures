@@ -7,6 +7,8 @@ import {
 import { weekVisits } from '../data/clinical'
 import { getPatient, patients } from '../data/patients'
 import type { VisitEvent } from '../data/types'
+import { WORK_QUEUE } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, PatientAvatar, StatusChip } from '../ui'
 import './sched.css'
 
@@ -159,6 +161,12 @@ export default function ScheduleScreen() {
           <div className="screen-sub">Week of Aug 3 – Aug 9 · Taylor Brooks, RN</div>
         </div>
         <div className="screen-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/field-visits')}>
+            Field visits
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/work-queue')}>
+            Work queue
+          </button>
           <button className="btn btn-secondary" onClick={scrollToday}>
             <CalendarClock size={15} strokeWidth={2} aria-hidden />
             Today
@@ -169,6 +177,8 @@ export default function ScheduleScreen() {
           </button>
         </div>
       </div>
+
+      <RelatedNav route="/schedule" />
 
       <div className="sched-body">
         <aside className="sched-rail">
@@ -222,6 +232,14 @@ export default function ScheduleScreen() {
                 )
               })}
             </ul>
+            <div className="sched-related">
+              <span className="card-kicker">Continue in</span>
+              <div className="sched-related-actions">
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/work-queue')}>Work queue</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/field-visits')}>Field visits</button>
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate(WORK_QUEUE.find(w => w.id === 'wq-5')?.href ?? '/field-visits')}>Missed-visit task</button>
+              </div>
+            </div>
           </section>
         </aside>
 

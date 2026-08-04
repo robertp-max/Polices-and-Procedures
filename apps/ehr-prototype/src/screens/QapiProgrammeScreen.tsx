@@ -1,133 +1,506 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, ClipboardList, FlaskConical, Search } from 'lucide-react'
-import { Drawer, EmptyState, StatCard, StatusChip } from '../ui'
+import {
+  Activity,
+  ArrowRight,
+  CheckCircle2,
+  ClipboardList,
+  FlaskConical,
+  Link2,
+  Search,
+  Target,
+  TrendingUp,
+} from 'lucide-react'
+import { QAPI_PIPS } from '../data/workspace'
+import type { QapiPip } from '../data/workspace'
+import { RelatedNav } from '../components/RelatedNav'
+import { Drawer, EmptyState, ProgressBar, StatCard, StatusChip } from '../ui'
+import type { StatusTone } from '../ui'
 import './qapi.css'
 
-/** Synthetic first-pass pageview for QAPI programme (QAP). Design prototype only. */
-const ROWS = [["Hospitalization · HF cohort","QAPI lead","22.4%","After-hours pathway","Sep 15","Active"],["Fall events · SOC week","DON","6 events","Home safety kit","Aug 30","Effectiveness due"],["Missed-visit communication","Ops director","4.1%","Call-tree drill","Closed","Sustained"]] as const
+/* ──────────────────────────────────────────────────────────────────────────
+ * QAPI programme (QAP) — PIPs, RCA, CAP, effectiveness return.
+ * Synthetic design prototype. No closure on task completion alone.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+type StatusFilter = 'all' | QapiPip['status']
+type DetailTab = 'overview' | 'measures' | 'effectiveness' | 'related'
+
+const STATUS_META: Record<QapiPip['status'], { tone: StatusTone; label: string }> = {
+  active: { tone: 'progress', label: 'Active' },
+  'effectiveness-due': { tone: 'warn', label: 'Effectiveness due' },
+  sustained: { tone: 'good', label: 'Sustained' },
+  closed: { tone: 'neutral', label: 'Closed' },
+}
+
+const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
+  { key: 'all', label: 'All statuses' },
+  { key: 'active', label: 'Active' },
+  { key: 'effectiveness-due', label: 'Effectiveness due' },
+  { key: 'sustained', label: 'Sustained' },
+  { key: 'closed', label: 'Closed' },
+]
+
+const DETAIL_TABS: { key: DetailTab; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'measures', label: 'Measures' },
+  { key: 'effectiveness', label: 'Effectiveness' },
+  { key: 'related', label: 'Related' },
+]
+
+/** Synthetic measure snapshots per PIP — visual only. */
+const PIP_MEASURES: Record<
+  string,
+  { label: string; baseline: string; current: string; target: string; pct: number }[]
+> = {
+  'pip-1': [
+    { label: 'Hospitalization rate · HF', baseline: '22.4%', current: '19.1%', target: '≤16%', pct: 45 },
+    { label: 'After-hours contact ≤2h', baseline: '61%', current: '78%', target: '≥90%', pct: 58 },
+  ],
+  'pip-2': [
+    { label: 'Fall events · SOC week', baseline: '6 events', current: '3 events', target: '≤2', pct: 70 },
+    { label: 'Home safety kit completion', baseline: '40%', current: '88%', target: '100%', pct: 88 },
+  ],
+  'pip-3': [
+    { label: 'Missed-visit rate', baseline: '4.1%', current: '1.9%', target: '≤2%', pct: 100 },
+    { label: 'Call-tree drill pass', baseline: '0', current: '2 drills', target: 'Quarterly', pct: 100 },
+  ],
+}
+
+function closeDisabledReason(pip: QapiPip): string | null {
+  if (pip.status === 'sustained' || pip.status === 'closed') {
+    return 'Already sustained/closed in this sample.'
+  }
+  if (pip.status === 'active') {
+    return 'Effectiveness return not yet due — cannot close on task completion alone.'
+  }
+  if (pip.status === 'effectiveness-due') {
+    return 'Return evidence required before sustained closure.'
+  }
+  return null
+}
 
 export default function QapiProgrammeScreen() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [selected, setSelected] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [selectedId, setSelectedId] = useState<string | null>(QAPI_PIPS[0]?.id ?? null)
+  const [detailTab, setDetailTab] = useState<DetailTab>('overview')
+  const [openPipDrawer, setOpenPipDrawer] = useState(false)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    if (!q) return ROWS
-    return ROWS.filter(row => row.some(cell => cell.toLowerCase().includes(q)))
-  }, [query])
+    return QAPI_PIPS.filter(p => {
+      if (statusFilter !== 'all' && p.status !== statusFilter) return false
+      if (!q) return true
+      const hay = [p.id, p.title, p.owner, p.baseline, p.countermeasure, p.returnDate, p.status]
+        .join(' ')
+        .toLowerCase()
+      return hay.includes(q)
+    })
+  }, [query, statusFilter])
+
+  useEffect(() => {
+    if (filtered.length === 0) {
+      setSelectedId(null)
+      return
+    }
+    if (!selectedId || !filtered.some(p => p.id === selectedId)) {
+      setSelectedId(filtered[0].id)
+      setDetailTab('overview')
+    }
+  }, [filtered, selectedId])
+
+  const selected = QAPI_PIPS.find(p => p.id === selectedId) ?? null
+  const activeCount = QAPI_PIPS.filter(p => p.status === 'active').length
+  const dueCount = QAPI_PIPS.filter(p => p.status === 'effectiveness-due').length
+  const sustainedCount = QAPI_PIPS.filter(p => p.status === 'sustained' || p.status === 'closed').length
+
+  const selectPip = (id: string) => {
+    setSelectedId(id)
+    setDetailTab('overview')
+  }
+
+  const closeBlock = selected ? closeDisabledReason(selected) : null
 
   return (
     <div className="screen">
       <div className="screen-head">
         <div>
-          <div className="card-kicker">Domain QAP · first-pass prototype</div>
+          <div className="card-kicker">Domain QAP · QAPI programme</div>
           <h1 className="screen-title">QAPI programme</h1>
-          <div className="screen-sub">PIPs, RCA, CAP, and effectiveness — no closure on task completion alone.</div>
+          <div className="screen-sub">
+            PIPs, RCA, CAP, and effectiveness return — no closure on task completion alone.
+          </div>
         </div>
         <div className="screen-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/requirements')}>
-            Requirements register
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/quality')}>
+            Quality desk
           </button>
-          <button type="button" className="btn btn-primary" onClick={() => { setSelected(ROWS[0]?.[0] ?? 'QAPI programme'); setDrawerOpen(true) }}>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/legal-evidence')}>
+            Incident packages
+          </button>
+          <button type="button" className="btn btn-primary" onClick={() => setOpenPipDrawer(true)}>
+            <Target size={15} strokeWidth={2} aria-hidden />
             Open active PIP
-            <ArrowRight size={14} strokeWidth={2.25} aria-hidden />
           </button>
         </div>
       </div>
 
       <div className="qapi-banner" role="status">
         <FlaskConical size={15} strokeWidth={2} aria-hidden />
-        <span>Synthetic design prototype · not build authorized · no clinical or legal action is recorded.</span>
+        <span>
+          Synthetic design prototype · no PIP is opened, closed, or marked effective. Production requires
+          authorized QAP requirements and evidence-backed effectiveness.
+        </span>
       </div>
+
+      <RelatedNav route="/qapi" />
 
       <div className="qapi-stats">
         <StatCard
-          key={0}
-          icon={<ClipboardList size={16} strokeWidth={1.75} aria-hidden />}
-          kicker="Active PIPs"
-          value="2"
-          sub="Agency control"
+          icon={<Activity size={16} strokeWidth={1.75} aria-hidden />}
+          kicker="PIPs in sample"
+          value={QAPI_PIPS.length}
+          sub="Agency-controlled improvement set"
           accent="teal"
         />
         <StatCard
-          key={1}
+          icon={<TrendingUp size={16} strokeWidth={1.75} aria-hidden />}
+          kicker="Active"
+          value={activeCount}
+          sub="Countermeasures in flight"
+          accent="teal"
+        />
+        <StatCard
           icon={<ClipboardList size={16} strokeWidth={1.75} aria-hidden />}
-          kicker="CAPs open"
-          value="5"
-          sub="With owners"
+          kicker="Effectiveness due"
+          value={dueCount}
+          sub="Return evidence needed"
           accent="warn"
         />
         <StatCard
-          key={2}
-          icon={<ClipboardList size={16} strokeWidth={1.75} aria-hidden />}
-          kicker="Due effectiveness"
-          value="1"
-          sub="Return evidence needed"
-          accent="orange"
-        />
-        <StatCard
-          key={3}
-          icon={<ClipboardList size={16} strokeWidth={1.75} aria-hidden />}
-          kicker="Closed w/ proof"
-          value="4"
-          sub="Last 2 quarters"
+          icon={<CheckCircle2 size={16} strokeWidth={1.75} aria-hidden />}
+          kicker="Sustained / closed"
+          value={sustainedCount}
+          sub="With proof in sample"
           accent="good"
         />
       </div>
 
-      <section className="card" aria-label="QAPI programme list">
-        <div className="qapi-toolbar">
-          <label className="qapi-search">
-            <Search size={15} strokeWidth={2} aria-hidden />
-            <span className="sr-only">Search QAPI programme</span>
-            <input
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Search this workspace"
-            />
-          </label>
-          <button type="button" className="btn btn-secondary btn-sm">Effectiveness board</button>
-        </div>
-
-        {filtered.length === 0 ? (
-          <EmptyState
-            icon={<ClipboardList size={26} strokeWidth={1.5} />}
-            title="No matching rows"
-            sub="Adjust search or reset filters. All data on this page is synthetic."
-          />
-        ) : (
-          <div className="qapi-table-wrap">
-            <table className="table">
-              <thead>
-                <tr><th>PIP / CAP</th><th>Owner</th><th>Baseline</th><th>Countermeasure</th><th>Return</th><th>Status</th></tr>
-              </thead>
-              <tbody>
-                  <tr key={0}><td>Hospitalization · HF cohort</td><td>QAPI lead</td><td>22.4%</td><td>After-hours pathway</td><td>Sep 15</td><td><StatusChip tone="good">Active</StatusChip></td></tr>
-                  <tr key={1}><td>Fall events · SOC week</td><td>DON</td><td>6 events</td><td>Home safety kit</td><td>Aug 30</td><td><StatusChip tone="warn">Effectiveness due</StatusChip></td></tr>
-                  <tr key={2}><td>Missed-visit communication</td><td>Ops director</td><td>4.1%</td><td>Call-tree drill</td><td>Closed</td><td><StatusChip tone="good">Sustained</StatusChip></td></tr>
-              </tbody>
-            </table>
+      <div className="qapi-workspace">
+        <section className="card qapi-registry" aria-label="PIP registry">
+          <div className="qapi-card-head">
+            <div>
+              <div className="card-kicker">Registry</div>
+              <h2 className="card-title qapi-card-title">Performance improvement projects</h2>
+            </div>
+            <span className="chip chip-neutral">{filtered.length} shown</span>
           </div>
-        )}
-      </section>
+
+          <div className="qapi-toolbar">
+            <label className="qapi-search">
+              <Search size={15} strokeWidth={2} aria-hidden />
+              <span className="sr-only">Search PIPs</span>
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Search PIP, owner, or countermeasure"
+              />
+            </label>
+            <div className="qapi-filter-block">
+              <span className="qapi-filter-label" id="qapi-status-filters">Status</span>
+              <div className="qapi-filters" role="toolbar" aria-labelledby="qapi-status-filters">
+                {STATUS_FILTERS.map(f => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    className={'qapi-filter' + (statusFilter === f.key ? ' is-active' : '')}
+                    aria-pressed={statusFilter === f.key}
+                    onClick={() => setStatusFilter(f.key)}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={<Target size={26} strokeWidth={1.5} />}
+              title="No PIPs match"
+              sub="Clear filters or search. All PIPs are synthetic."
+            />
+          ) : (
+            <div className="qapi-list" role="listbox" aria-label="PIP list">
+              {filtered.map(pip => {
+                const meta = STATUS_META[pip.status]
+                const isSelected = pip.id === selectedId
+                const measures = PIP_MEASURES[pip.id] ?? []
+                const progress = measures[0]?.pct ?? 0
+                return (
+                  <button
+                    key={pip.id}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    className={'qapi-row' + (isSelected ? ' is-selected' : '')}
+                    onClick={() => selectPip(pip.id)}
+                  >
+                    <span
+                      className={
+                        'qapi-row-icon' +
+                        (pip.status === 'effectiveness-due' ? ' is-warn' : pip.status === 'sustained' ? ' is-good' : '')
+                      }
+                      aria-hidden
+                    >
+                      <Target size={16} strokeWidth={1.75} />
+                    </span>
+                    <span className="qapi-row-main">
+                      <span className="qapi-row-top">
+                        <span className="qapi-id">{pip.id}</span>
+                        <StatusChip tone={meta.tone}>{meta.label}</StatusChip>
+                      </span>
+                      <span className="qapi-title">{pip.title}</span>
+                      <span className="qapi-meta">
+                        <span>Owner · {pip.owner}</span>
+                        <span className="qapi-dot" aria-hidden />
+                        <span>Baseline · {pip.baseline}</span>
+                        <span className="qapi-dot" aria-hidden />
+                        <span>Return · {pip.returnDate}</span>
+                      </span>
+                    </span>
+                    <span className="qapi-row-meter">
+                      <span className="qapi-meter-label">{progress}%</span>
+                      <ProgressBar
+                        pct={progress}
+                        color={
+                          pip.status === 'sustained'
+                            ? 'var(--status-good)'
+                            : pip.status === 'effectiveness-due'
+                              ? 'var(--status-warn)'
+                              : 'var(--teal-400)'
+                        }
+                        label={`${pip.id} progress ${progress} percent`}
+                      />
+                    </span>
+                    <ArrowRight className="qapi-row-go" size={14} strokeWidth={2} aria-hidden />
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </section>
+
+        <aside className="qapi-inspector" aria-label="PIP inspector">
+          {selected ? (
+            <div className="card qapi-inspector-card">
+              <div className="qapi-inspector-head">
+                <div>
+                  <div className="card-kicker">Inspector</div>
+                  <h2 className="card-title qapi-card-title">{selected.id}</h2>
+                  <p className="qapi-inspector-title">{selected.title}</p>
+                </div>
+                <div className="qapi-drawer-status">
+                  <StatusChip tone={STATUS_META[selected.status].tone}>
+                    {STATUS_META[selected.status].label}
+                  </StatusChip>
+                </div>
+              </div>
+
+              <div className="qapi-tabs" role="tablist" aria-label="PIP detail sections">
+                {DETAIL_TABS.map(tab => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={detailTab === tab.key}
+                    className={'qapi-tab' + (detailTab === tab.key ? ' is-active' : '')}
+                    onClick={() => setDetailTab(tab.key)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="qapi-inspector-body" role="tabpanel">
+                {detailTab === 'overview' ? (
+                  <div className="qapi-panel">
+                    {selected.status === 'effectiveness-due' ? (
+                      <div className="qapi-callout is-warn" role="status">
+                        <ClipboardList size={16} strokeWidth={2} aria-hidden />
+                        <div>
+                          <strong>Effectiveness return due</strong>
+                          <span>
+                            Return date {selected.returnDate}. Closure requires measure evidence — not task
+                            checkboxes alone.
+                          </span>
+                        </div>
+                      </div>
+                    ) : null}
+                    <div className="qapi-drawer-grid">
+                      <div>
+                        <span className="card-kicker">Owner</span>
+                        <strong>{selected.owner}</strong>
+                        <span>Accountable lead</span>
+                      </div>
+                      <div>
+                        <span className="card-kicker">Baseline</span>
+                        <strong>{selected.baseline}</strong>
+                        <span>Problem magnitude</span>
+                      </div>
+                      <div>
+                        <span className="card-kicker">Countermeasure</span>
+                        <strong>{selected.countermeasure}</strong>
+                        <span>Change under test</span>
+                      </div>
+                      <div>
+                        <span className="card-kicker">Return</span>
+                        <strong>{selected.returnDate}</strong>
+                        <span>Effectiveness check</span>
+                      </div>
+                    </div>
+                    <p className="qapi-drawer-copy">
+                      QAPI links signals → investigation → corrective action → effectiveness. This prototype
+                      does not write RCA, CAP, or governing-body minutes.
+                    </p>
+                  </div>
+                ) : null}
+
+                {detailTab === 'measures' ? (
+                  <div className="qapi-panel">
+                    <p className="qapi-drawer-copy">
+                      Measure snapshots are synthetic and must reconcile to Quality / CMS quality desks in
+                      production.
+                    </p>
+                    <ul className="qapi-measure-list">
+                      {(PIP_MEASURES[selected.id] ?? []).map(m => (
+                        <li key={m.label}>
+                          <div className="qapi-measure-head">
+                            <strong>{m.label}</strong>
+                            <span>{m.pct}%</span>
+                          </div>
+                          <ProgressBar pct={m.pct} color="var(--teal-400)" label={`${m.label} ${m.pct}%`} />
+                          <span className="qapi-measure-meta">
+                            Baseline {m.baseline} · Current {m.current} · Target {m.target}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+
+                {detailTab === 'effectiveness' ? (
+                  <div className="qapi-panel">
+                    <p className="qapi-drawer-copy">
+                      Effectiveness requires a planned return, numerator/denominator, and decision to sustain,
+                      adapt, or abandon — never “done because tasks finished.”
+                    </p>
+                    <ul className="qapi-check-list">
+                      <li>
+                        <CheckCircle2 size={15} strokeWidth={2} aria-hidden />
+                        <span>Return date scheduled · {selected.returnDate}</span>
+                      </li>
+                      <li>
+                        <CheckCircle2 size={15} strokeWidth={2} aria-hidden />
+                        <span>Countermeasure documented · {selected.countermeasure}</span>
+                      </li>
+                      <li>
+                        <CheckCircle2 size={15} strokeWidth={2} aria-hidden />
+                        <span>
+                          Status · {STATUS_META[selected.status].label}
+                          {selected.status === 'sustained' ? ' · proof on file (sample)' : ' · not sustained yet'}
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                ) : null}
+
+                {detailTab === 'related' ? (
+                  <div className="qapi-panel">
+                    <div className="qapi-related-actions">
+                      {selected.related.map(r => (
+                        <button
+                          key={r.to + r.label}
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => navigate(r.to)}
+                        >
+                          <Link2 size={13} strokeWidth={2} aria-hidden />
+                          {r.label}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => navigate('/competency')}
+                      >
+                        Competency
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="qapi-inspector-foot">
+                <div className="qapi-drawer-actions">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => navigate('/quality')}
+                    title="Navigate only"
+                  >
+                    Quality desk
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={!!closeBlock}
+                    title={closeBlock ?? 'Visual only · no PIP is closed'}
+                  >
+                    Mark sustained
+                  </button>
+                </div>
+                <p className="qapi-drawer-footnote">
+                  {closeBlock
+                    ? `Close disabled · ${closeBlock}`
+                    : 'Sustain / close controls are visual only. No QAPI record is written.'}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="card qapi-inspector-empty">
+              <EmptyState
+                icon={<Target size={26} strokeWidth={1.5} />}
+                title="Select a PIP"
+                sub="Inspect measures, effectiveness, and related workspaces."
+              />
+            </div>
+          )}
+        </aside>
+      </div>
 
       <Drawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        title={selected ?? 'QAPI programme'}
-        sub="Review-only drawer · nothing is filed, signed, or submitted"
+        open={openPipDrawer}
+        onClose={() => setOpenPipDrawer(false)}
+        title="Open active PIP"
+        sub="Review-only · nothing is opened or filed"
       >
-        <p className="qapi-drawer-copy">
-          This first-pass pageview demonstrates layout, status language, and navigation for
-          <strong> QAPI programme</strong>. Production behavior requires authorized requirements,
-          prototypes, and evidence gates before development.
-        </p>
-        <div className="qapi-drawer-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => setDrawerOpen(false)}>Close</button>
-          <button type="button" className="btn btn-primary" onClick={() => navigate('/requirements')}>Open requirements</button>
+        <div className="qapi-panel">
+          <p className="qapi-drawer-copy">
+            Opening a PIP in production requires problem statement, baseline measure, owner, and planned
+            effectiveness return. This drawer is layout only.
+          </p>
+          <div className="qapi-drawer-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => setOpenPipDrawer(false)}>
+              Close
+            </button>
+            <button type="button" className="btn btn-primary" disabled title="Visual only · no PIP is created">
+              Create PIP
+            </button>
+          </div>
+          <p className="qapi-drawer-footnote">Create is disabled. No durable write occurs in this prototype.</p>
         </div>
       </Drawer>
     </div>

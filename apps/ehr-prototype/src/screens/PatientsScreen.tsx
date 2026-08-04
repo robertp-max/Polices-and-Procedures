@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { patients } from '../data/patients'
 import type { Patient, RiskLevel } from '../data/types'
+import { RelatedNav } from '../components/RelatedNav'
 import { EmptyState, PatientAvatar, ProgressBar, StatusChip } from '../ui'
 import './pts.css'
 
@@ -82,6 +83,12 @@ export default function PatientsScreen() {
           </div>
         </div>
         <div className="screen-actions">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/episodes')}>
+            Episodes
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/intake')}>
+            Intake
+          </button>
           <button className="btn btn-secondary">
             <Download size={15} strokeWidth={2} aria-hidden />
             Export list
@@ -94,6 +101,8 @@ export default function PatientsScreen() {
       </div>
 
       <div className="pts-toolbar">
+
+      <RelatedNav route="/patients" />
         <label className="field-input pts-search">
           <Search size={15} strokeWidth={1.75} aria-hidden />
           <input
