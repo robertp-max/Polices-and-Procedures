@@ -1,3 +1,28 @@
+> ## ⚠️ CORRECTION — read before acting on finding #1 or #2
+>
+> **The "BLOCKER-severity" findings below are wrong, and acting on them would delete accurate data.**
+>
+> This review treated the static `Care_Indeed_Home_Health_EHR_Complete_Requirements.html`
+> extract as the sole authority. It is not. The figures it reports as unsourced —
+> **1,108** workflow steps, **192** target elements, **Corridor / 269 / 201**, **77**,
+> the **CL-PA / FN-BL / IT-AC** taxonomies, and the orphan/missing-alignment counts —
+> were all verified present in the same source app's requirements *workspace* data:
+> `app/requirements/requirements-program-data.ts`, `requirements-data.ts`,
+> `requirements-audit-data.ts`, `requirements-pm-model.ts`.
+>
+> **5,350** is not a literal anywhere because it is *computed* at runtime
+> (`planningTasks.length`); it renders on the live `/requirements` page, which was
+> read directly and showed "5350 Planning tasks", "15 Planning buckets" and
+> "30 flagged".
+>
+> So the numbers are sourced — just not from the document this review checked.
+> The real defect is **attribution**, and it is narrow: the on-screen `TASKS_NOTE`
+> said "The source states…" while pointing at the addendum. `requirementsSpec.ts`
+> now carries a header naming both sources and which supplies what.
+>
+> **Do not remove these figures.** The remainder of the review (register fidelity,
+> gates, ADRs, architecture, traceability, sources) was independently useful and stands.
+
 # Requirements Screen — Fidelity & Honesty Review
 
 **Scope reviewed:** `src/screens/RequirementsScreen.tsx` (766 lines), `src/screens/req.css` (602 lines),
