@@ -14,7 +14,7 @@ prototype.
 | Input | Finding |
 |---|---|
 | `CI Design System.pdf` | 206 "pages" is really **10 tall boards**; all text is vector outline, so no text layer exists. Extracted by rendering at 1.6× and slicing into 40 overlapping tiles, then transcribing each visually. Consolidated spec: [CI-DESIGN-SYSTEM-SPEC.md](CI-DESIGN-SYSTEM-SPEC.md). |
-| Prototype at `127.0.0.1:5191` | This specific artifact is a compiled static build (vinext/Codex family) served from `%TEMP%\care-indeed-ehr-prototype-local`; it contains no editable source. It remains preserved as a fallback alongside the separate source app now under `apps/ehr-prototype`. |
+| Prototype at `127.0.0.1:5191` | **No source exists on this machine.** It is a compiled static build (vinext/Codex family) served by `python -m http.server` from `%TEMP%\care-indeed-ehr-prototype-local`. A copy was preserved to the session scratchpad because `%TEMP%` can be cleaned at any time. `launch.json`'s `gbp-web`→5191 mapping is a red herring. |
 | `Care_Indeed_EHR_Business_Plan_Complete_App_*.zip` | The canonical Business Plan (v2.2, 2026-07-29) and Requirements addendum (v1.1) documents, shipped as static HTML inside the app's `public/`. These are the content authority for the two document pageviews. |
 
 ## Design tokens applied
@@ -59,7 +59,6 @@ standalone pageviews with a light CI-lockup header, the mode switcher, and a
 | Check | Result |
 |---|---|
 | `npx tsc --noEmit -p .` | **Pass** — zero errors |
-| `npm run build` | **Pass** — Vite 6.4.3 production build, 1,633 modules transformed |
 | Vite transform, all 12 screens | **200** each |
 | Route render sweep (13 routes) | All render substantive content; no blank screens |
 | Patient chart tabs (8) | All 8 render real content for Elena; non-flagship patient (Walter Feld) renders his own data |
@@ -138,9 +137,11 @@ Verification not yet performed, in rough priority order:
    chapters have not been read line by line.
 4. **Mobile (<900px).** Usable but untuned; the DS mobile radius and type
    scales are documented in the spec and not yet applied.
-5. **Cross-browser.** Verified in the in-app Chromium preview only. Note
+5. **Production build.** Only the dev server has been exercised — `npm run
+   build` has never been run for this app.
+6. **Cross-browser.** Verified in the in-app Chromium preview only. Note
    `req.css` uses `:has()` for the full-bleed layout.
-6. **Contrast audit.** The palette was validated for charts; body and chip text
+7. **Contrast audit.** The palette was validated for charts; body and chip text
    pairings have not been run through a WCAG checker.
 
 ## Known limitations
@@ -151,7 +152,3 @@ Verification not yet performed, in rough priority order:
 - Mobile (<900px) is usable but not tuned; the design system's mobile radius and
   type scales are documented in the spec but not yet applied.
 - No persistence, auth, or backend — all interaction is client-side state.
-- `npm audit` reports the React Router RSC-mode CSRF advisory
-  `GHSA-qwww-vcr4-c8h2` against the latest published release (`7.18.2`). This
-  client-only prototype does not use RSC actions, and no patched npm release is
-  currently available; recheck before a production deployment.
