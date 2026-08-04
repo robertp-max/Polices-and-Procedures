@@ -310,3 +310,7 @@ input, select, textarea { font: inherit; color: var(--ink-strong); }
 .screen-title { font-size: 22px; line-height: 30px; }
 .screen-sub { font-size: 13px; color: var(--ink-soft); margin-top: 3px; }
 .screen-actions { display: flex; align-items: center; gap: 10px; }
+
+/* Visually hidden, available to AT */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+

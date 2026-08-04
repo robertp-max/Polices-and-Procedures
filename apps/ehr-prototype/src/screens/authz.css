@@ -1,0 +1,67 @@
+/* Authorizations screen — classes prefixed .authz- */
+
+.authz-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  background: var(--surface-brand-tint);
+  color: var(--ink);
+  font-size: 12.5px;
+  margin-bottom: 14px;
+}
+
+.authz-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+@media (max-width: 1280px) {
+  .authz-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.authz-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.authz-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: min(360px, 100%);
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink-soft);
+}
+.authz-search input {
+  border: 0;
+  outline: none;
+  width: 100%;
+  background: transparent;
+  color: var(--ink-strong);
+  font-size: 13.5px;
+}
+
+.authz-table-wrap { overflow-x: auto; }
+
+.authz-drawer-copy {
+  margin: 0 0 16px;
+  color: var(--ink);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.authz-drawer-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+

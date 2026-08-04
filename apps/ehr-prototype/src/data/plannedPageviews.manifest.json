@@ -1,0 +1,149 @@
+[
+  {
+    "name": "WorkQueue",
+    "prefix": "wq",
+    "route": "/work-queue",
+    "navLabel": "My work queue",
+    "domainId": "COR"
+  },
+  {
+    "name": "Episodes",
+    "prefix": "epi",
+    "route": "/episodes",
+    "navLabel": "Episodes & certification",
+    "domainId": "EPI"
+  },
+  {
+    "name": "OasisAssessments",
+    "prefix": "oas",
+    "route": "/oasis",
+    "navLabel": "OASIS assessments",
+    "domainId": "EPI"
+  },
+  {
+    "name": "Medications",
+    "prefix": "med",
+    "route": "/medications",
+    "navLabel": "Medications",
+    "domainId": "CLN"
+  },
+  {
+    "name": "FieldVisits",
+    "prefix": "fld",
+    "route": "/field-visits",
+    "navLabel": "Field visits & EVV",
+    "domainId": "FLD"
+  },
+  {
+    "name": "AideSupervision",
+    "prefix": "hha",
+    "route": "/aide-supervision",
+    "navLabel": "Aide supervision",
+    "domainId": "HHA"
+  },
+  {
+    "name": "Authorizations",
+    "prefix": "authz",
+    "route": "/authorizations",
+    "navLabel": "Authorizations",
+    "domainId": "RCM"
+  },
+  {
+    "name": "BeneficiaryNotices",
+    "prefix": "ben",
+    "route": "/beneficiary-notices",
+    "navLabel": "Beneficiary notices",
+    "domainId": "BEN"
+  },
+  {
+    "name": "QapiProgramme",
+    "prefix": "qapi",
+    "route": "/qapi",
+    "navLabel": "QAPI programme",
+    "domainId": "QAP"
+  },
+  {
+    "name": "CmsQuality",
+    "prefix": "hqr",
+    "route": "/cms-quality",
+    "navLabel": "CMS quality reporting",
+    "domainId": "HQR"
+  },
+  {
+    "name": "Competency",
+    "prefix": "cmp",
+    "route": "/competency",
+    "navLabel": "Competency & in-service",
+    "domainId": "QAP"
+  },
+  {
+    "name": "EmergencyPrep",
+    "prefix": "emp",
+    "route": "/emergency",
+    "navLabel": "Emergency preparedness",
+    "domainId": "EMP"
+  },
+  {
+    "name": "LegalEvidence",
+    "prefix": "leg",
+    "route": "/legal-evidence",
+    "navLabel": "Legal evidence",
+    "domainId": "DOC"
+  },
+  {
+    "name": "DataExports",
+    "prefix": "dex",
+    "route": "/data-exports",
+    "navLabel": "Data & exports",
+    "domainId": "DAT"
+  },
+  {
+    "name": "UsersAccess",
+    "prefix": "iam",
+    "route": "/users-access",
+    "navLabel": "Users & access",
+    "domainId": "IAM"
+  },
+  {
+    "name": "OrgMaster",
+    "prefix": "gov",
+    "route": "/org-master",
+    "navLabel": "Organization & master data",
+    "domainId": "GOV"
+  },
+  {
+    "name": "Interoperability",
+    "prefix": "fhr",
+    "route": "/interoperability",
+    "navLabel": "Interoperability",
+    "domainId": "FHR"
+  },
+  {
+    "name": "AiGovernance",
+    "prefix": "aig",
+    "route": "/ai-governance",
+    "navLabel": "AI governance",
+    "domainId": "AIG"
+  },
+  {
+    "name": "SecurityReliability",
+    "prefix": "sec",
+    "route": "/security",
+    "navLabel": "Security & reliability",
+    "domainId": "SEC"
+  },
+  {
+    "name": "Migration",
+    "prefix": "mig",
+    "route": "/migration",
+    "navLabel": "Migration & adoption",
+    "domainId": "MIG"
+  },
+  {
+    "name": "Traceability",
+    "prefix": "trc",
+    "route": "/traceability",
+    "navLabel": "Traceability",
+    "domainId": "TRC"
+  }
+]

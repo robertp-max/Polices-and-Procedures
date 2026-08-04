@@ -45,6 +45,28 @@ const PREFIX_REGISTRY = {
   'sched.css': ['sched'],
   // Legacy: today.css predates the prefix convention.
   'today.css': ['slice', 'queue', 'brad', 'today', 'visit'],
+  // First-pass planned pageviews (ehr_phase1)
+  'wq.css': ['wq'],
+  'epi.css': ['epi'],
+  'oas.css': ['oas'],
+  'med.css': ['med'],
+  'fld.css': ['fld'],
+  'hha.css': ['hha'],
+  'authz.css': ['authz'],
+  'ben.css': ['ben'],
+  'qapi.css': ['qapi'],
+  'hqr.css': ['hqr'],
+  'cmp.css': ['cmp'],
+  'emp.css': ['emp'],
+  'leg.css': ['leg'],
+  'dex.css': ['dex'],
+  'iam.css': ['iam'],
+  'gov.css': ['gov'],
+  'fhr.css': ['fhr'],
+  'aig.css': ['aig'],
+  'sec.css': ['sec'],
+  'mig.css': ['mig'],
+  'trc.css': ['trc'],
 }
 
 /**
