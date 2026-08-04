@@ -1121,6 +1121,116 @@ const STYLES = `
   .lvn002-bot{height:62px;padding:0 6px;gap:3px}.lvn002-bot button.nav,.lvn002-bot button.next{font-size:9px;letter-spacing:.03em;padding:6px;white-space:normal;line-height:1.1}.lvn002-bot button.next{max-width:140px}.lvn002-footer-status{min-width:0}.lvn002-footer-status span{font-size:8px!important;padding:5px!important;letter-spacing:.02em!important;text-align:center}
   .lvn002-modal{padding:0;align-items:flex-end}.lvn002-modal-card{border-radius:16px 16px 0 0;max-height:90dvh}
 }
+
+/* RN-002 premium Journey visual system */
+.lvn002,.lvn002 *{font-family:var(--font-family,'Roboto',system-ui,-apple-system,'Segoe UI',sans-serif);letter-spacing:0!important}
+.lvn002-shell{background:#F2F5F4;color:#243331;font-size:15px}
+.lvn002-top{height:72px;padding:0 24px;gap:20px;background:#FFFFFF;border-bottom:1px solid #DCE5E2;box-shadow:0 2px 12px rgba(28,57,53,.05)}
+.lvn002-brand{min-width:304px;gap:11px;color:#174F49;font-size:15px;font-weight:800;text-transform:none}
+.lvn002-brand img{width:34px;height:34px;object-fit:contain}
+.lvn002-tabs{gap:3px;padding:4px;align-items:center;background:#F3F6F5;border:1px solid #E2E9E7;border-radius:8px}
+.lvn002-tab{min-height:40px;padding:8px 11px;border-radius:6px;color:#52645F;font-size:13px;font-weight:700}
+.lvn002-tab{display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.lvn002-tab-index{font-size:12px;font-weight:800}
+.lvn002-tab-label{white-space:nowrap}
+.lvn002-tab:hover{background:#E7EFED;color:#174F49}
+.lvn002-tab.active{background:#0F5B54;color:#FFFFFF;box-shadow:0 3px 10px rgba(15,91,84,.18)}
+.lvn002-tab.quiz-tab{border:0;border-left:1px solid #D8E1DE;border-radius:0 6px 6px 0;color:#9B3F19}
+.lvn002-tab.quiz-tab.active{border-color:transparent;background:#A94018;color:#FFFFFF}
+.lvn002-exit{min-height:40px;padding:8px 14px;border:1px solid #D8A28A;border-radius:6px;background:#FFF9F6;color:#9B3F19;font-size:13px;font-weight:800;text-transform:none}
+.lvn002-exit:hover{background:#FFF1EA;border-color:#B94718}
+.lvn002-work{width:100%;max-width:1600px;margin:0 auto;padding:20px 24px;gap:18px}
+.lvn002-left{width:39%;min-width:380px;max-width:570px;padding:28px;overflow:auto;border:1px solid #DCE5E2;border-radius:8px;background:#FFFFFF;box-shadow:0 12px 32px rgba(31,59,54,.07)}
+.lvn002-right{min-width:0;padding:8px;border:1px solid #D4DEDB;border-radius:8px;background:#E4EAE8;box-shadow:0 12px 32px rgba(31,59,54,.08)}
+.lvn002-stage-wrap{display:flex;align-items:center;justify-content:center}
+.lvn002-stage{width:100%;max-width:100%;aspect-ratio:16/13;border:0;border-radius:6px;background:#DCE5E2;box-shadow:none}
+.lvn002-stage img.scene{filter:saturate(.94) contrast(1.02)}
+.rn-left-panel-system{display:flex;min-height:100%;flex-direction:column}
+.rn-lesson-kicker{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;padding-bottom:12px;border-bottom:1px solid #E5EBE9;color:#52645F;font-size:12px;font-weight:800;text-transform:uppercase}
+.rn-lesson-kicker span:first-child{color:#A94018}
+.rn-lesson-title{max-width:470px;margin:0 0 7px;color:#1F2C2A;font-size:29px;font-weight:800;line-height:1.16}
+.rn-lesson-subtitle{margin:0 0 21px;color:#A94018;font-size:15px;font-weight:700;line-height:1.4}
+.rn-focus-panel{margin-bottom:24px;padding:16px 17px;border:0;border-left:3px solid #0F5B54;border-radius:6px;background:#EDF4F2}
+.rn-section-label,.rn-clinical-tip-label{display:flex;align-items:center;gap:7px;margin-bottom:7px;color:#0F5B54;font-size:12px;font-weight:800;text-transform:uppercase}
+.rn-focus-panel p{margin:0;color:#334744;font-size:15px;line-height:1.6}
+.rn-actions-section{margin-bottom:24px}
+.rn-section-heading{margin:0 0 11px;color:#52645F;font-size:12px;font-weight:800;text-transform:uppercase}
+.rn-key-action-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rn-action-card{display:flex;min-width:0;gap:11px;padding:14px;border:1px solid #E0E7E5;border-radius:6px;background:#FFFFFF;overflow:hidden;transition:border-color .18s ease,box-shadow .18s ease}
+.rn-action-card:hover{border-color:#B7CECA;box-shadow:0 7px 18px rgba(31,59,54,.07)}
+.rn-action-index{display:grid;width:28px;height:28px;min-width:28px;place-items:center;border-radius:50%;background:#EAF2F0;color:#0F5B54;font-size:11px;font-weight:800}
+.rn-action-copy{min-width:0}
+.rn-action-title{margin-bottom:4px;color:#22312E;font-size:14px;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
+.rn-action-detail{color:#596B67;font-size:13px;line-height:1.52;overflow-wrap:anywhere}
+.rn-clinical-tip{margin-bottom:24px;padding:16px 17px;border:0;border-left:3px solid #B94718;border-radius:6px;background:#FBF3EF}
+.rn-clinical-tip-label{color:#9B3F19}
+.rn-clinical-tip-copy{color:#4E5553;font-size:14px;line-height:1.6}
+.rn-sources-section{margin-bottom:18px}
+.rn-source-list{display:flex;flex-wrap:wrap;gap:7px}
+.rn-source-chip{display:inline-flex;gap:5px;padding:6px 8px;border:1px solid #DDE6E3;border-radius:4px;background:#F8FAF9;color:#425954;font-size:11px;font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.rn-source-chip strong{color:#0F5B54;font-weight:800}
+.rn-lesson-details{margin:0;border:1px solid #DDE6E3;border-radius:6px;background:#F8FAF9}
+.rn-lesson-details summary{padding:13px 14px;color:#174F49;font-size:13px;font-weight:800;cursor:pointer}
+.rn-lesson-details-copy{padding:15px;border-top:1px solid #DDE6E3;background:#FFFFFF;color:#4E5E5A;font-size:14px;line-height:1.65}
+.lvn002-scene-title{top:18px!important;left:18px!important;max-width:min(56%,390px)!important;padding:12px 14px!important;border:1px solid rgba(255,255,255,.78)!important;border-radius:6px!important;background:rgba(255,255,255,.94)!important;box-shadow:0 8px 24px rgba(20,42,38,.16)!important;backdrop-filter:blur(10px)}
+.lvn002-scene-title>div:first-child{margin-bottom:3px;color:#A94018!important;font-size:11px!important}
+.lvn002-scene-title>div:last-child{color:#174F49!important;font-size:14px!important;line-height:1.35}
+.lvn002-scene-progress{top:18px!important;right:18px!important;padding:8px 11px!important;border:1px solid rgba(255,255,255,.78)!important;border-radius:6px!important;background:rgba(255,255,255,.94)!important;box-shadow:0 8px 22px rgba(20,42,38,.14)!important;backdrop-filter:blur(10px);font-size:12px!important}
+.lvn002-hotspot{gap:6px}
+.lvn002-hotspot .orb{width:46px;height:46px;min-width:46px;min-height:46px;border:2px solid #FFFFFF;box-shadow:0 7px 20px rgba(0,0,0,.24)}
+.lvn002-hotspot .tag{max-width:170px;padding:6px 9px;border:0;border-radius:4px;background:rgba(255,255,255,.96);box-shadow:0 5px 15px rgba(0,0,0,.16);color:#174F49;font-size:11px}
+.lvn002-bot{height:72px;padding:0 24px;border-top:1px solid #DCE5E2;background:#FFFFFF;box-shadow:0 -4px 16px rgba(31,59,54,.04)}
+.lvn002-bot button.nav{padding:0 8px;color:#52645F;font-size:13px;text-transform:none}
+.lvn002-bot button.next{min-height:42px;max-width:280px;padding:11px 17px;border-radius:6px;background:#A94018;font-size:13px;text-transform:none;box-shadow:0 5px 14px rgba(169,64,24,.2)}
+.lvn002-footer-status span{padding:0!important;border:0!important;background:transparent!important;color:#52645F!important;font-size:12px!important;text-transform:none!important}
+.lvn002-modal-card{border-radius:8px}
+.lvn002-modal-card h2,.lvn002-modal-card h3{font-size:20px!important}
+.lvn002-modal-card p,.lvn002-modal-card button{font-size:15px!important;line-height:1.55!important}
+@media (max-width:1180px){
+  .lvn002-top{padding:0 14px;gap:10px}
+  .lvn002-brand{min-width:auto}
+  .lvn002-brand .brand-text{display:none}
+  .lvn002-tabs{flex:0 1 auto;justify-content:center}
+  .lvn002-tab{width:40px;min-width:40px;padding:0;font-size:12px}
+  .lvn002-tab-label{display:none}
+  .lvn002-tab.quiz-tab{width:42px;border-left:0;border-radius:6px}
+  .lvn002-work{padding:14px;gap:12px}
+  .lvn002-left{width:41%;min-width:330px;padding:22px}
+  .rn-lesson-title{font-size:26px}
+}
+@media (max-width:780px){
+  .lvn002-top{height:auto;min-height:118px;padding:8px 10px;align-content:center;flex-wrap:wrap;gap:6px 10px}
+  .lvn002-brand{font-size:13px}
+  .lvn002-brand .brand-text{display:inline}
+  .lvn002-exit{margin-left:auto}
+  .lvn002-tabs{order:3;display:flex;width:100%;min-width:100%;flex:0 0 100%;overflow-x:auto}
+  .lvn002-tab{flex:0 0 38px;width:38px;min-width:38px;min-height:36px;padding:0;font-size:11px}
+  .lvn002-tab.quiz-tab{font-size:11px}
+  .lvn002-tab.quiz-tab:after{content:none}
+  .lvn002-work{flex-direction:column;overflow-y:auto;overflow-x:hidden;padding:10px;gap:10px}
+  .lvn002-left,.lvn002-right{width:100%;min-width:0;max-width:none;border-radius:8px}
+  .lvn002-left{max-height:none;padding:20px;overflow:visible}
+  .lvn002-right{order:-1;min-height:0;padding:6px;aspect-ratio:16/13}
+  .lvn002-stage{width:100%;height:auto;border-radius:5px}
+  .lvn002-bot{height:66px;padding:0 10px}
+}
+@media (max-width:520px){
+  .lvn002-top{min-height:124px}
+  .lvn002-tab{flex-basis:32px;width:32px;min-width:32px}
+  .lvn002-tab.quiz-tab{width:32px;min-width:32px}
+  .lvn002-brand .brand-text{display:none}
+  .lvn002-work{padding:8px}
+  .lvn002-left{padding:17px}
+  .rn-lesson-title{font-size:24px}
+  .rn-key-action-grid{grid-template-columns:1fr}
+  .rn-action-card{grid-column:auto!important}
+  .lvn002-right{min-height:0}
+  .lvn002-scene-title{top:8px!important;left:8px!important;padding:8px 9px!important}
+  .lvn002-scene-progress{top:8px!important;right:8px!important;padding:6px 8px!important}
+  .lvn002-scene-progress svg{display:none}
+  .lvn002-hotspot .tag{max-width:105px;font-size:9px}
+  .lvn002-bot button.next{max-width:150px;padding:8px 10px;font-size:11px}
+}
 `;
 
 function FeedbackBlock({ label, body, accent, icon }: { label: string; body: string; accent?: boolean; icon?: React.ReactNode }) {
@@ -1282,48 +1392,51 @@ function LeftPanel({ page, pageIndex, total }: { page: PageData; pageIndex: numb
   const sourcesId = `rn-sources-${page.id}`;
   return (
     <div className="rn-left-panel-system" data-left-panel="segmented">
-      <div style={{ display: 'inline-flex', alignItems: 'center', fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: CI.teal, background: CI.tealSoft, border: `1px solid ${CI.tealMuted}`, borderRadius: 999, padding: '4px 10px', marginBottom: 12 }}>{page.shortName} · {pageIndex + 1} of {total}</div>
-      <h1 style={{ margin: '0 0 6px', fontSize: 24, fontWeight: 800, lineHeight: 1.25, color: '#1F1C1B' }}>{page.title}</h1>
-      <p style={{ margin: '0 0 12px', color: CI.orange, fontSize: 15, fontWeight: 600 }}>{page.subtitle}</p>
+      <div className="rn-lesson-kicker">
+        <span>{page.shortName}</span>
+        <span>{String(pageIndex + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
+      </div>
+      <h1 className="rn-lesson-title">{page.title}</h1>
+      <p className="rn-lesson-subtitle">{page.subtitle}</p>
 
-      <section aria-label="Lesson focus" style={{ padding: 13, borderRadius: 12, background: CI.tealSoft, border: `1px solid ${CI.tealMuted}`, marginBottom: 14 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, fontWeight: 800, color: CI.teal, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}><Sparkles size={15} aria-hidden="true" />Lesson Focus</div>
-        <p style={{ margin: 0, fontSize: 15, lineHeight: 1.55, color: CI.ink }}>{focus}</p>
+      <section aria-label="Lesson focus" className="rn-focus-panel">
+        <div className="rn-section-label"><Sparkles size={15} aria-hidden="true" />Lesson focus</div>
+        <p>{focus}</p>
       </section>
 
-      <section aria-labelledby={actionsId} style={{ marginBottom: 14 }}>
-        <h2 id={actionsId} style={{ margin: '0 0 9px', fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: CI.muted }}>Key RN Actions</h2>
-        <div className="rn-key-action-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
+      <section aria-labelledby={actionsId} className="rn-actions-section">
+        <h2 id={actionsId} className="rn-section-heading">Key RN actions</h2>
+        <div className="rn-key-action-grid">
           {page.keyPoints.map((kp, index) => (
-            <article id={`kp-${page.id}-${index}`} key={`kp-${page.id}-${index}`} style={{ background: '#fff', border: `1px solid ${CI.border}`, borderRadius: 12, padding: 11, display: 'flex', gap: 9, minWidth: 0, overflow: 'hidden', boxShadow: '0 3px 10px rgba(15,91,84,.06)', gridColumn: page.keyPoints.length % 2 === 1 && index === page.keyPoints.length - 1 ? '1 / -1' : undefined }}>
-              <span style={{ fontSize: 18, lineHeight: 1.2 }} aria-hidden>{kp.icon}</span>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 800, fontSize: 13, color: '#1F1C1B', marginBottom: 3, overflowWrap: 'anywhere' }}>{kp.title}</div>
-                <div style={{ fontSize: 13, color: CI.muted, lineHeight: 1.4, overflowWrap: 'anywhere' }}>{kp.detail}</div>
+            <article id={`kp-${page.id}-${index}`} key={`kp-${page.id}-${index}`} className="rn-action-card" style={{ gridColumn: page.keyPoints.length % 2 === 1 && index === page.keyPoints.length - 1 ? '1 / -1' : undefined }}>
+              <span className="rn-action-index" aria-hidden>{String(index + 1).padStart(2, '0')}</span>
+              <div className="rn-action-copy">
+                <div className="rn-action-title">{kp.title}</div>
+                <div className="rn-action-detail">{kp.detail}</div>
               </div>
             </article>
           ))}
         </div>
       </section>
 
-      <section aria-label="Clinical tip" style={{ padding: 13, borderRadius: 12, background: '#FFF8F3', border: `1px solid #F3D5C7`, borderLeft: `4px solid ${CI.orangeDark}`, marginBottom: 13 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, fontWeight: 800, color: CI.orangeDark, letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}><AlertCircle size={15} aria-hidden="true" />Clinical Tip</div>
-        <div style={{ fontSize: 14, color: '#524C4B', lineHeight: 1.5 }}>{page.clinicalTip}</div>
+      <section aria-label="Clinical tip" className="rn-clinical-tip">
+        <div className="rn-clinical-tip-label"><AlertCircle size={15} aria-hidden="true" />Clinical tip</div>
+        <div className="rn-clinical-tip-copy">{page.clinicalTip}</div>
       </section>
 
-      <section aria-labelledby={sourcesId} style={{ marginBottom: 13 }}>
-        <h2 id={sourcesId} style={{ margin: '0 0 7px', fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: CI.muted }}>Sources &amp; Standards</h2>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+      <section aria-labelledby={sourcesId} className="rn-sources-section">
+        <h2 id={sourcesId} className="rn-section-heading">Sources &amp; standards</h2>
+        <div className="rn-source-list">
           {page.sourceLabels.map((s) => (
-            <span key={s.kind + s.text} style={{ fontSize: 10.5, padding: '5px 8px', borderRadius: 999, background: '#FAFBF8', border: `1px solid ${CI.border}`, color: CI.teal, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.035em', overflowWrap: 'anywhere' }}>{s.kind}: {s.text}</span>
+            <span key={s.kind + s.text} className="rn-source-chip"><strong>{s.kind}</strong>{s.text}</span>
           ))}
         </div>
       </section>
 
-      <details className="rn-lesson-details" style={{ border: `1px solid ${CI.border}`, borderRadius: 12, background: '#FAFBF8', marginBottom: 4 }}>
-        <summary style={{ padding: '12px 14px', fontWeight: 800, fontSize: 13, color: CI.teal, cursor: 'pointer' }}>Read Full Lesson Details</summary>
-        <div style={{ padding: 14, borderTop: `1px solid ${CI.border}`, background: '#fff' }}>
-          {page.narration.map((paragraph, index) => <p key={index} style={{ margin: index === page.narration.length - 1 ? 0 : '0 0 11px', fontSize: 15, lineHeight: 1.65, color: '#524C4B' }}>{paragraph}</p>)}
+      <details className="rn-lesson-details">
+        <summary>Read full lesson details</summary>
+        <div className="rn-lesson-details-copy">
+          {page.narration.map((paragraph, index) => <p key={index} style={{ margin: index === page.narration.length - 1 ? 0 : '0 0 11px' }}>{paragraph}</p>)}
         </div>
       </details>
     </div>
@@ -1356,7 +1469,7 @@ function RightPanel({ page, completed, setCompleted, onGoQuiz }: {
           <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.1em', textTransform: 'uppercase', color: CI.orange }}>{page.shortName}</div>
           <div style={{ fontSize: 13, fontWeight: 800, color: CI.teal }}>{page.title.split(':')[0]}</div>
         </div>
-        <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 8, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 999, background: '#fff', border: `1px solid ${CI.border}`, fontSize: 11, fontWeight: 800, color: CI.teal, pointerEvents: 'none' }} aria-hidden="true">
+        <div className="lvn002-scene-progress" style={{ position: 'absolute', top: 10, right: 10, zIndex: 8, display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 999, background: '#fff', border: `1px solid ${CI.border}`, fontSize: 11, fontWeight: 800, color: CI.teal, pointerEvents: 'none' }} aria-hidden="true">
           <Eye size={14} /> {completed.length} / {page.hotspots.length} observed
         </div>
         {page.hotspots.map((hs) => {
@@ -1708,15 +1821,18 @@ export default function RN002() {
         <div className="lvn002-tabs" role="tablist" aria-label="Lessons">
           {PAGES.map((p, i) => (
             <button key={p.id} type="button" role="tab" aria-selected={mode === 'lessons' && i === pageIndex}
+              aria-label={`Lesson ${i + 1}: ${p.title}`} title={p.title}
               className={`lvn002-tab ${mode === 'lessons' && i === pageIndex ? 'active' : ''}`}
               onClick={() => { setMode('lessons'); setPageIndex(i); }}>
-              {p.shortName}
+              <span className="lvn002-tab-index" aria-hidden="true">{i + 1}</span>
+              <span className="lvn002-tab-label" aria-hidden="true">{p.shortName.replace(/^\d+\s*/, '')}</span>
             </button>
           ))}
-          <button type="button" role="tab" aria-selected={mode === 'quiz'}
+          <button type="button" role="tab" aria-selected={mode === 'quiz'} aria-label="Knowledge Check" title="Knowledge Check"
             className={`lvn002-tab quiz-tab ${mode === 'quiz' ? 'active' : ''}`}
             onClick={() => setMode('quiz')}>
-            Knowledge Check
+            <CheckCircle2 size={16} aria-hidden="true" />
+            <span className="lvn002-tab-label" aria-hidden="true">Knowledge Check</span>
           </button>
         </div>
         <button type="button" className="lvn002-exit" onClick={handleSaveExit}>Save &amp; Exit</button>
