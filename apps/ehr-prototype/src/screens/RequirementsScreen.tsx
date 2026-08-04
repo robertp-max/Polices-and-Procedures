@@ -74,48 +74,50 @@ function RequirementsRail({ active, onSelect }: { active: WorkspaceKey; onSelect
           </div>
         </div>
         <div className="req-rail-scroll">
-          {NAV_GROUPS.map(g => (
-            <div className="req-rail-group" key={g.group}>
-              <div className="req-rail-label">{g.group}</div>
-              {g.items.map(item => (
-                <button
-                  key={item.key}
-                  type="button"
-                  className={'req-rail-item' + (active === item.key ? ' is-active' : '')}
-                  onClick={() => onSelect(item.key)}
-                  aria-current={active === item.key ? 'page' : undefined}
-                  aria-label={item.count != null ? `${item.label}, ${item.count.toLocaleString()}` : item.label}
-                >
-                  <span className="req-rail-item-text">
-                    <span className="req-rail-item-label" aria-hidden="true">{item.label}</span>
-                    <span className="req-rail-item-sub" aria-hidden="true">{item.sublabel}</span>
-                  </span>
-                  {item.count != null ? (
-                    <span className="req-rail-badge req-mono" aria-hidden="true">{item.count.toLocaleString()}</span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
-          ))}
+          {NAV_GROUPS.map((g, gi) => {
+            const groupId = `req-rail-group-${gi}`
+            return (
+              <div className="req-rail-group" key={g.group} role="group" aria-labelledby={groupId}>
+                <div className="req-rail-label" id={groupId}>{g.group}</div>
+                {g.items.map(item => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    className={'req-rail-item' + (active === item.key ? ' is-active' : '')}
+                    onClick={() => onSelect(item.key)}
+                    aria-current={active === item.key ? true : undefined}
+                    aria-label={item.count != null ? `${item.label}, ${item.count.toLocaleString()}` : item.label}
+                  >
+                    <span className="req-rail-item-text">
+                      <span className="req-rail-item-label" aria-hidden="true">{item.label}</span>
+                      <span className="req-rail-item-sub" aria-hidden="true">{item.sublabel}</span>
+                    </span>
+                    {item.count != null ? (
+                      <span className="req-rail-badge req-mono" aria-hidden="true">{item.count.toLocaleString()}</span>
+                    ) : null}
+                  </button>
+                ))}
+              </div>
+            )
+          })}
         </div>
       </nav>
 
-      {/* Collapsed strip for narrow viewports */}
-      <div className="req-chip-strip" role="tablist" aria-label="Requirements workspaces">
+      {/* Collapsed strip for narrow viewports — same nav pattern as the rail (not incomplete tabs) */}
+      <nav className="req-chip-strip" aria-label="Requirements workspaces">
         {NAV_GROUPS.flatMap(g => g.items).map(item => (
           <button
             key={item.key}
             type="button"
-            role="tab"
-            aria-selected={active === item.key}
-            aria-label={item.label}
+            aria-current={active === item.key ? true : undefined}
+            aria-label={item.count != null ? `${item.label}, ${item.count.toLocaleString()}` : item.label}
             className={'req-chip-strip-item' + (active === item.key ? ' is-active' : '')}
             onClick={() => onSelect(item.key)}
           >
             {item.label}
           </button>
         ))}
-      </div>
+      </nav>
     </>
   )
 }
