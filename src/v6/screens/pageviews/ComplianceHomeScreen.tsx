@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, ChevronDown, FileText, Search, ShieldCheck, XCircle } from 'lucide-react';
+import { ArrowRight, Building2, ChevronDown, FileText, Search, ShieldCheck, UserCheck, XCircle } from 'lucide-react';
 import { buildCalendarEvents, buildSprintSummary, type CesCalendarEvent } from '@/policy/ces/cesViewProjections';
 import { loadMasterControlInventorySeed } from '@/policy/data/masterControlInventory';
 import type { MasterControlItem, MasterControlReadinessStatus } from '@/policy/types/masterControlInventory';
@@ -94,6 +94,30 @@ const highlights: readonly HighlightCardData[] = [
     body: 'Confirm the sprint has complete evidence, clean audit trails, approved minutes, required forms, and export-ready survey packets.',
   },
 ];
+
+const registryWorkspaces = [
+  {
+    eyebrow: 'Canonical controls',
+    title: 'Registry Management',
+    body: 'Review regulatory controls, evidence requirements, accountable owners, and readiness gates.',
+    to: '/compliance/master-controls',
+    icon: ShieldCheck,
+  },
+  {
+    eyebrow: 'Entity oversight',
+    title: 'Vendor Management',
+    body: 'Manage vendor classification, agreements, BAAs, monitoring, renewals, incidents, and offboarding.',
+    to: '/compliance/vendors',
+    icon: Building2,
+  },
+  {
+    eyebrow: 'Workforce clearance',
+    title: 'Contractor Management',
+    body: 'Review contractor classification, credentials, clearance, assignments, renewals, and offboarding.',
+    to: '/compliance/contractors',
+    icon: UserCheck,
+  },
+] as const;
 
 const HOME_SURFACE_CLASS = 'rounded-lg bg-white shadow-[0_14px_34px_rgba(31,41,55,0.10),0_2px_8px_rgba(31,41,55,0.06)] ring-1 ring-black/[0.03]';
 const HOME_SURFACE_HOVER_CLASS = 'transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_42px_rgba(31,41,55,0.14),0_4px_12px_rgba(31,41,55,0.08)]';
@@ -227,6 +251,50 @@ function HomeLandingView({ openWorkspace }: { openWorkspace: () => void }) {
             <span className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#474742]">{stat.label}</span>
           </div>
         ))}
+      </section>
+
+      <section className="pt-4" aria-labelledby="registry-contracts-heading">
+        <div className="mb-6 flex flex-col gap-2 px-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#C2410C]">
+              Compliance operations
+            </p>
+            <h2 id="registry-contracts-heading" className="mt-1 font-montserrat text-2xl font-semibold text-[#007970]">
+              Registry &amp; Contracts
+            </h2>
+          </div>
+          <p className="max-w-xl font-roboto text-sm leading-relaxed text-[#3D3D3A]">
+            Move from canonical controls into the entity and person-level workspaces they govern.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          {registryWorkspaces.map((workspace) => {
+            const Icon = workspace.icon;
+            return (
+              <Link
+                key={workspace.title}
+                to={workspace.to}
+                aria-label={`Open ${workspace.title}`}
+                className={`group flex min-h-[220px] flex-col p-7 ${HOME_SURFACE_CLASS} ${HOME_SURFACE_HOVER_CLASS}`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <span className="grid h-12 w-12 place-items-center rounded-lg bg-[#E5FEFF] text-[#007970]">
+                    <Icon className="h-6 w-6" aria-hidden />
+                  </span>
+                  <ArrowRight
+                    className="h-5 w-5 text-[#474742] transition group-hover:translate-x-1 group-hover:text-[#007970]"
+                    aria-hidden
+                  />
+                </div>
+                <p className="mt-7 font-montserrat text-[10px] font-bold uppercase tracking-widest text-[#C2410C]">
+                  {workspace.eyebrow}
+                </p>
+                <h3 className="mt-2 font-montserrat text-lg font-semibold text-[#007970]">{workspace.title}</h3>
+                <p className="mt-3 font-roboto text-sm leading-relaxed text-[#3D3D3A]">{workspace.body}</p>
+              </Link>
+            );
+          })}
+        </div>
       </section>
 
       <section className="pt-8">
