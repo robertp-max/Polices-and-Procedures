@@ -1210,7 +1210,7 @@ const STYLES = `
   .lvn002-work{flex-direction:column;overflow-y:auto;overflow-x:hidden;padding:10px;gap:10px}
   .lvn002-left,.lvn002-right{width:100%;min-width:0;max-width:none;border-radius:8px}
   .lvn002-left{max-height:none;padding:20px;overflow:visible}
-  .lvn002-right{order:-1;min-height:0;padding:6px;aspect-ratio:16/13}
+  .lvn002-right{order:-1;flex:none;min-height:0;padding:6px;aspect-ratio:16/13}
   .lvn002-stage{width:100%;height:auto;border-radius:5px}
   .lvn002-bot{height:66px;padding:0 10px}
 }
