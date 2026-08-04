@@ -152,7 +152,11 @@ export default function QualityScreen() {
                   </span>
                   <span className="qual-int-meter">
                     <span className="qual-int-frac">{p.integrity.passed}<span>/{p.integrity.total}</span></span>
-                    <ProgressBar pct={pct} color={ok ? 'var(--status-good)' : 'var(--status-warn-icon)'} />
+                    <ProgressBar
+                      pct={pct}
+                      color={ok ? 'var(--status-good)' : 'var(--status-warn-icon)'}
+                      label={`${p.firstName} ${p.lastName} record integrity ${p.integrity.passed} of ${p.integrity.total} checks passed`}
+                    />
                   </span>
                   <StatusChip tone={ok ? 'good' : 'warn'}>{ok ? 'On track' : 'Attention'}</StatusChip>
                   <ArrowRight className="qual-int-go" size={14} strokeWidth={2} aria-hidden />

@@ -42,13 +42,10 @@ npx tsc --noEmit -p .
 3. [`docs/A11Y-AUDIT.md`](docs/A11Y-AUDIT.md) — the accessibility contract for this app,
    including exact token pairings that fail contrast (folded into §2 below).
 
-> **Known gap, don't rely on it:** the sidebar has a "Design system" nav item
-> (`src/data/navigation.ts`, `to: '/design-system'`, `status: 'built'`) but no matching
-> `<Route>` exists in `src/App.tsx` and no `DesignSystemScreen` is registered — clicking it
-> silently redirects to `/today` via the catch-all route. There is **no live component
-> gallery today**; use the two docs above instead. If you wire this route up, also fix the
-> dangling nav entry in the same change — don't leave a `status: 'built'` item pointing
-> nowhere (see §5 on the honesty rule this file's own header comment sets).
+> **Live gallery:** `/design-system` is registered in `src/App.tsx` (outside AppShell/
+> DocShell as a full-width developer surface) and the sidebar "Design system" item in
+> `src/data/navigation.ts` is `status: 'built'`. Prefer the live gallery when exploring
+> kit components; the three docs above remain the written contract.
 
 ---
 
@@ -176,8 +173,8 @@ There is no scaffolding CLI — copy the closest existing screen as your templat
    ```
    **Never set `status: 'built'` before the route actually works.** `navigation.ts`'s own
    header comment states this rule explicitly ("Navigation must never imply a capability
-   exists when it does not") — the dangling `/design-system` entry described in §1 is the
-   live counter-example of what happens when this slips.
+   exists when it does not") — `/design-system` is the positive example (route +
+   `status: 'built'` stay in lockstep; see §1).
 5. **Root JSX** must be:
    ```tsx
    <div className="screen">

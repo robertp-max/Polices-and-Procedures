@@ -466,7 +466,7 @@ export default function DesignSystemScreen() {
                   <div className="ds-progress-demo-row">
                     {[25, 60, 90].map(p => (
                       <div className="ds-progress-demo" key={p}>
-                        <ProgressBar pct={p} />
+                        <ProgressBar pct={p} label={`Demo progress bar at ${p}%`} />
                         <span className="ds-swatch-hex">{p}%</span>
                       </div>
                     ))}

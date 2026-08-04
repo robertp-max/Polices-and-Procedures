@@ -185,7 +185,13 @@ export default function PatientsScreen() {
                       <td>
                         <div className="pts-episode">
                           <div className="pts-episode-day">Day {p.episode.day} of {p.episode.length}</div>
-                          <div className="pts-mini-bar"><ProgressBar pct={episodePct} color="var(--teal-400)" /></div>
+                          <div className="pts-mini-bar">
+                            <ProgressBar
+                              pct={episodePct}
+                              color="var(--teal-400)"
+                              label={`${p.firstName} ${p.lastName} episode day ${p.episode.day} of ${p.episode.length}`}
+                            />
+                          </div>
                           {p.episode.status !== 'active' && (
                             <div className="pts-episode-note">
                               {p.episode.status === 'pending-soc' ? 'SOC pending' : 'Discharge planned'}
@@ -212,6 +218,7 @@ export default function PatientsScreen() {
                             <ProgressBar
                               pct={(p.integrity.passed / p.integrity.total) * 100}
                               color={integrityComplete ? 'var(--green-300)' : 'var(--yellow-300)'}
+                              label={`${p.firstName} ${p.lastName} record integrity ${p.integrity.passed} of ${p.integrity.total} checks passed`}
                             />
                           </div>
                         </div>

@@ -445,7 +445,11 @@ export default function PatientChartScreen() {
                         <div className="chart-assess-meta">{a.discipline} · {a.window}</div>
                       </div>
                       <div className="chart-assess-progress">
-                        <ProgressBar pct={a.completion} color={a.completion === 100 ? 'var(--green-300)' : 'var(--orange-400)'} />
+                        <ProgressBar
+                          pct={a.completion}
+                          color={a.completion === 100 ? 'var(--green-300)' : 'var(--orange-400)'}
+                          label={`${a.name} assessment ${a.completion}% complete`}
+                        />
                         <span className="chart-assess-pct">{a.completion}%</span>
                       </div>
                       <StatusChip tone={ASSESS_STATUS[a.status].tone}>{ASSESS_STATUS[a.status].label}</StatusChip>
@@ -465,7 +469,10 @@ export default function PatientChartScreen() {
                         {a.items.map(sec => (
                           <div className="chart-assess-section-row" key={sec.section}>
                             <span className="chart-assess-section-label">{sec.section}</span>
-                            <ProgressBar pct={(sec.done / sec.total) * 100} />
+                            <ProgressBar
+                              pct={(sec.done / sec.total) * 100}
+                              label={`${a.name} · ${sec.section} ${sec.done} of ${sec.total} items`}
+                            />
                             <span className="chart-assess-section-count">{sec.done}/{sec.total}</span>
                           </div>
                         ))}

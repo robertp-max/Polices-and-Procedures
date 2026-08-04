@@ -345,7 +345,11 @@ function EpicsWorkspace() {
                 <span>{e.storyCount} stories</span>
                 <span className="req-mono">{e.planningPct}%</span>
               </div>
-              <ProgressBar pct={e.planningPct} color="var(--teal-400)" />
+              <ProgressBar
+                pct={e.planningPct}
+                color="var(--teal-400)"
+                label={`${e.id} ${e.name} planning ${e.planningPct}% complete`}
+              />
             </button>
           )
         })}
@@ -360,7 +364,15 @@ function EpicsWorkspace() {
       >
         {selected ? (
           <div className="req-drawer-body">
-            <div className="req-drawer-row"><span className="card-kicker">Planning progress</span><ProgressBar pct={selected.planningPct} color="var(--teal-400)" /><p className="req-body">{EPIC_PROGRESS_NOTE}</p></div>
+            <div className="req-drawer-row">
+              <span className="card-kicker">Planning progress</span>
+              <ProgressBar
+                pct={selected.planningPct}
+                color="var(--teal-400)"
+                label={`${selected.id} ${selected.name} planning ${selected.planningPct}% complete`}
+              />
+              <p className="req-body">{EPIC_PROGRESS_NOTE}</p>
+            </div>
             <div className="req-drawer-row">
               <span className="card-kicker">Story slots</span>
               <ul className="req-drawer-list">
