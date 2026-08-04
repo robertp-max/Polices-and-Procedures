@@ -137,8 +137,10 @@ const CRITICAL_STANDARDS: string[] = [
   "Evidence dated after a matter's source cutoff may never be treated as controlling at decision time.",
 ];
 
-const LEFT_RAIL_ITEMS: { key: string; label: string; icon: typeof LayoutGrid; active?: boolean }[] = [
-  { key: 'hub', label: 'Tabletop Hub', icon: LayoutGrid, active: true },
+type HubSectionKey = 'hub' | 'progress' | 'pnp' | 'standards' | 'reports' | 'admin' | 'help' | 'library';
+
+const LEFT_RAIL_ITEMS: { key: HubSectionKey; label: string; icon: typeof LayoutGrid }[] = [
+  { key: 'hub', label: 'Tabletop Hub', icon: LayoutGrid },
   { key: 'progress', label: 'My Progress', icon: TrendingUp },
   { key: 'pnp', label: 'P&Ps Library', icon: BookOpen },
   { key: 'standards', label: 'Standards Matrix', icon: ClipboardList },
@@ -147,8 +149,8 @@ const LEFT_RAIL_ITEMS: { key: string; label: string; icon: typeof LayoutGrid; ac
   { key: 'help', label: 'Need Help', icon: HelpCircle },
 ];
 
-const TOP_NAV_ITEMS: { key: string; label: string; active?: boolean }[] = [
-  { key: 'hub', label: 'Tabletop Hub', active: true },
+const TOP_NAV_ITEMS: { key: HubSectionKey; label: string }[] = [
+  { key: 'hub', label: 'Tabletop Hub' },
   { key: 'standards', label: 'Standards' },
   { key: 'pnp', label: 'Policies & Procedures' },
   { key: 'reports', label: 'Reports' },
@@ -220,6 +222,8 @@ export default function TabletopHub({
   const [restartPackId, setRestartPackId] = useState<string | null>(null);
   const [packetArtifacts, setPacketArtifacts] = useState<TabletopPacketArtifact[]>([]);
   const [packetNotice, setPacketNotice] = useState('Loading controlled packet artifacts...');
+  const [activeSection, setActiveSection] = useState<HubSectionKey>('hub');
+  const sectionRefs = useRef(new Map<HubSectionKey, HTMLElement | null>());
 
   useEffect(() => {
     const unsubscribe = subscribe(() => forceTick((n) => n + 1));
@@ -352,6 +356,19 @@ export default function TabletopHub({
   const donutCircumference = 2 * Math.PI * donutRadius;
   const donutOffset = donutCircumference * (1 - coverage.pct / 100);
 
+  const selectSection = useCallback((section: HubSectionKey) => {
+    setActiveSection(section);
+    const target = sectionRefs.current.get(section);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.requestAnimationFrame(() => target.focus({ preventScroll: true }));
+    }
+  }, []);
+
+  const registerSection = useCallback((section: HubSectionKey) => (node: HTMLElement | null) => {
+    sectionRefs.current.set(section, node);
+  }, []);
+
   return (
     <>
     {/* Background is inert while the readiness gate is open. */}
@@ -374,9 +391,9 @@ export default function TabletopHub({
             <button
               key={item.key}
               type="button"
-              className={item.active ? 'active' : undefined}
-              aria-current={item.active ? 'page' : undefined}
-              onClick={item.active ? undefined : onExit}
+              className={activeSection === item.key ? 'active' : undefined}
+              aria-current={activeSection === item.key ? 'page' : undefined}
+              onClick={() => selectSection(item.key)}
             >
               {item.label}
             </button>
@@ -402,9 +419,9 @@ export default function TabletopHub({
               <button
                 key={item.key}
                 type="button"
-                className={item.active ? 'active' : undefined}
-                aria-current={item.active ? 'page' : undefined}
-                onClick={item.active ? undefined : onExit}
+                className={activeSection === item.key ? 'active' : undefined}
+                aria-current={activeSection === item.key ? 'page' : undefined}
+                onClick={() => selectSection(item.key)}
               >
                 <Icon size={18} aria-hidden="true" />
                 <span>{item.label}</span>
@@ -422,7 +439,7 @@ export default function TabletopHub({
 
           <PrivilegedAccessBanner mode={privilegedMode} />
 
-          <div className="bs-hub-head">
+          <div className="bs-hub-head" ref={registerSection('hub')} tabIndex={-1}>
             <div>
               <h1 className="bs-editorial">Tabletop Hub</h1>
               <p>
@@ -630,6 +647,107 @@ export default function TabletopHub({
               );
             })}
           </div>
+
+          <div className="bs-hub-section-stack" aria-label="Tabletop workspace sections">
+            <section className="bs-hub-section-panel" ref={registerSection('progress')} tabIndex={-1}>
+              <header>
+                <span>My Progress</span>
+                <h2>Complete every 2026 tabletop exercise.</h2>
+              </header>
+              <div className="bs-hub-section-metrics">
+                <article><strong>{completedCount} / {PACKS.length}</strong><span>completed</span></article>
+                <article><strong>{draftInProgressCount}</strong><span>drafts in progress</span></article>
+                <article><strong>{coverage.covered} / {coverage.total}</strong><span>workflows covered</span></article>
+              </div>
+              <ul className="bs-hub-section-list">
+                {PACKS.map((pack) => {
+                  const attempt = attempts.get(pack.id);
+                  return (
+                    <li key={pack.id}>
+                      <CheckCircle2 size={15} aria-hidden="true" />
+                      <span>{pack.quarter === 'FY2026' ? 'Annual' : pack.quarter}</span>
+                      <strong>{pack.title}</strong>
+                      <em>{attempt?.officiallyComplete ? 'Complete' : attempt?.draft ? 'In progress' : 'Not started'}</em>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+
+            <section className="bs-hub-section-panel" ref={registerSection('pnp')} tabIndex={-1}>
+              <header>
+                <span>P&Ps Library</span>
+                <h2>Policy sources used by the tabletop.</h2>
+              </header>
+              <div className="bs-hub-link-grid">
+                {['GV-GB-001 Governing Body', 'QA-PG-001 QAPI Program', 'RM-EP-002 Emergency Exercise', 'IT-BC-002 DR/BC Testing'].map((item) => (
+                  <article key={item}><BookOpen size={16} aria-hidden="true" /><strong>{item}</strong><p>Source-controlled policy reference for scoring, evidence, and decision posture.</p></article>
+                ))}
+              </div>
+            </section>
+
+            <section className="bs-hub-section-panel" ref={registerSection('standards')} tabIndex={-1}>
+              <header>
+                <span>Standards Matrix</span>
+                <h2>Pass standards and critical failure rules.</h2>
+              </header>
+              <ul className="bs-hub-standard-list">
+                {CRITICAL_STANDARDS.map((standard) => <li key={standard}><AlertTriangle size={15} aria-hidden="true" />{standard}</li>)}
+              </ul>
+            </section>
+
+            <section className="bs-hub-section-panel" ref={registerSection('reports')} tabIndex={-1}>
+              <header>
+                <span>Reports & Insights</span>
+                <h2>Fiscal-year tabletop readiness snapshot.</h2>
+              </header>
+              <p>Across the five sessions, {coverage.covered} of {coverage.total} Governing Body workflows are represented. Completion records are learner-bound through the LMS evidence route.</p>
+              <div className="bs-hub-section-metrics">
+                <article><strong>{coverage.pct}%</strong><span>workflow coverage</span></article>
+                <article><strong>{packetArtifacts.length}</strong><span>packet artifacts</span></article>
+                <article><strong>{PACKS.length}</strong><span>required sessions</span></article>
+              </div>
+            </section>
+
+            <section className="bs-hub-section-panel" ref={registerSection('library')} tabIndex={-1}>
+              <header>
+                <span>Resource Library</span>
+                <h2>Board packets and source artifacts.</h2>
+              </header>
+              {packetArtifacts.length ? (
+                <div className="bs-hub-link-grid">
+                  {packetArtifacts.map((artifact) => (
+                    <article key={artifact.packetId}>
+                      <FileText size={16} aria-hidden="true" />
+                      <strong>{artifact.packetId}</strong>
+                      <p>{artifact.status.replaceAll('_', ' ')} · v{artifact.version} · {artifact.pageCount} pages</p>
+                      <button type="button" className="outline" onClick={() => openProtectedPacket(artifact)}>Open packet</button>
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p>{packetNotice}</p>
+              )}
+            </section>
+
+            <section className="bs-hub-section-panel" ref={registerSection('admin')} tabIndex={-1}>
+              <header>
+                <span>Admin Center</span>
+                <h2>Completion control center.</h2>
+              </header>
+              <p>LMS-backed completion evidence is bound to the signed-in learner. Privileged reviewer attempts remain excluded from official completion.</p>
+              <button type="button" onClick={onGoToCompliance ?? onExit}>Open required work</button>
+            </section>
+
+            <section className="bs-hub-section-panel" ref={registerSection('help')} tabIndex={-1}>
+              <header>
+                <span>Need Help</span>
+                <h2>What to do when launch is blocked.</h2>
+              </header>
+              <p>Tabletop exercises are the final validation. Complete the required training modules, assigned P&Ps, and assessments first, then return here and start the quarterly or annual session.</p>
+              <button type="button" onClick={onGoToCompliance ?? onExit}>Go to My Compliance</button>
+            </section>
+          </div>
         </main>
 
         <aside className="bs-hub-right-rail" aria-label="Program overview">
@@ -715,9 +833,7 @@ export default function TabletopHub({
               </p>
             ) : (
               <p className="bs-hub-readiness-text">
-                Preview only — official readiness cannot be determined because the compliance evidence
-                service is not connected. {draftInProgressCount} of {PACKS.length} sessions have a local
-                draft in progress.
+                LMS completion evidence is temporarily unavailable for this session. {draftInProgressCount} of {PACKS.length} sessions have a local draft in progress.
               </p>
             )}
           </section>
@@ -890,6 +1006,115 @@ const HUB_STYLE = `
 }
 .bs-pack-card > footer.bs-hub-pack-footer .bs-hub-restart-confirm button.danger:hover { background: #70271f; }
 .bs-hub-pack-footer small { align-self: flex-end; }
+
+.bs-hub-section-stack { display: grid; gap: 14px; margin-top: 18px; }
+.bs-hub-section-panel {
+  padding: 18px;
+  background: var(--bs-paper-glass);
+  border: 1px solid var(--bs-line);
+  border-radius: var(--bs-radius);
+  box-shadow: var(--bs-shadow-sm);
+  scroll-margin-top: 18px;
+}
+.bs-hub-section-panel:focus { outline: 2px solid var(--bs-gold); outline-offset: 2px; }
+.bs-hub-section-panel header { margin-bottom: 14px; }
+.bs-hub-section-panel header span {
+  color: var(--bs-bronze);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.bs-hub-section-panel h2 {
+  margin: 4px 0 0;
+  color: var(--bs-forest);
+  font-family: var(--font-editorial);
+  font-size: 22px;
+  font-weight: 400;
+}
+.bs-hub-section-panel p { color: var(--bs-muted); font-size: 11px; line-height: 1.55; }
+.bs-hub-section-panel > button,
+.bs-hub-link-grid button {
+  min-height: 34px;
+  padding: 7px 12px;
+  color: #fff;
+  background: var(--bs-forest);
+  border: 1px solid var(--bs-forest);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 650;
+}
+.bs-hub-section-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.bs-hub-section-metrics article {
+  padding: 12px;
+  background: var(--bs-canvas);
+  border: 1px solid var(--bs-line);
+  border-radius: 8px;
+}
+.bs-hub-section-metrics strong {
+  display: block;
+  color: var(--bs-forest);
+  font-family: var(--font-editorial);
+  font-size: 24px;
+  font-weight: 400;
+}
+.bs-hub-section-metrics span,
+.bs-hub-section-list span,
+.bs-hub-section-list em {
+  color: var(--bs-muted);
+  font-size: 10px;
+}
+.bs-hub-section-list,
+.bs-hub-standard-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 9px;
+}
+.bs-hub-section-list li,
+.bs-hub-standard-list li {
+  display: grid;
+  grid-template-columns: 18px minmax(42px, auto) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid var(--bs-line);
+  border-radius: 8px;
+}
+.bs-hub-section-list svg { color: var(--bs-success); }
+.bs-hub-section-list strong { color: var(--bs-ink); font-size: 11px; }
+.bs-hub-section-list em { font-style: normal; text-align: right; }
+.bs-hub-standard-list li {
+  grid-template-columns: 18px minmax(0, 1fr);
+  color: var(--bs-ink);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.bs-hub-standard-list svg { color: var(--bs-bronze); }
+.bs-hub-link-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.bs-hub-link-grid article {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid var(--bs-line);
+  border-radius: 8px;
+}
+.bs-hub-link-grid svg { color: var(--bs-bronze); }
+.bs-hub-link-grid strong { color: var(--bs-forest); font-size: 11px; }
+.bs-hub-link-grid p { margin: 0; font-size: 9.5px; }
 
 .bs-hub-right-rail { position: sticky; top: 14px; display: flex; flex-direction: column; gap: 14px; }
 

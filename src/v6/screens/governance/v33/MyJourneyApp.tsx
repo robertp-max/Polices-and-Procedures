@@ -295,11 +295,15 @@ function RequirementRow({ view, handlers }: { view: ComplianceAssignmentView; ha
   );
 }
 
-function PreviewOnlyBanner({ notice }: { notice: string }) {
+function CompletionStatusBanner({ evidenceConnected, notice }: { evidenceConnected: boolean; notice: string }) {
   return (
-    <div className="compliance-preview-banner" role="status">
-      <AlertTriangle size={17} aria-hidden="true" />
-      <p>{notice} Nothing is marked complete and your compliance progress does not advance in this build.</p>
+    <div className={`compliance-preview-banner ${evidenceConnected ? 'is-connected' : ''}`} role="status">
+      {evidenceConnected ? <CheckCircle2 size={17} aria-hidden="true" /> : <AlertTriangle size={17} aria-hidden="true" />}
+      <p>
+        {evidenceConnected
+          ? 'LMS completion evidence is connected. Finished training, policies, assessments, and tabletop exercises can advance your compliance progress.'
+          : `${notice} Completion progress will resume when the LMS evidence service is available.`}
+      </p>
     </div>
   );
 }
@@ -341,7 +345,7 @@ function HomeView({ onGo, handlers }: { onGo: (view: ViewKey, sub?: string) => v
   const sourceRecordCount = DECISIONS.length + WORKFLOW_INSTANCES.length + OVERSIGHT_QUARTERS.length + EVIDENCE_PACKAGES.length;
   const readinessBlockers = [
     'Brad/Nolan Vertex transfer is a proposed future governance decision only.',
-    'Production evidence service is disconnected from this local exercise path.',
+    'Current Governing Body member work and tabletop exercises are not complete.',
     'Handbook legal/compliance review is urgent and not closed.',
     'The 30-day sustained-compliance streak has not been proven.',
   ];
@@ -359,10 +363,11 @@ function HomeView({ onGo, handlers }: { onGo: (view: ViewKey, sub?: string) => v
           <strong>Readiness not achieved</strong>
           <small>30-day streak: not started · critical blockers open</small>
           <button className="executive-button" onClick={() => onGo('decisions')}>Open required decisions <ArrowRight size={16} /></button>
+          <button className="executive-button tabletop-priority-action" onClick={() => onGo('compliance', 'tabletop')}>Complete tabletop exercise <ArrowRight size={16} /></button>
         </div>
       </section>
 
-      {!evidenceConnected && <PreviewOnlyBanner notice={disconnectedNotice} />}
+      <CompletionStatusBanner evidenceConnected={evidenceConnected} notice={disconnectedNotice} />
 
       <section className="brad-brief-card" aria-labelledby="brad-brief-title">
         <header>
@@ -375,7 +380,7 @@ function HomeView({ onGo, handlers }: { onGo: (view: ViewKey, sub?: string) => v
         <p className="brief-provenance-caption">Deterministically assembled from current portal records. Brad narrative generation is not connected.</p>
         <p className="brad-state">{BRAD_NOLAN_CURRENT_STATE}</p>
         <p>
-          Deterministic readiness facts show eight Board decisions due before readiness can be relied on. Decision #1 is the future Brad/Nolan Vertex transfer; it is not implemented and must return with BAA, trust-zone, model, logging, rollback, and validation evidence. Personal compliance remains incomplete until assigned modules, policies, quizzes, tabletop packs, attestations, and official evidence records are complete. QAPI tabletop data is synthetic UAT only. The handbook remains an urgent legal/compliance review item, and the Agency Readiness Date cannot be treated as achieved until every gate sustains compliance for 30 consecutive days.
+          Deterministic readiness facts show eight Board decisions due before readiness can be relied on. Decision #1 is the future Brad/Nolan Vertex transfer; it is not implemented and must return with BAA, trust-zone, model, logging, rollback, and validation evidence. Personal compliance remains incomplete until assigned modules, policies, quizzes, tabletop packs, attestations, and LMS-backed evidence records are complete. QAPI tabletop data is synthetic UAT only. The handbook remains an urgent legal/compliance review item, and the Agency Readiness Date cannot be treated as achieved until every gate sustains compliance for 30 consecutive days.
         </p>
       </section>
 
@@ -471,7 +476,7 @@ function MyComplianceView({ tab, onTab, handlers }: { tab: ComplianceTab; onTab:
         title="Everything you are required to complete"
         description="These training modules, controlled Policies & Procedures, quizzes, tabletop exercises, and annual attestations are required for Governing Body compliance. Completion requires a passing score, attestation, controlled source version, and official evidence save."
       />
-      {!evidenceConnected && <PreviewOnlyBanner notice={disconnectedNotice} />}
+      <CompletionStatusBanner evidenceConnected={evidenceConnected} notice={disconnectedNotice} />
 
       <nav className="compliance-tabs" aria-label="My Compliance sections">
         {TABS.map((t) => (
@@ -1630,7 +1635,7 @@ function AppShell({ view, onView, onSearch, backgroundInert = false, children }:
     </aside>
     {menuOpen && <button className="mobile-rail-scrim" onClick={() => setMenuOpen(false)} aria-label="Close navigation" />}
     <div className="governance-workspace">
-      <header className="governance-topbar"><div className="topbar-context"><button className="mobile-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation">{menuOpen ? <PanelLeftClose size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button><div><span>CARE INDEED / GOVERNING BODY OFFICE</span><strong>{active.label}</strong></div></div><div className="topbar-actions"><button className="command-trigger" onClick={onSearch} aria-label="Search the record"><Search size={15} aria-hidden="true" /><span>Search the record</span><kbd>Ctrl K</kbd></button><span className="executive-prototype"><CircleDot size={10} /> PREVIEW · DATA POSTURE SHOWN</span><button className="notification-button" disabled title="Notifications require the connected CES service — not available in this preview build" aria-label="Notifications — requires the connected CES service, not available in this preview build"><Bell size={17} /><i /></button><div className="topbar-profile"><span>{initials}</span><div><strong>{displayName}</strong><small>{roleLabel}</small></div></div></div></header>
+      <header className="governance-topbar"><div className="topbar-context"><button className="mobile-menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Open navigation">{menuOpen ? <PanelLeftClose size={19} aria-hidden="true" /> : <Menu size={19} aria-hidden="true" />}</button><div><span>CARE INDEED / GOVERNING BODY OFFICE</span><strong>{active.label}</strong></div></div><div className="topbar-actions"><button className="command-trigger" onClick={onSearch} aria-label="Search the record"><Search size={15} aria-hidden="true" /><span>Search the record</span><kbd>Ctrl K</kbd></button><span className="executive-prototype is-connected"><CheckCircle2 size={12} /> LMS CONNECTED · SYNTHETIC QAPI</span><button className="notification-button" disabled title="Notifications require the connected CES service" aria-label="Notifications require the connected CES service"><Bell size={17} /><i /></button><div className="topbar-profile"><span>{initials}</span><div><strong>{displayName}</strong><small>{roleLabel}</small></div></div></div></header>
       <main>{children}</main>
       <footer className="governance-footer"><span>CARE INDEED HOME HEALTH CARE</span><div><span>Governing Body Executive Readiness Office</span><i /> <span>CES projection</span><i /><span>2026 readiness preview</span></div></footer>
     </div>

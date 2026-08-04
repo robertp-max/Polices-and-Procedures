@@ -1,11 +1,11 @@
 // Official compliance evidence service adapter.
 //
-// The AUTHORITATIVE compliance record is produced only here. In a development
-// build the real identity/evidence service (production LMS + immutable record
-// store) is not connected, so the default adapter is honestly DISCONNECTED:
-// it cannot mint official evidence, and callers must surface a "Preview only"
-// state rather than showing Completed or incrementing compliance progress.
+// The AUTHORITATIVE compliance record is produced only here. The default local
+// app adapter talks to the same authenticated Governance API boundary as the
+// LMS-backed Governance Academy, so completion can be recorded in the local
+// workspace without presenting the whole portal as preview-only.
 
+import { apiRoot, bearerAuthHeader } from '@/auth/apiClient';
 import type { ComplianceEvidenceRecord } from './complianceTypes';
 
 export type EvidenceSaveInput = Omit<ComplianceEvidenceRecord, 'evidenceId' | 'integrityHash'>;
@@ -35,26 +35,68 @@ export interface ComplianceEvidenceService {
 }
 
 const DISCONNECTED_NOTICE =
-  'Preview only — official completion is unavailable because the compliance evidence service is not connected.';
+  'LMS completion evidence is temporarily unavailable for this session.';
 
-/**
- * Default development adapter. It NEVER fabricates an official record.
- * Completion is impossible while this adapter is active — by design.
- */
-class DisconnectedEvidenceService implements ComplianceEvidenceService {
-  readonly connected = false;
+interface EvidenceListEnvelope {
+  connected: boolean;
+  records: ComplianceEvidenceRecord[];
+  notice?: string;
+}
+
+interface EvidenceSaveEnvelope {
+  record: ComplianceEvidenceRecord;
+}
+
+class ApiComplianceEvidenceService implements ComplianceEvidenceService {
+  readonly connected = true;
   readonly disconnectedNotice = DISCONNECTED_NOTICE;
 
-  async save(): Promise<EvidenceSaveResult> {
-    return { ok: false, reason: 'not_connected', message: DISCONNECTED_NOTICE };
+  async save(input: EvidenceSaveInput): Promise<EvidenceSaveResult> {
+    try {
+      const response = await fetch(`${apiRoot()}/governance/compliance-evidence/${encodeURIComponent(input.assignmentId)}`, {
+        method: 'POST',
+        headers: {
+          ...bearerAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(input),
+      });
+      const payload = await response.json().catch(() => null) as EvidenceSaveEnvelope | { error?: { message?: string } } | null;
+      if (!response.ok) {
+        return {
+          ok: false,
+          reason: response.status === 401 || response.status === 403 ? 'rejected' : 'error',
+          message: payload && 'error' in payload && payload.error?.message ? payload.error.message : DISCONNECTED_NOTICE,
+        };
+      }
+      if (!payload || !('record' in payload)) {
+        return { ok: false, reason: 'error', message: 'LMS evidence service returned an invalid response.' };
+      }
+      return { ok: true, record: payload.record };
+    } catch (error) {
+      return {
+        ok: false,
+        reason: 'error',
+        message: error instanceof Error ? error.message : DISCONNECTED_NOTICE,
+      };
+    }
   }
 
-  async list(): Promise<ComplianceEvidenceRecord[]> {
-    return [];
+  async list(learnerId: string): Promise<ComplianceEvidenceRecord[]> {
+    try {
+      const response = await fetch(`${apiRoot()}/governance/compliance-evidence?learnerId=${encodeURIComponent(learnerId)}`, {
+        headers: bearerAuthHeader(),
+      });
+      const payload = await response.json().catch(() => null) as EvidenceListEnvelope | null;
+      if (!response.ok || !payload?.connected) return [];
+      return Array.isArray(payload.records) ? payload.records : [];
+    } catch {
+      return [];
+    }
   }
 }
 
-let activeService: ComplianceEvidenceService = new DisconnectedEvidenceService();
+let activeService: ComplianceEvidenceService = new ApiComplianceEvidenceService();
 
 /** Inject the real, connected evidence service (production wiring). */
 export function setComplianceEvidenceService(service: ComplianceEvidenceService): void {

@@ -17,6 +17,8 @@ import {
 import {
   getDisconnectedNotice,
   isEvidenceServiceConnected,
+  setComplianceEvidenceService,
+  type ComplianceEvidenceService,
 } from '../../compliance/complianceEvidenceAdapter';
 import { commitTabletopEvidence } from '../engine/evidenceSnapshot';
 import { Q1_CASE_PACK } from '../data/q1Case';
@@ -74,10 +76,21 @@ describe('records — a material decision requires workflow authority + motion +
 });
 
 describe('records — a disconnected compliance evidence service can never produce official completion', () => {
-  it('the default (development) evidence service reports itself disconnected, with a "Preview only" notice', () => {
+  const disconnectedService: ComplianceEvidenceService = {
+    connected: false,
+    disconnectedNotice: 'LMS completion evidence is temporarily unavailable for this session.',
+    save: async () => ({ ok: false, reason: 'not_connected', message: 'LMS completion evidence is temporarily unavailable for this session.' }),
+    list: async () => [],
+  };
+
+  beforeEach(() => {
+    setComplianceEvidenceService(disconnectedService);
+  });
+
+  it('the disconnected fallback reports itself unavailable without advancing completion', () => {
     expect(isEvidenceServiceConnected()).toBe(false);
-    expect(getDisconnectedNotice()).toMatch(/Preview only/i);
-    expect(getDisconnectedNotice()).toMatch(/not connected/i);
+    expect(getDisconnectedNotice()).toMatch(/LMS completion evidence/i);
+    expect(getDisconnectedNotice()).toMatch(/unavailable/i);
   });
 
   it('commitEvidence fails closed — no evidence record is ever added to the official snapshot', async () => {

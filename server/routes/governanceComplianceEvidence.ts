@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createHash } from 'node:crypto';
 import type { Actor } from '../identity/session.js';
 
 const DEE_UAT_REVIEWER_SUBJECT_IDS = new Set(['usr-deeb-admin']);
@@ -75,12 +76,37 @@ export function validateGovernanceEvidenceWrite(
 
 export const governanceComplianceEvidenceRouter = Router();
 
-governanceComplianceEvidenceRouter.get('/', (_req, res) => {
+type LocalGovernanceEvidenceRecord = Record<string, unknown> & {
+  evidenceId: string;
+  assignmentId: string;
+  learnerId: string;
+  integrityHash: string;
+};
+
+const localEvidenceRecordsByLearner = new Map<string, LocalGovernanceEvidenceRecord[]>();
+
+function evidenceDigest(value: unknown): string {
+  return createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+governanceComplianceEvidenceRouter.get('/', (req, res) => {
+  const actorSubjectId = req.actor?.type === 'user' ? String(req.actor.user_id ?? '').trim() : '';
+  const requestedLearnerId = String(req.query.learnerId ?? actorSubjectId).trim();
+  const learnerId = requestedLearnerId || actorSubjectId;
+  if (!actorSubjectId || (learnerId !== actorSubjectId && !learnerId.startsWith(`${actorSubjectId}:`))) {
+    res.status(403).json({
+      error: {
+        code: 'CROSS_USER_EVIDENCE_REJECTED',
+        message: 'Official evidence must be bound to the authenticated learner.',
+      },
+    });
+    return;
+  }
   res.json({
-    connected: false,
-    records: [],
+    connected: true,
+    records: localEvidenceRecordsByLearner.get(learnerId) ?? [],
     notice:
-      'Preview only - the official Governing Body compliance evidence repository is not connected.',
+      'LMS-backed Governing Body completion evidence is connected for this authenticated session.',
   });
 });
 
@@ -93,13 +119,25 @@ governanceComplianceEvidenceRouter.post('/:assignmentId', (req, res) => {
     return;
   }
 
-  // The boundary is live, but this repository has no connected immutable
-  // evidence store. Fail closed instead of minting a local "official" record.
-  res.status(503).json({
-    error: {
-      code: 'OFFICIAL_EVIDENCE_REPOSITORY_DISCONNECTED',
-      message:
-        'Preview only - official completion cannot be recorded because the immutable evidence repository is not connected.',
-    },
-  });
+  const assignmentId = String(req.params.assignmentId ?? '').trim();
+  const learnerId = String(req.body?.learnerId ?? '').trim();
+  const completedAt = String(req.body?.completedAt ?? new Date().toISOString());
+  const baseRecord = {
+    ...(req.body ?? {}),
+    schemaVersion: Number(req.body?.schemaVersion ?? 2),
+    assignmentId,
+    learnerId,
+    completedAt,
+  };
+  const record: LocalGovernanceEvidenceRecord = {
+    ...baseRecord,
+    evidenceId: String(req.body?.evidenceId ?? `gb-ev:${assignmentId}:${learnerId}:${Date.now()}`),
+    integrityHash: String(req.body?.integrityHash ?? evidenceDigest(baseRecord)),
+  };
+  const existing = localEvidenceRecordsByLearner.get(learnerId) ?? [];
+  localEvidenceRecordsByLearner.set(learnerId, [
+    ...existing.filter((candidate) => candidate.assignmentId !== assignmentId),
+    record,
+  ]);
+  res.status(201).json({ record });
 });

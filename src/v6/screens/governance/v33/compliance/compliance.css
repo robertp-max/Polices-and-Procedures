@@ -23,6 +23,9 @@
 .compliance-preview-banner { display: flex; gap: 12px; align-items: flex-start; background: var(--oxblood-soft); border: 1px solid #edc9b8; border-left: 4px solid var(--oxblood); border-radius: 12px; padding: 14px 16px; margin: 0 0 22px; }
 .compliance-preview-banner svg { color: var(--oxblood); flex: none; margin-top: 1px; }
 .compliance-preview-banner p { margin: 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+.compliance-preview-banner.is-connected { background: #edf7f1; border-color: #bbdac8; border-left-color: #1b7a5d; }
+.compliance-preview-banner.is-connected svg { color: #1b7a5d; }
+.compliance-preview-banner.is-connected p { color: #183d34; font-weight: 650; }
 
 /* ---- Home summary cards -------------------------------------------------- */
 .compliance-summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin: 0 0 30px; }
