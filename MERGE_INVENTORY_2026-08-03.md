@@ -8,7 +8,7 @@
 | Base | `onboarding_specialized` @ `7b0b6ae6` |
 | Safety branch | `safety/onboarding_specialized-2026-08-03` @ `7b0b6ae6` |
 | Merge worktree | `C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\merge-local-app-surfaces-2026-08-03` |
-| Method | Approved file copies plus additive cherry-picks from committed remote branches; dirty roots and Fable's worktree were not used |
+| Method | Approved file copies plus additive cherry-picks from committed remote branches; the current `EHR_Prototype/apps/ehr-prototype` working tree was added later by explicit user request; dirty root checkout was not used |
 
 ### Commits on merge branch
 
@@ -31,13 +31,13 @@
 | `npm run build` (`tsc -b && vite build`) | **PASS** |
 | `npm run lint` | **PASS** — 0 errors; 712 warnings (legacy debt plus 4 EHR hook warnings) |
 | `npm test` | **PASS** — 72 files, 792 tests |
-| `apps/ehr-prototype`: `npm run build` | **PASS** — Vite 6.4.3, 1,633 modules |
+| `apps/ehr-prototype`: `npm run build` | **PASS** — Vite 6.4.3, 1,634 modules |
 | Journey: direct ESLint / `vinext build` / route tests | **PASS** — 0 lint errors, production build, 7/7 tests |
 | Browser: Journey → Connect | **PASS** — desktop/mobile no switch overlap; opens `http://127.0.0.1:5192/` |
 | Browser: Reception → EHR | **PASS** — launcher present; EHR dashboard renders on `http://127.0.0.1:5194/` with no console errors |
 | Sibling `src/**/*.js` shadows | None |
 | Secrets in `apps/ehr-prototype-static` | None found |
-| Fable `EHR_Prototype` in diff | **Not included** |
+| Latest `EHR_Prototype` working-tree overlay | **Included by user request** — 3 modified and 9 untracked app files copied exactly |
 | Connect / Journey sources in diff | **Not included** |
 | Drive health `http://127.0.0.1:5188/api/calendar/evidence/health` | HTTP 200, `ok: true`, `drive.reachable: true` (env on main) |
 | EHR source app `http://127.0.0.1:5194/` | Production build passed; Reception launcher target |
@@ -85,11 +85,13 @@ No full `git merge qapi` (branch history diverges from base).
 - Isolated static assets only; no auth/API/shared-state wiring
 - Serve: `npx --yes serve apps/ehr-prototype-static -l 5191`
 
-### Full EHR prototype source (from committed remote branch)
+### Full EHR prototype source (committed branch plus current working tree)
 
 - Source: `origin/EHR_Prototype`, commits `6f0f8b7c`, `49c54ebe`, and `828e37c6`
+- Current working-tree source: `C:\AI\Git\training\HomeHealth\Policies_and_Procedures_V2_worktrees\EHR_Prototype\apps\ehr-prototype`
 - Merge-branch cherry-picks: `25f2ff25`, `09483a5c`, and `e2b1e4c8`
 - Destination: `apps/ehr-prototype/`
+- Uncommitted overlay included exactly: requirements provenance updates; requirements-derived navigation; expanded prototype shell; planned-domain screen/styles; accessibility, component, requirements-review, and UI/UX framework docs; app-local agent guidance
 - Standalone Vite app with no policy-runtime auth, API, or shared-state wiring
 - Dev URL: `http://127.0.0.1:5194/`
 - Reception workspace card and `/ehr-prototype` CTA both launch port 5194
@@ -125,7 +127,7 @@ Latest correction verification:
 
 | Item | Reason |
 | --- | --- |
-| Fable `EHR_Prototype` worktree | Hard ban; never inspected or used as source. Only the separately committed `origin/EHR_Prototype` commits approved by the user were cherry-picked. |
+| Unrelated files outside `EHR_Prototype/apps/ehr-prototype` | The user authorized the current EHR app snapshot only; no other files from that worktree were copied. |
 | Dirty root checkout bulk untracked | Unrelated litter; merge done only in worktree |
 | Main dirty `src/auth/apiClient.ts` (larger) / tests | Not reception-approved set |
 | Connect repo (`...\connect`) | Separate Sites source; Journey toggle stays there |
@@ -169,7 +171,7 @@ Code already present on base: `server/googleDrive.ts`, `server/googleDriveAuth.t
 
 ## Confirmation
 
-- **Fable’s `EHR_Prototype` worktree was not included** and was not used as a source.
+- **The current `EHR_Prototype/apps/ehr-prototype` working-tree snapshot was included by explicit user request**, including its 3 modified and 9 untracked app files. No files outside that app directory were copied.
 - Merge performed only in the dedicated merge worktree; dirty root checkout was not staged.
 
 ## Wave-1 inventory verification (2026-08-03, W1-A15)
@@ -181,7 +183,7 @@ Additive check against merge worktree HEAD after feature commits (pre-refresh ti
 | Inclusions: reception launcher paths | **OK** | `src/v6/screens/pageviews/ReceptionScreen.tsx` (EHR → `http://127.0.0.1:5194`), route/shell/auth files from `79f25bd4` present |
 | Inclusions: qapi EHR docs | **OK** | `docs/ehr-development-inventory.md`, `docs/ehr-uiux-discovery-plan.md` |
 | Inclusions: static EHR path | **OK** | Destination **`apps/ehr-prototype-static/`**; title *Care Indeed Home Health EHR Prototype*; serve on **5191**; source Temp mirror (not Fable) |
-| Exclusion: Fable `EHR_Prototype` worktree | **OK** | Worktree was never inspected or copied; full source came from the user-approved committed remote branch |
+| Inclusion: latest `EHR_Prototype` app snapshot | **OK** | Committed branch content plus all current modified/untracked files under `apps/ehr-prototype`; exact SHA-256 parity checked before commit |
 | Exclusion: Connect / Journey | **OK** | External-only section; not in merge diff |
 | Working Drive URL | **OK** | **Only** `http://127.0.0.1:5188/evidence` (+ defensible-2) with API 8790 / env |
 | 5187 is not working Drive | **OK** | Inventory labels qapi preview **Not** / **NOT working Drive** |

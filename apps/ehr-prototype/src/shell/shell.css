@@ -16,7 +16,11 @@
   color: var(--sidebar-ink);
   padding: 20px 14px 14px;
   overflow-y: auto;
+  /* The nav spans every requirement domain, so it scrolls — without a visible bar. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.shell-sidebar::-webkit-scrollbar { width: 0; height: 0; display: none; }
 
 .shell-logo { padding: 2px 8px 18px; }
 .shell-logo img { width: 168px; height: auto; display: block; }
@@ -39,10 +43,10 @@
 
 .shell-nav-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 11px;
-  height: 38px;
-  padding: 0 10px;
+  min-height: 38px;
+  padding: 9px 10px;
   border-radius: var(--r-sm);
   color: var(--sidebar-ink-dim);
   font-size: 13.5px;
@@ -62,7 +66,25 @@
   background: var(--orange-400);
 }
 
-.shell-nav-text { flex: 1; }
+.shell-nav-text { flex: 1; line-height: 1.35; padding-top: 1px; }
+.shell-nav-item > svg { margin-top: 2px; flex-shrink: 0; }
+
+/* Planned areas are reachable but must never look implemented. */
+.shell-nav-item.is-planned { color: var(--sidebar-ink-faint); }
+.shell-nav-item.is-planned:hover { color: var(--sidebar-ink-dim); }
+
+.shell-nav-planned {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sidebar-ink-faint);
+  border: 1px solid var(--sidebar-line);
+  border-radius: 999px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
 
 .shell-nav-badge {
   min-width: 19px;

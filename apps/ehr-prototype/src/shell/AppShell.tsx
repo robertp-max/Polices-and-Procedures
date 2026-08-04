@@ -1,40 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import {
-  Bell, CalendarDays, FileSignature, Inbox, LayoutDashboard,
-  MessagesSquare, Plus, Receipt, Search, ShieldCheck, Stethoscope, TrendingUp,
-  Users, BadgeCheck,
-} from 'lucide-react'
+import { Bell, MessagesSquare, Plus, Search, ShieldCheck, BadgeCheck } from 'lucide-react'
 import { notifications } from '../data/clinical'
+import { NAV_COUNTS, NAV_GROUPS } from '../data/navigation'
 import { CommandPalette } from './CommandPalette'
 import './shell.css'
 
-const NAV = [
-  {
-    label: 'Workspace',
-    items: [
-      { to: '/today', label: 'Today', icon: LayoutDashboard },
-      { to: '/patients', label: 'Patients', icon: Users },
-      { to: '/intake', label: 'Referral & intake', icon: Inbox, badge: 6 },
-      { to: '/schedule', label: 'Schedule', icon: CalendarDays },
-    ],
-  },
-  {
-    label: 'Care delivery',
-    items: [
-      { to: '/clinical', label: 'Clinical', icon: Stethoscope, badge: 3 },
-      { to: '/orders', label: 'Orders', icon: FileSignature, badge: 4 },
-      { to: '/quality', label: 'Quality & compliance', icon: ShieldCheck },
-    ],
-  },
-  {
-    label: 'Operations',
-    items: [
-      { to: '/billing', label: 'Billing', icon: Receipt },
-      { to: '/reports', label: 'Reports', icon: TrendingUp },
-    ],
-  },
-]
+/* Navigation is derived from the requirements register — see data/navigation.ts. */
 
 const MODES = [
   { to: '/business-plan', label: 'Business Plan' },
@@ -91,18 +63,27 @@ export function AppShell() {
         </button>
 
         <nav className="shell-nav" aria-label="Primary">
-          {NAV.map(group => (
+          {NAV_GROUPS.map(group => (
             <div className="shell-nav-group" key={group.label}>
               <div className="shell-nav-label">{group.label}</div>
               {group.items.map(item => (
                 <NavLink
-                  key={item.to}
+                  key={item.label + item.to}
                   to={item.to}
-                  className={({ isActive }) => 'shell-nav-item' + (isActive ? ' is-active' : '')}
+                  end={item.to.startsWith('/domain/')}
+                  className={({ isActive }) =>
+                    'shell-nav-item'
+                    + (isActive ? ' is-active' : '')
+                    + (item.status === 'planned' ? ' is-planned' : '')
+                  }
+                  title={item.status === 'planned' ? `${item.label} — planned, not built` : item.label}
                 >
                   <item.icon size={17} strokeWidth={1.75} aria-hidden />
                   <span className="shell-nav-text">{item.label}</span>
                   {item.badge ? <span className="shell-nav-badge">{item.badge}</span> : null}
+                  {item.status === 'planned' && (
+                    <span className="shell-nav-planned" aria-label="planned, not built">planned</span>
+                  )}
                 </NavLink>
               ))}
             </div>
@@ -114,7 +95,10 @@ export function AppShell() {
             <BadgeCheck size={15} strokeWidth={1.75} aria-hidden />
             <div>
               <div className="shell-env-title">Design prototype</div>
-              <div className="shell-env-sub">Synthetic data only · no PHI</div>
+              <div className="shell-env-sub">
+                Synthetic data only · no PHI<br />
+                {NAV_COUNTS.built} of {NAV_COUNTS.total} areas built
+              </div>
             </div>
           </div>
         </div>
