@@ -237,9 +237,20 @@
 .chart-med-alert-name { font-size: 14px; font-weight: 500; color: var(--ink-strong); font-family: var(--font-display); }
 .chart-med-alert-note { font-size: 12.5px; color: var(--ink); line-height: 1.55; max-width: 640px; }
 .chart-med-alert-actions { display: flex; gap: 10px; margin-top: 4px; }
+.chart-med-alert-foot {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
 
 .chart-med-highrisk { margin-left: 8px; }
 .chart-med-footer { padding: 12px 20px 16px; font-size: 11.5px; color: var(--ink-soft); border-top: 1px solid var(--line); margin-top: 2px; }
+.chart-med-footer.is-attention {
+  color: var(--status-warn);
+  font-weight: 500;
+  background: var(--status-warn-bg);
+}
 
 /* ---------- Documents ---------- */
 

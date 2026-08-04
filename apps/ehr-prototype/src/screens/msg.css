@@ -103,6 +103,12 @@
   background: var(--teal-100);
   border-color: var(--teal-300);
 }
+.msg-row.is-unread .msg-subject {
+  font-weight: 600;
+}
+.msg-row.is-unread:not(.is-selected) {
+  background: var(--surface-brand-tint);
+}
 
 .msg-row-main {
   flex: 1;

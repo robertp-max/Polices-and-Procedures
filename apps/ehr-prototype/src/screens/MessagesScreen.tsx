@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   ArrowRight, FlaskConical, MessageSquare, Search, Users,
@@ -33,6 +33,23 @@ export default function MessagesScreen() {
   const [query, setQuery] = useState('')
   const [channel, setChannel] = useState<ChannelFilter>('all')
   const [selectedId, setSelectedId] = useState(MESSAGE_THREADS[0]?.id ?? null)
+  /** Thread ids opened this session — local read state only (no server write). */
+  const [readIds, setReadIds] = useState<Set<string>>(() => new Set())
+
+  const isUnread = (t: MessageThread) => t.unread && !readIds.has(t.id)
+
+  // Selecting an unread thread marks it read in local React state.
+  useEffect(() => {
+    if (!selectedId) return
+    const thread = MESSAGE_THREADS.find(t => t.id === selectedId)
+    if (!thread?.unread) return
+    setReadIds(prev => {
+      if (prev.has(selectedId)) return prev
+      const next = new Set(prev)
+      next.add(selectedId)
+      return next
+    })
+  }, [selectedId])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -49,7 +66,8 @@ export default function MessagesScreen() {
   }, [query, channel])
 
   const selected = MESSAGE_THREADS.find(t => t.id === selectedId) ?? null
-  const unread = MESSAGE_THREADS.filter(t => t.unread).length
+  const selectedUnread = selected ? isUnread(selected) : false
+  const unread = MESSAGE_THREADS.filter(t => isUnread(t)).length
 
   return (
     <div className="screen">
@@ -68,7 +86,9 @@ export default function MessagesScreen() {
           <button
             type="button"
             className="btn btn-primary"
+            disabled={false}
             title="Visual only · no message is sent"
+            onClick={() => { /* visual only — compose is not wired */ }}
           >
             <MessageSquare size={15} strokeWidth={2} aria-hidden />
             Compose
@@ -123,17 +143,18 @@ export default function MessagesScreen() {
               {filtered.map(t => {
                 const patient = t.patientId ? getPatient(t.patientId) : undefined
                 const meta = CHANNEL_META[t.channel]
+                const unreadRow = isUnread(t)
                 return (
                   <button
                     key={t.id}
                     type="button"
-                    className={'msg-row' + (t.id === selectedId ? ' is-selected' : '')}
+                    className={'msg-row' + (t.id === selectedId ? ' is-selected' : '') + (unreadRow ? ' is-unread' : '')}
                     onClick={() => setSelectedId(t.id)}
                   >
                     <span className="msg-row-main">
                       <span className="msg-row-top">
                         <strong className="msg-subject">{t.subject}</strong>
-                        {t.unread ? <StatusChip tone="warn">Unread</StatusChip> : null}
+                        {unreadRow ? <StatusChip tone="warn">Unread</StatusChip> : null}
                         <StatusChip tone={meta.tone}>{meta.label}</StatusChip>
                       </span>
                       <span className="msg-preview">{t.preview}</span>
@@ -167,7 +188,7 @@ export default function MessagesScreen() {
               <h2 className="card-title msg-detail-title">{selected.subject}</h2>
               <div className="msg-detail-chips">
                 <StatusChip tone={CHANNEL_META[selected.channel].tone}>{CHANNEL_META[selected.channel].label}</StatusChip>
-                {selected.unread ? <StatusChip tone="warn">Unread</StatusChip> : <StatusChip tone="good">Read</StatusChip>}
+                {selectedUnread ? <StatusChip tone="warn">Unread</StatusChip> : <StatusChip tone="good">Read</StatusChip>}
               </div>
               <p className="msg-detail-copy">{selected.preview}</p>
               <div className="msg-detail-block">
@@ -198,7 +219,10 @@ export default function MessagesScreen() {
                   ))}
                 </div>
               </div>
-              <p className="msg-footnote">Reply / escalate controls are visual only. Nothing is sent.</p>
+              <p className="msg-footnote">
+                Compose / reply / escalate controls are visual only. Nothing is sent. Opening a thread marks it
+                read in this session only.
+              </p>
             </div>
           ) : (
             <EmptyState icon={<MessageSquare size={26} strokeWidth={1.5} />} title="Select a thread" sub="Choose a message to inspect context and related work." />

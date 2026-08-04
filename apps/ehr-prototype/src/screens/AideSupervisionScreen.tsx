@@ -16,7 +16,11 @@ import { EmptyState, PatientAvatar, StatCard, StatusChip } from '../ui'
 import type { StatusTone } from '../ui'
 import './hha.css'
 
-/* Synthetic aide-supervision clocks — design prototype only (HHA domain). */
+/* Synthetic aide-supervision clocks — design prototype only (HHA domain).
+ * App "today" matches Schedule/Today: Mon Aug 3 (2026).
+ * nextDue / daysRemaining are derived from lastObservation + skilled 14-day
+ * or non-skilled 60-day windows so sample arithmetic is reconcilable (P1-11).
+ */
 
 type ClockKind = 'skilled-14' | 'non-skilled-60'
 type ClockStatus = 'on-track' | 'due-soon' | 'overdue' | 'observed'
@@ -32,6 +36,84 @@ type SupervisionClock = {
   status: ClockStatus
   daysRemaining: number
   related: RelatedLink[]
+}
+
+/** Prototype calendar anchor — same as ScheduleScreen "today". */
+const AS_OF = new Date(2026, 7, 3) // Mon Aug 3, 2026
+
+const WINDOW_DAYS: Record<ClockKind, number> = {
+  'skilled-14': 14,
+  'non-skilled-60': 60,
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const
+
+function startOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+function addDays(d: Date, days: number): Date {
+  const next = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+  next.setDate(next.getDate() + days)
+  return next
+}
+
+function calendarDaysBetween(from: Date, to: Date): number {
+  const ms = startOfDay(to).getTime() - startOfDay(from).getTime()
+  return Math.round(ms / 86_400_000)
+}
+
+function formatShortDate(d: Date): string {
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}`
+}
+
+/** Parse "Aug 1" or "Aug 1 (aide present)" against the prototype year. */
+function parseObservationDate(label: string, year = AS_OF.getFullYear()): Date {
+  const m = /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2})/i.exec(label.trim())
+  if (!m) {
+    throw new Error(`Unrecognized observation date label: ${label}`)
+  }
+  const month = MONTHS.findIndex(x => x.toLowerCase() === m[1].toLowerCase())
+  const day = Number(m[2])
+  return new Date(year, month, day)
+}
+
+function statusFromDays(daysRemaining: number, forced?: ClockStatus): ClockStatus {
+  if (forced === 'observed') return 'observed'
+  if (daysRemaining < 0) return 'overdue'
+  if (daysRemaining > 0 && daysRemaining <= 7) return 'due-soon'
+  return 'on-track'
+}
+
+type ClockSeed = {
+  id: string
+  patientId: string
+  aide: string
+  supervisor: string
+  clockKind: ClockKind
+  /** Calendar date of last direct observation (optional note in parens). */
+  lastObservation: string
+  /** When set, keeps "observed" story status after a recent aide-present visit. */
+  statusOverride?: 'observed'
+  related: RelatedLink[]
+}
+
+function buildClock(seed: ClockSeed): SupervisionClock {
+  const last = parseObservationDate(seed.lastObservation)
+  const next = addDays(last, WINDOW_DAYS[seed.clockKind])
+  const daysRemaining = calendarDaysBetween(AS_OF, next)
+  return {
+    id: seed.id,
+    patientId: seed.patientId,
+    aide: seed.aide,
+    supervisor: seed.supervisor,
+    clockKind: seed.clockKind,
+    lastObservation: seed.lastObservation,
+    nextDue: daysRemaining < 0 ? 'Overdue' : formatShortDate(next),
+    daysRemaining,
+    status: statusFromDays(daysRemaining, seed.statusOverride),
+    related: seed.related,
+  }
 }
 
 const CLOCK_META: Record<ClockKind, { label: string; short: string }> = {
@@ -63,17 +145,26 @@ const KIND_FILTERS: { key: KindFilter; label: string }[] = [
   { key: 'non-skilled-60', label: 'Non-skilled 60-day' },
 ]
 
+/**
+ * Seeds only store last observation + kind. Derived fields:
+ *   nextDue = lastObservation + 14|60
+ *   daysRemaining = nextDue − AS_OF (Aug 3)
+ *
+ * Expected (asOf Aug 3):
+ *   hha-1 Jul 23 + 14 → Aug 6  →  3d  due-soon
+ *   hha-2 Jul 29 + 14 → Aug 12 →  9d  on-track
+ *   hha-3 May 31 + 60 → Jul 30 → −4d  overdue  (Sam Ortiz also overdue on competency)
+ *   hha-4 Jul 28 + 14 → Aug 11 →  8d  on-track
+ *   hha-5 Aug 1  + 60 → Sep 30 → 58d observed
+ */
 const SUPERVISION_CLOCKS: SupervisionClock[] = [
-  {
+  buildClock({
     id: 'hha-1',
     patientId: 'pt-elena',
     aide: 'Priya Natarajan',
     supervisor: 'Taylor Brooks, RN',
     clockKind: 'skilled-14',
-    nextDue: 'Wed',
-    lastObservation: 'Aug 1',
-    status: 'due-soon',
-    daysRemaining: 3,
+    lastObservation: 'Jul 23',
     related: [
       { to: '/field-visits', label: 'Field visits' },
       { to: '/schedule', label: 'Schedule' },
@@ -81,72 +172,63 @@ const SUPERVISION_CLOCKS: SupervisionClock[] = [
       { to: '/work-queue', label: 'Work queue' },
       { to: '/patients/pt-elena', label: 'Chart' },
     ],
-  },
-  {
+  }),
+  buildClock({
     id: 'hha-2',
     patientId: 'pt-walter',
     aide: 'Sam Ortiz',
     supervisor: 'Dana Whitfield, RN',
     clockKind: 'skilled-14',
-    nextDue: 'Fri',
-    lastObservation: 'Jul 28',
-    status: 'on-track',
-    daysRemaining: 5,
+    lastObservation: 'Jul 29',
     related: [
       { to: '/field-visits', label: 'Field visits' },
       { to: '/schedule', label: 'Schedule' },
       { to: '/patients/pt-walter', label: 'Chart' },
     ],
-  },
-  {
+  }),
+  buildClock({
     id: 'hha-3',
     patientId: 'pt-raymond',
     aide: 'Sam Ortiz',
     supervisor: 'Taylor Brooks, RN',
     clockKind: 'non-skilled-60',
-    nextDue: 'Overdue',
-    lastObservation: 'Jun 12',
-    status: 'overdue',
-    daysRemaining: -4,
+    lastObservation: 'May 31',
+    // Concurrent competency risk: Sam Ortiz has overdue in-service on /competency.
     related: [
       { to: '/field-visits', label: 'Field visits' },
       { to: '/work-queue', label: 'Work queue' },
+      { to: '/competency', label: 'Competency' },
       { to: '/qapi', label: 'QAPI' },
       { to: '/schedule', label: 'Reschedule' },
     ],
-  },
-  {
+  }),
+  buildClock({
     id: 'hha-4',
     patientId: 'pt-margaret',
     aide: 'Priya Natarajan',
     supervisor: 'Iris Duan, RN',
     clockKind: 'skilled-14',
-    nextDue: 'Aug 12',
-    lastObservation: 'Aug 2',
-    status: 'on-track',
-    daysRemaining: 9,
+    lastObservation: 'Jul 28',
     related: [
       { to: '/schedule', label: 'Schedule' },
       { to: '/competency', label: 'Competency' },
       { to: '/patients/pt-margaret', label: 'Chart' },
     ],
-  },
-  {
+  }),
+  buildClock({
     id: 'hha-5',
     patientId: 'pt-june',
     aide: 'Priya Natarajan',
     supervisor: 'Dana Whitfield, RN',
     clockKind: 'non-skilled-60',
-    nextDue: 'Aug 20',
     lastObservation: 'Aug 1 (aide present)',
-    status: 'observed',
-    daysRemaining: 17,
+    statusOverride: 'observed',
     related: [
       { to: '/field-visits', label: 'Field visits' },
       { to: '/competency', label: 'Competency' },
       { to: '/patients/pt-june', label: 'Chart' },
     ],
-  },
+  }),
 ]
 
 function scheduleDisabledReason(clock: SupervisionClock): string | null {
@@ -197,8 +279,11 @@ export default function AideSupervisionScreen() {
 
   const selected = SUPERVISION_CLOCKS.find(c => c.id === selectedId) ?? null
   const activeCount = SUPERVISION_CLOCKS.length
-  const dueSoon = SUPERVISION_CLOCKS.filter(c => c.status === 'due-soon' || c.daysRemaining <= 7).length
-  const overdue = SUPERVISION_CLOCKS.filter(c => c.status === 'overdue').length
+  // Due ≤7: approaching only — do not double-count closed (overdue) windows.
+  const dueSoon = SUPERVISION_CLOCKS.filter(
+    c => c.daysRemaining > 0 && c.daysRemaining <= 7,
+  ).length
+  const overdue = SUPERVISION_CLOCKS.filter(c => c.daysRemaining < 0).length
   const observed = SUPERVISION_CLOCKS.filter(c => c.status === 'observed').length
   const scheduleBlock = selected ? scheduleDisabledReason(selected) : null
 

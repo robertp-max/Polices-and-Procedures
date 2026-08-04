@@ -98,6 +98,12 @@ const DOC_CATEGORY_LABEL: Record<PatientDocument['category'], string> = {
   billing: 'Billing',
 }
 
+const DOC_CONTINUE_LINKS = [
+  { to: '/documents', label: 'Documents workspace' },
+  { to: '/forms', label: 'Forms library' },
+  { to: '/legal-evidence', label: 'Legal evidence' },
+] as const
+
 export default function PatientChartScreen() {
   const { patientId, tab } = useParams<{ patientId: string; tab?: string }>()
   const navigate = useNavigate()
@@ -119,7 +125,7 @@ export default function PatientChartScreen() {
             title="No matching chart"
             sub="Check the patient list and try again."
           />
-          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/patients')}>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/patients')}>
             Back to patients
           </button>
         </div>
@@ -227,7 +233,13 @@ export default function PatientChartScreen() {
                     pct={(patient.integrity.passed / patient.integrity.total) * 100}
                     size={52}
                     stroke={5}
-                    color="var(--green-300)"
+                    color={
+                      patient.integrity.passed >= patient.integrity.total
+                        ? 'var(--green-300)'
+                        : patient.integrity.passed / patient.integrity.total >= 0.75
+                          ? 'var(--yellow-300)'
+                          : 'var(--orange-400)'
+                    }
                     label={`${patient.integrity.passed} of ${patient.integrity.total} checks passing`}
                   />
                 </div>
@@ -285,7 +297,12 @@ export default function PatientChartScreen() {
                   <History size={15} strokeWidth={1.75} />
                   <span className="card-kicker">Recent activity</span>
                 </div>
-                <button className="btn-inline" onClick={() => navigate(`/patients/${id}/timeline`)}>
+                <button
+                  type="button"
+                  className="btn-inline"
+                  title="Opens chart timeline tab"
+                  onClick={() => navigate(`/patients/${id}/timeline`)}
+                >
                   Full timeline <ArrowRight size={13} strokeWidth={2.25} aria-hidden />
                 </button>
               </div>
@@ -356,7 +373,12 @@ export default function PatientChartScreen() {
                 <section className="card card-pad chart-poc-callout" aria-label="Plan of care status">
                   <StatusChip tone="warn">Pending physician signature</StatusChip>
                   <div className="chart-poc-callout-text">Sent to Dr. Susan Cho · Jul 29</div>
-                  <button className="btn btn-outline-accent btn-sm">
+                  <button
+                    type="button"
+                    className="btn btn-outline-accent btn-sm"
+                    title="Visual only · opens orders workspace · no reminder is sent"
+                    onClick={() => navigate('/orders')}
+                  >
                     <Send size={13} strokeWidth={2} aria-hidden />
                     Send reminder
                   </button>
@@ -474,9 +496,11 @@ export default function PatientChartScreen() {
                       <StatusChip tone={ASSESS_STATUS[a.status].tone}>{ASSESS_STATUS[a.status].label}</StatusChip>
                       {a.items ? (
                         <button
+                          type="button"
                           className="icon-btn"
                           aria-label={breakdownOpen ? 'Collapse section breakdown' : 'Expand section breakdown'}
                           aria-expanded={breakdownOpen}
+                          title="Toggle section breakdown"
                           onClick={() => setBreakdownOpen(o => !o)}
                         >
                           <ChevronDown size={16} strokeWidth={2} style={{ transform: breakdownOpen ? 'rotate(180deg)' : undefined, transition: 'transform 150ms ease' }} />
@@ -499,7 +523,12 @@ export default function PatientChartScreen() {
                           <ShieldAlert size={14} strokeWidth={1.75} aria-hidden />
                           7 responses need clinician confirmation
                         </div>
-                        <button className="btn btn-primary btn-sm">
+                        <button
+                          type="button"
+                          className="btn btn-primary btn-sm"
+                          title="Visual only · opens OASIS workspace · assessment is not mutated here"
+                          onClick={() => navigate('/oasis')}
+                        >
                           <PlayCircle size={14} strokeWidth={2} aria-hidden />
                           Resume assessment
                         </button>
@@ -580,15 +609,28 @@ export default function PatientChartScreen() {
                 <div className="chart-med-alert-name">{needsReviewMed.name} {needsReviewMed.dose} · {needsReviewMed.frequency}</div>
                 <p className="chart-med-alert-note">{needsReviewMed.note}</p>
                 <div className="chart-med-alert-actions">
-                  <button className="btn btn-teal btn-sm">
+                  <button
+                    type="button"
+                    className="btn btn-teal btn-sm"
+                    title="Visual only · no message is sent"
+                    onClick={() => navigate('/messages')}
+                  >
                     <MessageSquare size={13} strokeWidth={2} aria-hidden />
                     Message physician
                   </button>
-                  <button className="btn btn-secondary btn-sm">
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    disabled
+                    title="Visual only · reconciliation is not complete while high-risk discrepancy is open"
+                  >
                     <Check size={13} strokeWidth={2} aria-hidden />
                     Mark reconciled
                   </button>
                 </div>
+                <p className="chart-med-alert-foot">
+                  Reconciliation is not complete. Mark reconciled stays disabled until the discrepancy is resolved in production.
+                </p>
               </section>
             ) : null}
 
@@ -623,45 +665,76 @@ export default function PatientChartScreen() {
                 </table>
               )}
               {patientMeds.length > 0 && (
-                <div className="chart-med-footer">Medication list reconciled at SOC · {patient.episode.socDate}</div>
+                <div className={'chart-med-footer' + (needsReviewMed ? ' is-attention' : '')}>
+                  {needsReviewMed
+                    ? `Medication reconciliation incomplete · open discrepancy · SOC ${patient.episode.socDate}`
+                    : `Medication list reconciled at SOC · ${patient.episode.socDate}`}
+                </div>
               )}
             </section>
           </>
         )}
 
         {activeTab === 'documents' && (
-          <section className="card" aria-label="Documents">
-            {patientDocs.length === 0 ? (
-              <div className="card-pad"><EmptyState icon={<FileText size={28} strokeWidth={1.5} />} title="No documents on file" sub="No documents have been uploaded for this patient." /></div>
-            ) : (
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Date</th>
-                    <th>Pages</th>
-                    <th>Status</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {patientDocs.map(d => (
-                    <tr key={d.id} className="chart-doc-row">
-                      <td>
-                        <span className="chart-doc-title"><FileText size={14} strokeWidth={1.75} aria-hidden /> {d.title}</span>
-                      </td>
-                      <td><span className="chip chip-outline">{DOC_CATEGORY_LABEL[d.category]}</span></td>
-                      <td>{d.date}</td>
-                      <td>{d.pages}</td>
-                      <td><StatusChip tone={DOC_STATUS[d.status].tone}>{DOC_STATUS[d.status].label}</StatusChip></td>
-                      <td className="chart-doc-open"><button className="btn-inline">Open</button></td>
+          <>
+            <div className="chart-related card card-pad">
+              <span className="card-kicker">Continue in</span>
+              <div className="chart-related-actions">
+                {DOC_CONTINUE_LINKS.map(r => (
+                  <button
+                    key={r.to}
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    title={`Opens ${r.label}`}
+                    onClick={() => navigate(r.to)}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <section className="card" aria-label="Documents">
+              {patientDocs.length === 0 ? (
+                <div className="card-pad"><EmptyState icon={<FileText size={28} strokeWidth={1.5} />} title="No documents on file" sub="No documents have been uploaded for this patient." /></div>
+              ) : (
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Category</th>
+                      <th>Date</th>
+                      <th>Pages</th>
+                      <th>Status</th>
+                      <th></th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </section>
+                  </thead>
+                  <tbody>
+                    {patientDocs.map(d => (
+                      <tr key={d.id} className="chart-doc-row">
+                        <td>
+                          <span className="chart-doc-title"><FileText size={14} strokeWidth={1.75} aria-hidden /> {d.title}</span>
+                        </td>
+                        <td><span className="chip chip-outline">{DOC_CATEGORY_LABEL[d.category]}</span></td>
+                        <td>{d.date}</td>
+                        <td>{d.pages}</td>
+                        <td><StatusChip tone={DOC_STATUS[d.status].tone}>{DOC_STATUS[d.status].label}</StatusChip></td>
+                        <td className="chart-doc-open">
+                          <button
+                            type="button"
+                            className="btn-inline"
+                            title="Opens documents workspace · prototype review only"
+                            onClick={() => navigate('/documents')}
+                          >
+                            Open in Documents
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </section>
+          </>
         )}
       </div>
     </div>

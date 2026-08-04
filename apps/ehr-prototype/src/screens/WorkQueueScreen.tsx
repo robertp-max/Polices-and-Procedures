@@ -22,8 +22,12 @@ import { RelatedNav } from '../components/RelatedNav'
 import { EmptyState, PatientAvatar, StatCard, StatusChip } from '../ui'
 import './wq.css'
 
+/** Demo session owner — must match WORK_QUEUE.owner strings for Taylor. */
+const DEMO_OWNER = 'Taylor Brooks, RN'
+
 type StatusFilter = 'all' | WorkItemStatus
 type PriorityFilter = 'all' | WorkItemPriority
+type OwnerFilter = 'all' | 'mine'
 
 const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
   { key: 'all', label: 'All statuses' },
@@ -42,6 +46,11 @@ const PRIORITY_FILTERS: { key: PriorityFilter; label: string }[] = [
   { key: 'low', label: 'Low' },
 ]
 
+const OWNER_FILTERS: { key: OwnerFilter; label: string }[] = [
+  { key: 'all', label: 'All owners' },
+  { key: 'mine', label: 'Assigned to me' },
+]
+
 function isOverdue(due: string): boolean {
   return due.toLowerCase().includes('overdue')
 }
@@ -57,11 +66,20 @@ export default function WorkQueueScreen() {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>('all')
+  const [ownerFilter, setOwnerFilter] = useState<OwnerFilter>('all')
   const [selectedId, setSelectedId] = useState<string | null>(WORK_QUEUE[0]?.id ?? null)
+
+  const mineItems = useMemo(
+    () => WORK_QUEUE.filter(item => item.owner === DEMO_OWNER),
+    [],
+  )
+  const mineCount = mineItems.length
+  const mineOpenCount = mineItems.filter(i => i.status !== 'done').length
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     return WORK_QUEUE.filter(item => {
+      if (ownerFilter === 'mine' && item.owner !== DEMO_OWNER) return false
       if (statusFilter !== 'all' && item.status !== statusFilter) return false
       if (priorityFilter !== 'all' && item.priority !== priorityFilter) return false
       if (!q) return true
@@ -80,7 +98,7 @@ export default function WorkQueueScreen() {
         .toLowerCase()
       return hay.includes(q)
     })
-  }, [query, statusFilter, priorityFilter])
+  }, [query, statusFilter, priorityFilter, ownerFilter])
 
   useEffect(() => {
     if (filtered.length === 0) {
@@ -94,22 +112,29 @@ export default function WorkQueueScreen() {
 
   const selected = WORK_QUEUE.find(i => i.id === selectedId) ?? null
 
-  const openCount = WORK_QUEUE.filter(i => i.status !== 'done').length
-  const dueToday = WORK_QUEUE.filter(i => i.due.toLowerCase().includes('today')).length
-  const overdueCount = WORK_QUEUE.filter(i => isOverdue(i.due) || i.status === 'escalated').length
-  const criticalCount = WORK_QUEUE.filter(i => i.priority === 'critical' || i.priority === 'high').length
+  // Stats reflect the active owner scope so "Mine" is honest.
+  const scoped = ownerFilter === 'mine' ? mineItems : WORK_QUEUE
+  const openCount = scoped.filter(i => i.status !== 'done').length
+  const dueToday = scoped.filter(i => i.due.toLowerCase().includes('today')).length
+  const overdueCount = scoped.filter(i => isOverdue(i.due) || i.status === 'escalated').length
+  const criticalCount = scoped.filter(i => i.priority === 'critical' || i.priority === 'high').length
   const claimBlock = selected ? claimDisabledReason(selected) : null
+
+  const subtitle =
+    ownerFilter === 'mine'
+      ? `${mineOpenCount} open of ${mineCount} assigned to ${DEMO_OWNER} · ${WORK_QUEUE.length} agency items total (synthetic).`
+      : `${openCount} open of ${WORK_QUEUE.length} agency items · ${mineCount} assigned to me (${DEMO_OWNER}).`
 
   return (
     <div className="screen">
       <div className="screen-head">
         <div>
-          <div className="card-kicker">Domain COR · work queue</div>
-          <h1 className="screen-title">My work queue</h1>
-          <div className="screen-sub">
-            Closed-loop tasks with owners, SLAs, and deep links into clinical, revenue, and legal surfaces —
-            synthetic queue for design evaluation.
+          <div className="card-kicker">
+            Domain COR · work queue
+            {ownerFilter === 'mine' ? ' · mine' : ' · all owners'}
           </div>
+          <h1 className="screen-title">My work queue</h1>
+          <div className="screen-sub">{subtitle}</div>
         </div>
         <div className="screen-actions">
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/today')}>
@@ -123,7 +148,8 @@ export default function WorkQueueScreen() {
             className="btn btn-primary"
             title="Visual only · no claim is recorded"
             onClick={() => {
-              const next = WORK_QUEUE.find(i => i.status === 'open' || i.status === 'escalated')
+              const pool = ownerFilter === 'mine' ? mineItems : WORK_QUEUE
+              const next = pool.find(i => i.status === 'open' || i.status === 'escalated')
               if (next) setSelectedId(next.id)
             }}
           >
@@ -146,9 +172,13 @@ export default function WorkQueueScreen() {
       <div className="wq-stats">
         <StatCard
           icon={<ClipboardList size={16} strokeWidth={1.75} aria-hidden />}
-          kicker="Open in sample"
+          kicker={ownerFilter === 'mine' ? 'Open · mine' : 'Open in sample'}
           value={openCount}
-          sub={`${WORK_QUEUE.length} total synthetic items`}
+          sub={
+            ownerFilter === 'mine'
+              ? `${mineCount} assigned to me · ${WORK_QUEUE.length} agency total`
+              : `${WORK_QUEUE.length} total · ${mineCount} mine`
+          }
           accent="teal"
         />
         <StatCard
@@ -194,6 +224,34 @@ export default function WorkQueueScreen() {
                 placeholder="Search task, patient, owner, or domain"
               />
             </label>
+
+            <div className="wq-filter-block">
+              <span className="wq-filter-label" id="wq-owner-filters">Owner</span>
+              <div className="wq-filters" role="toolbar" aria-labelledby="wq-owner-filters">
+                {OWNER_FILTERS.map(f => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    className={
+                      'wq-filter wq-filter-owner' + (ownerFilter === f.key ? ' is-active' : '')
+                    }
+                    aria-pressed={ownerFilter === f.key}
+                    onClick={() => setOwnerFilter(f.key)}
+                  >
+                    {f.label}
+                    {f.key === 'mine' ? (
+                      <span className="wq-filter-count" aria-hidden>
+                        {mineCount}
+                      </span>
+                    ) : (
+                      <span className="wq-filter-count" aria-hidden>
+                        {WORK_QUEUE.length}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <div className="wq-filter-block">
               <span className="wq-filter-label" id="wq-status-filters">Status</span>
@@ -290,7 +348,9 @@ export default function WorkQueueScreen() {
                           <span className="wq-who-name wq-who-soft">No patient link</span>
                         )}
                         <span className="wq-dot" aria-hidden />
-                        <span>{item.owner}</span>
+                        <span className={item.owner === DEMO_OWNER ? 'wq-owner-mine' : undefined}>
+                          {item.owner}
+                        </span>
                         <span className="wq-dot" aria-hidden />
                         <span className={isOverdue(item.due) ? 'wq-due-bad' : undefined}>{item.due}</span>
                       </span>
@@ -354,8 +414,14 @@ export default function WorkQueueScreen() {
                 <div className="wq-grid">
                   <div>
                     <span className="card-kicker">Owner</span>
-                    <strong>{selected.owner}</strong>
-                    <span>Assignment is sample-only</span>
+                    <strong className={selected.owner === DEMO_OWNER ? 'wq-owner-mine' : undefined}>
+                      {selected.owner}
+                    </strong>
+                    <span>
+                      {selected.owner === DEMO_OWNER
+                        ? 'Assigned to demo session owner'
+                        : 'Assignment is sample-only'}
+                    </span>
                   </div>
                   <div>
                     <span className="card-kicker">Due</span>

@@ -1,5 +1,18 @@
 /* Orders control center */
 
+.ord-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--surface-brand-tint);
+  color: var(--ink);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.ord-banner svg { flex-shrink: 0; margin-top: 1px; color: var(--teal-500); }
+
 .ord-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -135,6 +148,13 @@
 /* ---------- Drawer actions ---------- */
 
 .ord-drawer-actions { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
+
+.ord-drawer-footnote {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
 
 /* Cross-nav continue blocks */
 .ord-related { margin-top: 12px; }

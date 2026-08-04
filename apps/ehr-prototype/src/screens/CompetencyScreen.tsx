@@ -132,8 +132,8 @@ const DETAIL_TABS: { key: DetailTab; label: string }[] = [
   { key: 'related', label: 'Related' },
 ]
 
-function assignDisabledReason(row: CompetencyRow): string | null {
-  if (row.gate === 'blocked') return 'Gate blocked until overdue competency evidence is captured.'
+/** Record evidence: disabled only when already complete — not when gate is blocked (missing evidence). */
+function evidenceDisabledReason(row: CompetencyRow): string | null {
   if (row.status === 'complete') return 'Already complete in this sample.'
   return null
 }
@@ -145,6 +145,7 @@ export default function CompetencyScreen() {
   const [selectedId, setSelectedId] = useState<string | null>(ROWS[0]?.id ?? null)
   const [detailTab, setDetailTab] = useState<DetailTab>('overview')
   const [assignOpen, setAssignOpen] = useState(false)
+  const [evidenceOpen, setEvidenceOpen] = useState(false)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -180,7 +181,11 @@ export default function CompetencyScreen() {
     setDetailTab('overview')
   }
 
-  const assignBlock = selected ? assignDisabledReason(selected) : null
+  const evidenceBlock = selected ? evidenceDisabledReason(selected) : null
+  const evidenceMissing =
+    selected != null &&
+    (selected.gate === 'blocked' ||
+      /missing|pending|failed/i.test(selected.evidence))
 
   return (
     <div className="screen">
@@ -388,7 +393,8 @@ export default function CompetencyScreen() {
                           <strong>Assignment blocked</strong>
                           <span>
                             Overdue competency evidence is missing. Production scheduling gates prevent new
-                            field assignment until cleared.
+                            field assignment until cleared — use Capture evidence (prototype) to preview the
+                            evidence path.
                           </span>
                         </div>
                       </div>
@@ -498,17 +504,27 @@ export default function CompetencyScreen() {
                   <button
                     type="button"
                     className="btn btn-primary"
-                    disabled={!!assignBlock}
-                    title={assignBlock ?? 'Visual only · no training is assigned'}
-                    onClick={() => setAssignOpen(true)}
+                    disabled={!!evidenceBlock}
+                    title={
+                      evidenceBlock ??
+                      (evidenceMissing
+                        ? 'Visual only · Capture evidence (prototype) — production would open evidence capture path'
+                        : 'Visual only · no evidence is filed')
+                    }
+                    onClick={() => {
+                      if (evidenceBlock) return
+                      setEvidenceOpen(true)
+                    }}
                   >
-                    Record evidence
+                    {evidenceMissing ? 'Capture evidence (prototype)' : 'Record evidence'}
                   </button>
                 </div>
                 <p className="cmp-drawer-footnote">
-                  {assignBlock
-                    ? `Action disabled · ${assignBlock}`
-                    : 'Assign / record / clear-gate controls are visual only. No competency write occurs.'}
+                  {evidenceBlock
+                    ? `Action disabled · ${evidenceBlock}`
+                    : selected.gate === 'blocked'
+                      ? 'Gate is blocked for field assignment, but evidence capture stays available (visual only).'
+                      : 'Assign / record / clear-gate controls are visual only. No competency write occurs.'}
                 </p>
               </div>
             </div>
@@ -544,6 +560,40 @@ export default function CompetencyScreen() {
             </button>
           </div>
           <p className="cmp-drawer-footnote">Confirm is disabled. No durable write occurs in this prototype.</p>
+        </div>
+      </Drawer>
+
+      <Drawer
+        open={evidenceOpen}
+        onClose={() => setEvidenceOpen(false)}
+        title="Capture evidence (prototype)"
+        sub="Visual only · no observation or quiz is filed"
+      >
+        <div className="cmp-panel">
+          <p className="cmp-drawer-copy">
+            {selected?.gate === 'blocked'
+              ? 'Gate is blocked because evidence is missing. In production this path would capture observation, quiz, or drill proof and clear the assignment gate after supervisor review. This drawer does not write evidence or clear gates.'
+              : 'Production evidence capture attaches form version, observer identity, and timestamp. This drawer is layout only.'}
+          </p>
+          {selected ? (
+            <p className="cmp-drawer-copy">
+              <strong>{selected.staff}</strong> · {selected.requirement} · Evidence: {selected.evidence}
+            </p>
+          ) : null}
+          <div className="cmp-drawer-actions">
+            <button type="button" className="btn btn-secondary" onClick={() => setEvidenceOpen(false)}>
+              Close
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled
+              title="Visual only · no evidence is filed"
+            >
+              File evidence
+            </button>
+          </div>
+          <p className="cmp-drawer-footnote">File is disabled. No durable write occurs in this prototype.</p>
         </div>
       </Drawer>
     </div>

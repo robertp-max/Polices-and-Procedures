@@ -133,6 +133,7 @@ export default function OrgMasterScreen() {
         <span>
           Synthetic design prototype · no legal entity, payer, or service-area change is written.
           Production requires dual approval and effective dating before runtime config activates.
+          This prototype does not demonstrate a maker/checker workflow — Approve is a single visual control only.
         </span>
       </div>
 
@@ -298,8 +299,9 @@ export default function OrgMasterScreen() {
                         <div>
                           <strong>Awaiting dual approval</strong>
                           <span>
-                            Finance / clinical dual path for payer and clinical config. No runtime
-                            switch until approved + effective.
+                            Production design: finance / clinical dual path before runtime switch.
+                            This prototype does not demonstrate a maker/checker workflow — the single
+                            Approve button below is visual only and does not record a second approver.
                           </span>
                         </div>
                       </div>
@@ -418,7 +420,7 @@ export default function OrgMasterScreen() {
                     type="button"
                     className="btn btn-primary"
                     disabled={!!approveBlock}
-                    title={approveBlock ?? 'Visual only · nothing is approved'}
+                    title={approveBlock ?? 'Visual only · single-button approve is not maker/checker · nothing is approved'}
                   >
                     <Stamp size={14} strokeWidth={2} aria-hidden />
                     Approve change
@@ -426,8 +428,8 @@ export default function OrgMasterScreen() {
                 </div>
                 <p className="gov-footnote">
                   {approveBlock
-                    ? `Approve disabled · ${approveBlock} No master-data write occurs.`
-                    : 'Propose / approve controls are visual only. No configuration is activated.'}
+                    ? `Approve disabled · ${approveBlock} No master-data write occurs. Prototype does not demonstrate a maker/checker workflow.`
+                    : 'Propose / approve look like single-person actions. Prototype does not demonstrate a maker/checker workflow — no second approver is captured and no configuration is activated.'}
                 </p>
               </div>
             </div>

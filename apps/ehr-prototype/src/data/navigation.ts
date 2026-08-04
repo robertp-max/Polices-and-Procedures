@@ -39,7 +39,8 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Workspace',
     items: [
       { to: '/today', label: 'Today', icon: LayoutDashboard, domainId: 'COR', status: 'built' },
-      { to: '/work-queue', label: 'My work queue', icon: ListChecks, domainId: 'COR', status: 'built', badge: 18 },
+      // Badges match synthetic sample counts in workspace.ts / clinical.ts (not inflated)
+      { to: '/work-queue', label: 'My work queue', icon: ListChecks, domainId: 'COR', status: 'built', badge: 6 },
       { to: '/patients', label: 'Patients', icon: Users, domainId: 'PAT', status: 'built' },
       { to: '/intake', label: 'Referral & intake', icon: Inbox, domainId: 'REF', status: 'built', badge: 6 },
       { to: '/schedule', label: 'Schedule', icon: CalendarDays, domainId: 'SCH', status: 'built' },
@@ -51,7 +52,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/clinical', label: 'Clinical', icon: Stethoscope, domainId: 'CLN', status: 'built', badge: 3 },
       { to: '/episodes', label: 'Episodes & certification', icon: ClipboardList, domainId: 'EPI', status: 'built' },
-      { to: '/oasis', label: 'OASIS assessments', icon: Activity, domainId: 'EPI', status: 'built', badge: 7 },
+      { to: '/oasis', label: 'OASIS assessments', icon: Activity, domainId: 'EPI', status: 'built', badge: 3 },
       { to: '/orders', label: 'Orders', icon: FileSignature, domainId: 'CLN', status: 'built', badge: 4 },
       { to: '/medications', label: 'Medications', icon: Pill, domainId: 'CLN', status: 'built' },
       { to: '/field-visits', label: 'Field visits & EVV', icon: MapPin, domainId: 'FLD', status: 'built' },

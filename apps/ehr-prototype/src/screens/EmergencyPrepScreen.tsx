@@ -114,6 +114,32 @@ const PROFILES: EmergencyProfile[] = [
     contacts: 'Intake only',
     notes: 'Pending SOC assessment — emergency profile required on comprehensive assessment (EMP-002).',
   },
+  // Census completeness: every active patient must have a profile row (EMP-002).
+  // Missing profiles previously undercounted incomplete coverage (QA P0-02).
+  {
+    id: 'emp-7',
+    patientId: 'pt-raymond',
+    priority: 'medium',
+    dependencies: 'PT gait training · mobility aid',
+    evacuation: 'Not on file',
+    lastReview: 'Missing',
+    status: 'incomplete',
+    powerDependent: false,
+    contacts: 'Not captured',
+    notes: 'No emergency profile on file — counted as incomplete for census coverage (synthetic).',
+  },
+  {
+    id: 'emp-8',
+    patientId: 'pt-samuel',
+    priority: 'high',
+    dependencies: 'Warfarin · INR monitoring',
+    evacuation: 'Not on file',
+    lastReview: 'Missing',
+    status: 'incomplete',
+    powerDependent: false,
+    contacts: 'Not captured',
+    notes: 'No emergency profile on file — counted as incomplete for census coverage (synthetic).',
+  },
 ]
 
 const STATUS_META: Record<ProfileStatus, { tone: StatusTone; label: string }> = {

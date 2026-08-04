@@ -1,5 +1,18 @@
 /* Reports — insight gallery */
 
+/* ---------- Honesty banner (DAT-001) ---------- */
+
+.rep-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-sm);
+  background: var(--surface-brand-tint);
+  color: var(--ink);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
 /* ---------- Hero scorecard ---------- */
 
 .rep-hero {

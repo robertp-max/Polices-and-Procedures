@@ -14,6 +14,8 @@ export const todayVisits: VisitEvent[] = [
 
 export const weekVisits: VisitEvent[] = [
   ...todayVisits,
+  // Aligns with work-queue wq-5 + message msg-3 (missed SN · Raymond · escalated)
+  { id: 'v-miss-raymond', patientId: 'pt-raymond', date: 'Yesterday', time: '2:00 PM', durationMin: 45, discipline: 'SN', type: 'Skilled nursing · wound check', clinician: 'Taylor Brooks, RN', status: 'missed', location: 'home' },
   { id: 'v-5', patientId: 'pt-harold', date: 'Tomorrow', time: '9:30 AM', durationMin: 120, discipline: 'SN', type: 'Start of care · OASIS-E2', clinician: 'Taylor Brooks, RN', status: 'scheduled', location: 'home' },
   { id: 'v-6', patientId: 'pt-june', date: 'Aug 5', time: '1:00 PM', durationMin: 45, discipline: 'ST', type: 'Speech therapy', clinician: 'Amaia Ross, ST', status: 'scheduled', location: 'home' },
   { id: 'v-7', patientId: 'pt-raymond', date: 'Aug 5', time: '10:00 AM', durationMin: 45, discipline: 'PT', type: 'Physical therapy', clinician: 'Marcus Webb, PT', status: 'scheduled', location: 'home' },

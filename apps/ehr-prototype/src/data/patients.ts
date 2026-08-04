@@ -25,7 +25,8 @@ export const patients: Patient[] = [
     nextVisit: { date: 'Today', time: '2:30 PM', type: 'Skilled nursing', clinician: 'Taylor Brooks, RN' },
     socCompletion: 82,
     openOrders: 4,
-    integrity: { passed: 11, total: 13 },
+    // Checklist: 10 passed · 2 attention · 1 blocked (must match integrityChecks for Elena)
+    integrity: { passed: 10, total: 13 },
     photoTone: 'apricot',
   },
   {

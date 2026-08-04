@@ -3,12 +3,12 @@ import type { MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle, ArrowRight, CheckCircle2, Clock3, Download,
-  RefreshCw, Send, ShieldCheck, Wallet,
+  FlaskConical, RefreshCw, Send, ShieldCheck, Wallet,
 } from 'lucide-react'
 import type { Claim } from '../data/types'
 import { claims } from '../data/clinical'
 import { getPatient } from '../data/patients'
-import { AUTHORIZATIONS, WORK_QUEUE } from '../data/workspace'
+import { AUTHORIZATIONS, ROUTE_RELATED, WORK_QUEUE, type RelatedLink } from '../data/workspace'
 import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, PatientAvatar, StatCard, StatusChip } from '../ui'
 import type { StatusTone } from '../ui'
@@ -65,6 +65,31 @@ function money(n: number): string {
   return `$${n.toLocaleString('en-US')}`
 }
 
+/**
+ * Patient-scoped Continue-in links for a claim.
+ * Never fall back to Margaret's wq-3 (or any other patient's queue item).
+ */
+function relatedForClaim(patientId: string): RelatedLink[] {
+  const forPatient = WORK_QUEUE.filter(w => w.patientId === patientId)
+  const preferred =
+    forPatient.find(w => w.domain === 'RCM')
+    ?? forPatient[0]
+  if (preferred?.related?.length) {
+    return preferred.related
+  }
+  const routeLinks = ROUTE_RELATED['/billing'] ?? []
+  const built: RelatedLink[] = [
+    { to: `/patients/${patientId}`, label: 'Chart' },
+    ...routeLinks,
+  ]
+  const seen = new Set<string>()
+  return built.filter(link => {
+    if (seen.has(link.to)) return false
+    seen.add(link.to)
+    return true
+  })
+}
+
 export default function BillingScreen() {
   const navigate = useNavigate()
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -104,15 +129,33 @@ export default function BillingScreen() {
         <div className="screen-actions">
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/authorizations')}>Authorizations</button>
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/beneficiary-notices')}>Notices</button>
-          <button className="btn btn-secondary">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled
+            title="Visual only · nothing is submitted"
+          >
             <Download size={15} strokeWidth={2} aria-hidden />
             Export 837
           </button>
-          <button className="btn btn-primary">
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled
+            title="Visual only · nothing is submitted"
+          >
             <ShieldCheck size={15} strokeWidth={2} aria-hidden />
             Run claim check
           </button>
         </div>
+      </div>
+
+      <div className="bill-banner" role="status">
+        <FlaskConical size={15} strokeWidth={2} aria-hidden />
+        <span>
+          Synthetic design prototype · Export 837 and claim check are visual only — nothing is
+          submitted to a payer or clearinghouse. Claims stay review-only in this prototype.
+        </span>
       </div>
 
       <RelatedNav route="/billing" />
@@ -188,7 +231,7 @@ export default function BillingScreen() {
                     }}
                   >
                     <td>
-                      <button className="bill-patient" onClick={e => goToPatient(e, p.id)}>
+                      <button type="button" className="bill-patient" onClick={e => goToPatient(e, p.id)}>
                         <PatientAvatar first={p.firstName} last={p.lastName} tone={p.photoTone} size="sm" />
                         <span className="bill-patient-name">{p.firstName} {p.lastName}</span>
                       </button>
@@ -224,7 +267,10 @@ export default function BillingScreen() {
 
       <div className="card bill-note">
         <ShieldCheck size={17} strokeWidth={1.75} aria-hidden />
-        <p>Claims are assembled automatically from documentation — nothing is submitted without biller review.</p>
+        <p>
+          Claims are assembled automatically from documentation — nothing is submitted without biller
+          review. Export 837 and Run claim check are visual only in this prototype.
+        </p>
       </div>
 
       <Drawer
@@ -236,97 +282,125 @@ export default function BillingScreen() {
         })() : ''}
         sub={selected ? `${selected.period} · ${selected.type}` : undefined}
       >
-        {selected ? (
-          <div className="bill-drawer">
-            <div className="bill-drawer-summary">
-              <div className="bill-drawer-fact">
-                <div className="bill-drawer-fact-label">Amount</div>
-                <div className="bill-drawer-fact-value bill-amount">{money(selected.amount)}</div>
-              </div>
-              <div className="bill-drawer-fact">
-                <div className="bill-drawer-fact-label">Type</div>
-                <div className="bill-drawer-fact-value">
-                  <span className={'chip ' + (selected.type === 'Final' ? 'chip-teal' : 'chip-neutral')}>
-                    {selected.type}
-                  </span>
+        {selected ? (() => {
+          const related = relatedForClaim(selected.patientId)
+          const relatedTos = new Set(related.map(r => r.to))
+          const hasAuth = !!AUTHORIZATIONS.find(a => a.patientId === selected.patientId)
+          return (
+            <div className="bill-drawer">
+              <div className="bill-drawer-summary">
+                <div className="bill-drawer-fact">
+                  <div className="bill-drawer-fact-label">Amount</div>
+                  <div className="bill-drawer-fact-value bill-amount">{money(selected.amount)}</div>
+                </div>
+                <div className="bill-drawer-fact">
+                  <div className="bill-drawer-fact-label">Type</div>
+                  <div className="bill-drawer-fact-value">
+                    <span className={'chip ' + (selected.type === 'Final' ? 'chip-teal' : 'chip-neutral')}>
+                      {selected.type}
+                    </span>
+                  </div>
+                </div>
+                <div className="bill-drawer-fact">
+                  <div className="bill-drawer-fact-label">Status</div>
+                  <div className="bill-drawer-fact-value">
+                    <StatusChip tone={STATUS_TONE[selected.status]}>{STATUS_LABEL[selected.status]}</StatusChip>
+                  </div>
                 </div>
               </div>
-              <div className="bill-drawer-fact">
-                <div className="bill-drawer-fact-label">Status</div>
-                <div className="bill-drawer-fact-value">
-                  <StatusChip tone={STATUS_TONE[selected.status]}>{STATUS_LABEL[selected.status]}</StatusChip>
-                </div>
-              </div>
-            </div>
 
-            {selected.holds.length > 0 ? (
+              {selected.holds.length > 0 ? (
+                <div className="bill-drawer-section">
+                  <div className="card-kicker">Holds</div>
+                  <ul className="bill-checklist">
+                    {selected.holds.map(hold => {
+                      const res = holdResolution(hold, selected.patientId)
+                      return (
+                        <li key={hold} className="bill-checklist-item is-pending">
+                          <AlertTriangle size={15} strokeWidth={2} aria-hidden />
+                          <span className="bill-checklist-label">{hold}</span>
+                          {res ? (
+                            <button
+                              type="button"
+                              className="btn-inline bill-hold-link"
+                              onClick={() => { setSelectedId(null); navigate(res.to) }}
+                            >
+                              {res.note}
+                              <ArrowRight size={12} strokeWidth={2.25} aria-hidden />
+                            </button>
+                          ) : null}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </div>
+              ) : null}
+
               <div className="bill-drawer-section">
-                <div className="card-kicker">Holds</div>
+                <div className="card-kicker">Readiness checklist</div>
                 <ul className="bill-checklist">
-                  {selected.holds.map(hold => {
-                    const res = holdResolution(hold, selected.patientId)
-                    return (
-                      <li key={hold} className="bill-checklist-item is-pending">
-                        <AlertTriangle size={15} strokeWidth={2} aria-hidden />
-                        <span className="bill-checklist-label">{hold}</span>
-                        {res ? (
-                          <button
-                            className="btn-inline bill-hold-link"
-                            onClick={() => { setSelectedId(null); navigate(res.to) }}
-                          >
-                            {res.note}
-                            <ArrowRight size={12} strokeWidth={2.25} aria-hidden />
-                          </button>
-                        ) : null}
-                      </li>
-                    )
-                  })}
+                  {readinessChecklist(selected).map(item => (
+                    <li key={item.label} className={'bill-checklist-item ' + (item.done ? 'is-done' : 'is-pending')}>
+                      {item.done
+                        ? <CheckCircle2 size={15} strokeWidth={2} aria-hidden />
+                        : <Clock3 size={15} strokeWidth={2} aria-hidden />}
+                      <span className="bill-checklist-label">{item.label}</span>
+                      {!item.done ? <span className="chip chip-warn">Pending</span> : null}
+                    </li>
+                  ))}
                 </ul>
               </div>
-            ) : null}
 
-            <div className="bill-drawer-section">
-              <div className="card-kicker">Readiness checklist</div>
-              <ul className="bill-checklist">
-                {readinessChecklist(selected).map(item => (
-                  <li key={item.label} className={'bill-checklist-item ' + (item.done ? 'is-done' : 'is-pending')}>
-                    {item.done
-                      ? <CheckCircle2 size={15} strokeWidth={2} aria-hidden />
-                      : <Clock3 size={15} strokeWidth={2} aria-hidden />}
-                    <span className="bill-checklist-label">{item.label}</span>
-                    {!item.done ? <span className="chip chip-warn">Pending</span> : null}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bill-drawer-section">
-              <div className="card-kicker">Continue in</div>
-              <div className="bill-related-actions">
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/authorizations') }}>Authorizations</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/oasis') }}>OASIS</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/beneficiary-notices') }}>Beneficiary notices</button>
-                <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/orders') }}>Orders</button>
-                {(WORK_QUEUE.find(w => w.patientId === selected.patientId && w.domain === 'RCM') ?? WORK_QUEUE.find(w => w.id === 'wq-3'))?.related.map(r => (
-                  <button key={r.to + r.label} type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate(r.to) }}>{r.label}</button>
-                ))}
-                {AUTHORIZATIONS.find(a => a.patientId === selected.patientId) ? (
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/authorizations') }}>Auth units</button>
-                ) : null}
+              <div className="bill-drawer-section">
+                <div className="card-kicker">Continue in</div>
+                <div className="bill-related-actions">
+                  {!relatedTos.has('/authorizations') ? (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/authorizations') }}>Authorizations</button>
+                  ) : null}
+                  {!relatedTos.has('/oasis') ? (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/oasis') }}>OASIS</button>
+                  ) : null}
+                  {!relatedTos.has('/beneficiary-notices') ? (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/beneficiary-notices') }}>Beneficiary notices</button>
+                  ) : null}
+                  {!relatedTos.has('/orders') ? (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/orders') }}>Orders</button>
+                  ) : null}
+                  {related.map(r => (
+                    <button
+                      key={r.to + r.label}
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => { setSelectedId(null); navigate(r.to) }}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                  {hasAuth && !relatedTos.has('/authorizations') ? (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelectedId(null); navigate('/authorizations') }}>Auth units</button>
+                  ) : null}
+                </div>
               </div>
+
+              <hr className="divider" />
+
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setRecheckedAt(new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))}
+              >
+                <RefreshCw size={14} strokeWidth={2} aria-hidden />
+                Recheck readiness
+              </button>
+              {recheckedAt ? (
+                <div className="bill-recheck-note">Readiness rechecked at {recheckedAt} · no change</div>
+              ) : null}
+              <p className="bill-drawer-footnote">
+                Export 837 / claim check / submit are visual only · nothing is submitted in this prototype.
+              </p>
             </div>
-
-            <hr className="divider" />
-
-            <button className="btn btn-primary" onClick={() => setRecheckedAt(new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }))}>
-              <RefreshCw size={14} strokeWidth={2} aria-hidden />
-              Recheck readiness
-            </button>
-            {recheckedAt ? (
-              <div className="bill-recheck-note">Readiness rechecked at {recheckedAt} · no change</div>
-            ) : null}
-          </div>
-        ) : null}
+          )
+        })() : null}
       </Drawer>
     </div>
   )

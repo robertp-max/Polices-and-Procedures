@@ -111,6 +111,36 @@
   background: var(--orange-100);
   color: var(--orange-600);
 }
+.wq-filter-owner.is-active {
+  border-color: var(--teal-500);
+  background: var(--teal-100);
+  color: var(--teal-600);
+}
+.wq-filter-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--gray-100);
+  border: 1px solid var(--line);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+.wq-filter.is-active .wq-filter-count {
+  background: var(--teal-200);
+  border-color: var(--teal-300);
+  color: var(--teal-600);
+}
+.wq-owner-mine {
+  color: var(--teal-600);
+  font-weight: 500;
+}
 
 .wq-list {
   display: flex;

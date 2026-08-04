@@ -163,16 +163,15 @@ export function AppShell() {
               ))}
             </div>
 
-            <a
+            <button
+              type="button"
               className="icon-btn"
-              aria-label="Messages — open Connect in a new tab"
-              title="Open Connect messages"
-              href={getIntegrationHref('connect')}
-              target="_blank"
-              rel="noreferrer"
+              aria-label="Messages — open in-app message threads"
+              title="Open messages"
+              onClick={() => navigate('/messages')}
             >
               <MessagesSquare size={18} strokeWidth={1.75} />
-            </a>
+            </button>
 
             <div className="shell-bell" ref={bellRef}>
               <button

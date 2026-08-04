@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   Activity, ArrowRight, BarChart3, ClipboardCheck, Clock3,
-  GitBranch, HeartPulse, Mail, PillBottle,
+  FlaskConical, GitBranch, HeartPulse, Mail, PillBottle,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { WORK_QUEUE } from '../data/workspace'
@@ -172,7 +172,7 @@ export default function ReportsScreen() {
       <div className="screen-head">
         <div>
           <h1 className="screen-title">Reports</h1>
-          <div className="screen-sub">Operational and clinical intelligence</div>
+          <div className="screen-sub">Derived operational intelligence · not the legal clinical record</div>
         </div>
         <div className="screen-actions">
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/data-exports')}>Data exports</button>
@@ -184,6 +184,15 @@ export default function ReportsScreen() {
       </div>
 
       <RelatedNav route="/reports" />
+
+      <div className="rep-banner" role="status">
+        <FlaskConical size={15} strokeWidth={2} aria-hidden />
+        <span>
+          Derived operational intelligence only (DAT-001) · scorecards and analytics are permissioned
+          views, not the legal clinical record. Chart notes, orders, and claims remain transactional
+          authority — see Data & exports for lineage and freshness.
+        </span>
+      </div>
 
       <section className="card rep-hero" aria-label="Agency scorecard">
         <div className="rep-hero-head">
@@ -243,7 +252,7 @@ export default function ReportsScreen() {
       </div>
 
       <div className="rep-footer">
-        <span className="chip chip-neutral">All figures synthetic — design prototype</span>
+        <span className="chip chip-neutral">Synthetic · derived views only · not legal record (DAT-001)</span>
       </div>
 
       <Drawer
@@ -278,7 +287,7 @@ export default function ReportsScreen() {
                 <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setOpenReport(null); navigate(WORK_QUEUE.find(w => w.id === 'wq-1')?.href ?? '/oasis') }}>OASIS review</button>
               </div>
             </div>
-            <span className="chip chip-neutral">All figures synthetic — design prototype</span>
+            <span className="chip chip-neutral">Synthetic · derived views only · not legal record (DAT-001)</span>
           </>
         ) : null}
       </Drawer>
@@ -306,7 +315,7 @@ export default function ReportsScreen() {
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setScorecardOpen(false); navigate('/cms-quality') }}>CMS quality</button>
           </div>
         </div>
-        <span className="chip chip-neutral">All figures synthetic — design prototype</span>
+        <span className="chip chip-neutral">Synthetic · derived views only · not legal record (DAT-001)</span>
       </Drawer>
     </div>
   )

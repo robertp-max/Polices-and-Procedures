@@ -48,7 +48,16 @@ const VISIT_STATUS_LABEL = {
 /** Map local NBA ids → shared WORK_QUEUE destinations when titles align. */
 function actionHref(actionId: string): string {
   if (actionId === 'act-1') return WORK_QUEUE.find(w => w.id === 'wq-1')?.href ?? '/oasis'
-  if (actionId === 'act-2') return WORK_QUEUE.find(w => w.id === 'wq-2')?.href ?? '/orders'
+  // Elena POC signature — never Walter wq-2. Prefer Elena orders/signature work item.
+  if (actionId === 'act-2') {
+    const elenaOrders = WORK_QUEUE.find(
+      w =>
+        w.patientId === 'pt-elena' &&
+        (w.href === '/orders' ||
+          /signature|plan of care|cms-485|poc/i.test(`${w.title} ${w.detail}`)),
+    )
+    return elenaOrders?.href ?? '/orders'
+  }
   if (actionId === 'act-3') return '/medications'
   return '/work-queue'
 }

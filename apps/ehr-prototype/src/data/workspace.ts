@@ -536,13 +536,15 @@ export const CONTROLLED_DOCUMENTS: ControlledDocument[] = [
   {
     id: 'cdoc-4',
     title: 'Discharge teaching sheet',
-    patientId: 'pt-harold',
+    patientId: 'pt-dorothy',
     kind: 'education',
-    status: 'draft',
+    status: 'signed',
+    signer: 'Dorothy Liang / representative',
     pages: 3,
     related: [
       { to: '/forms', label: 'Forms' },
-      { to: '/legal-evidence', label: 'Discharge package' },
+      { to: '/patients/pt-dorothy', label: 'Chart' },
+      { to: '/legal-evidence', label: 'PKG-8755' },
     ],
   },
 ]
@@ -1495,8 +1497,8 @@ export const SEC_CONTROLS: SecControl[] = [
     target: '≤4h RTO',
     lastProof: 'Jun tabletop',
     owner: 'Platform',
-    gap: 'None · live restore still due',
-    status: 'met',
+    gap: 'Live restore still due · tabletop only',
+    status: 'at-risk',
     category: 'resilience',
     purpose: 'Demonstrate restore path for EHR config and synthetic chart stores.',
     related: [

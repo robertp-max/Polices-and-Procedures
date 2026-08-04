@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  AlertTriangle,
   ArrowRight,
   CalendarDays,
   ClipboardList,
@@ -30,12 +31,21 @@ const STATUS_META: Record<VisitStatus, { tone: StatusTone; label: string }> = {
   'documentation-due': { tone: 'warn', label: 'Documentation due' },
 }
 
+/** Attention first so missed / overdue are not buried under scheduled rows. */
+const STATUS_SORT: Record<VisitStatus, number> = {
+  missed: 0,
+  'documentation-due': 1,
+  'in-progress': 2,
+  scheduled: 3,
+  completed: 4,
+}
+
 const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
   { key: 'all', label: 'All statuses' },
-  { key: 'scheduled', label: 'Scheduled' },
-  { key: 'documentation-due', label: 'Documentation due' },
-  { key: 'completed', label: 'Completed' },
   { key: 'missed', label: 'Missed' },
+  { key: 'documentation-due', label: 'Documentation due' },
+  { key: 'scheduled', label: 'Scheduled' },
+  { key: 'completed', label: 'Completed' },
   { key: 'in-progress', label: 'In progress' },
 ]
 
@@ -45,35 +55,103 @@ function completeDisabledReason(visit: VisitEvent): string | null {
   return null
 }
 
+/** Honest prototype EVV labels — never invent captured punches or verified geo. */
+function evvPrototypeLabels(visit: VisitEvent): { label: string; detail: string; tone: 'bad' | 'warn' | 'neutral' }[] {
+  const labels: { label: string; detail: string; tone: 'bad' | 'warn' | 'neutral' }[] = [
+    {
+      label: 'Punch not captured',
+      detail: 'No start/end EVV punch is recorded in this prototype sample.',
+      tone: 'warn',
+    },
+    {
+      label: 'Geo not verified',
+      detail: 'Location method is not asserted — not production GPS / telephony verification.',
+      tone: 'warn',
+    },
+  ]
+  if (visit.status === 'missed') {
+    labels.push({
+      label: 'Exception path',
+      detail: 'Missed visit routes to reschedule / notify work — not treated as complete or EVV-ready.',
+      tone: 'bad',
+    })
+  } else if (visit.status === 'documentation-due') {
+    labels.push({
+      label: 'Exception path',
+      detail: 'Note still due · clinical completion is separate from any future EVV export.',
+      tone: 'warn',
+    })
+  } else {
+    labels.push({
+      label: 'Exception path',
+      detail: 'Not applicable unless punch fails applicability rules — prototype shows state labels only.',
+      tone: 'neutral',
+    })
+  }
+  return labels
+}
+
+function pickAttentionVisit(pool: VisitEvent[]): VisitEvent | undefined {
+  return (
+    pool.find(v => v.status === 'missed') ??
+    pool.find(v => v.status === 'documentation-due') ??
+    pool.find(v => v.status === 'in-progress') ??
+    pool[0]
+  )
+}
+
 export default function FieldVisitsScreen() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [scope, setScope] = useState<ScopeFilter>('week')
-  const [selectedId, setSelectedId] = useState<string | null>(weekVisits[0]?.id ?? null)
+  const [selectedId, setSelectedId] = useState<string | null>(
+    () => pickAttentionVisit(weekVisits)?.id ?? null,
+  )
 
   const source = scope === 'today' ? todayVisits : weekVisits
 
+  const missed = weekVisits.filter(v => v.status === 'missed').length
+  const docDue = weekVisits.filter(v => v.status === 'documentation-due').length
+  const statusCounts = useMemo(() => {
+    const counts: Record<VisitStatus, number> = {
+      scheduled: 0,
+      'in-progress': 0,
+      completed: 0,
+      missed: 0,
+      'documentation-due': 0,
+    }
+    for (const v of source) counts[v.status] += 1
+    return counts
+  }, [source])
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    return source.filter(v => {
-      if (statusFilter !== 'all' && v.status !== statusFilter) return false
-      if (!q) return true
-      const patient = getPatient(v.patientId)
-      const hay = [
-        v.id,
-        v.discipline,
-        v.type,
-        v.clinician,
-        v.date,
-        v.time,
-        v.location,
-        patient ? `${patient.firstName} ${patient.lastName} ${patient.mrn}` : '',
-      ]
-        .join(' ')
-        .toLowerCase()
-      return hay.includes(q)
-    })
+    return source
+      .filter(v => {
+        if (statusFilter !== 'all' && v.status !== statusFilter) return false
+        if (!q) return true
+        const patient = getPatient(v.patientId)
+        const hay = [
+          v.id,
+          v.discipline,
+          v.type,
+          v.clinician,
+          v.date,
+          v.time,
+          v.location,
+          patient ? `${patient.firstName} ${patient.lastName} ${patient.mrn}` : '',
+        ]
+          .join(' ')
+          .toLowerCase()
+        return hay.includes(q)
+      })
+      .slice()
+      .sort((a, b) => {
+        const byStatus = STATUS_SORT[a.status] - STATUS_SORT[b.status]
+        if (byStatus !== 0) return byStatus
+        return a.id.localeCompare(b.id)
+      })
   }, [query, statusFilter, source])
 
   useEffect(() => {
@@ -86,12 +164,37 @@ export default function FieldVisitsScreen() {
     }
   }, [filtered, selectedId])
 
-  const selected = weekVisits.find(v => v.id === selectedId) ?? null
+  const selected =
+    weekVisits.find(v => v.id === selectedId) ??
+    todayVisits.find(v => v.id === selectedId) ??
+    null
   const todayCount = todayVisits.length
-  const docDue = weekVisits.filter(v => v.status === 'documentation-due').length
-  const missed = weekVisits.filter(v => v.status === 'missed').length
   const telehealth = weekVisits.filter(v => v.location === 'telehealth').length
   const completeBlock = selected ? completeDisabledReason(selected) : null
+  const attentionTotal = missed + docDue
+  const showAttentionCallout = attentionTotal > 0 && statusFilter === 'all'
+
+  function inspectAttentionVisit() {
+    setScope('week')
+    const attention = pickAttentionVisit(weekVisits)
+    if (!attention) return
+    // Keep filter wide so sort surfaces attention; select the attention row into the inspector.
+    setStatusFilter('all')
+    setQuery('')
+    setSelectedId(attention.id)
+    // Scroll inspector into view on narrow layouts where it stacks below the list.
+    requestAnimationFrame(() => {
+      document.getElementById('fld-inspector')?.scrollIntoView({ block: 'nearest' })
+    })
+  }
+
+  function showMissedOnly() {
+    setScope('week')
+    setStatusFilter('missed')
+    setQuery('')
+    const firstMissed = weekVisits.find(v => v.status === 'missed')
+    if (firstMissed) setSelectedId(firstMissed.id)
+  }
 
   return (
     <div className="screen">
@@ -114,17 +217,11 @@ export default function FieldVisitsScreen() {
           <button
             type="button"
             className="btn btn-primary"
-            title="Visual only · no visit packet is opened for write"
-            onClick={() => {
-              const next = todayVisits.find(v => v.status === 'scheduled' || v.status === 'documentation-due')
-              if (next) {
-                setScope('today')
-                setSelectedId(next.id)
-              }
-            }}
+            title="Selects an attention visit and opens the inspector · no packet write"
+            onClick={inspectAttentionVisit}
           >
             <ClipboardList size={15} strokeWidth={2} aria-hidden />
-            Open visit packet
+            Inspect visit
           </button>
         </div>
       </div>
@@ -158,7 +255,7 @@ export default function FieldVisitsScreen() {
           icon={<CloudOff size={16} strokeWidth={1.75} aria-hidden />}
           kicker="Missed"
           value={missed}
-          sub="Exception / reschedule path"
+          sub={missed === 0 ? 'None in week sample' : 'Exception / reschedule path'}
           accent={missed === 0 ? 'good' : 'bad'}
         />
         <StatCard
@@ -216,26 +313,78 @@ export default function FieldVisitsScreen() {
             <div className="fld-filter-block">
               <span className="fld-filter-label" id="fld-status-filters">Status</span>
               <div className="fld-filters" role="toolbar" aria-labelledby="fld-status-filters">
-                {STATUS_FILTERS.map(f => (
-                  <button
-                    key={f.key}
-                    type="button"
-                    className={'fld-filter fld-filter-status' + (statusFilter === f.key ? ' is-active' : '')}
-                    aria-pressed={statusFilter === f.key}
-                    onClick={() => setStatusFilter(f.key)}
-                  >
-                    {f.label}
-                  </button>
-                ))}
+                {STATUS_FILTERS.map(f => {
+                  const count =
+                    f.key === 'all'
+                      ? source.length
+                      : statusCounts[f.key]
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      className={
+                        'fld-filter fld-filter-status' +
+                        (statusFilter === f.key ? ' is-active' : '') +
+                        (f.key === 'missed' && missed > 0 ? ' is-attention' : '')
+                      }
+                      aria-pressed={statusFilter === f.key}
+                      onClick={() => setStatusFilter(f.key)}
+                    >
+                      {f.label} ({count})
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
+
+          {showAttentionCallout ? (
+            <div className="fld-callout is-bad" role="status">
+              <AlertTriangle size={16} strokeWidth={2} aria-hidden />
+              <div className="fld-callout-body">
+                <strong>
+                  {missed > 0
+                    ? `${missed} missed visit${missed === 1 ? '' : 's'}`
+                    : null}
+                  {missed > 0 && docDue > 0 ? ' · ' : null}
+                  {docDue > 0
+                    ? `${docDue} documentation due`
+                    : null}
+                  {' '}in week sample
+                </strong>
+                <span>
+                  Sorted attention-first. Missed visits use the exception / reschedule path — never marked
+                  complete or EVV-punched in this prototype.
+                </span>
+              </div>
+              {missed > 0 ? (
+                <button type="button" className="btn btn-secondary btn-sm" onClick={showMissedOnly}>
+                  Show missed
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => {
+                    setScope('week')
+                    setStatusFilter('documentation-due')
+                  }}
+                >
+                  Show due
+                </button>
+              )}
+            </div>
+          ) : null}
 
           {filtered.length === 0 ? (
             <EmptyState
               icon={<MapPin size={26} strokeWidth={1.5} />}
               title="No visits match"
-              sub="Clear filters or switch scope. All visits are synthetic."
+              sub={
+                statusFilter === 'missed'
+                  ? 'No missed visits in this scope. Switch to Week — sample includes v-miss-raymond.'
+                  : 'Clear filters or switch scope. All visits are synthetic.'
+              }
             />
           ) : (
             <div className="fld-list" role="listbox" aria-label="Visit list">
@@ -306,7 +455,7 @@ export default function FieldVisitsScreen() {
           )}
         </section>
 
-        <aside className="fld-inspector" aria-label="Visit inspector">
+        <aside id="fld-inspector" className="fld-inspector" aria-label="Visit inspector">
           {selected ? (
             <div className="card fld-inspector-card">
               <div className="fld-inspector-head">
@@ -353,8 +502,21 @@ export default function FieldVisitsScreen() {
                 <p className="fld-copy">
                   Clinician {selected.clinician}. Window {selected.date} at {selected.time} (
                   {selected.durationMin} min). EVV applicability is payer- and state-driven in production;
-                  this prototype shows visit state only.
+                  this prototype shows visit state and honest non-capture labels only.
                 </p>
+
+                {selected.status === 'missed' ? (
+                  <div className="fld-callout is-bad" role="status">
+                    <AlertTriangle size={16} strokeWidth={2} aria-hidden />
+                    <div className="fld-callout-body">
+                      <strong>Missed visit · exception path</strong>
+                      <span>
+                        Not complete. Aligns with work-queue reschedule / notify work. No EVV punch is
+                        invented as successful.
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="fld-grid">
                   <div>
@@ -380,11 +542,27 @@ export default function FieldVisitsScreen() {
                       {selected.status === 'missed'
                         ? 'Exception path'
                         : selected.status === 'documentation-due'
-                          ? 'Synced · note due'
-                          : 'Sample · not production EVV'}
+                          ? 'Note due · punch not captured'
+                          : 'Punch not captured'}
                     </strong>
-                    <span>Visual labels only</span>
+                    <span>Not production EVV</span>
                   </div>
+                </div>
+
+                <div className="fld-section">
+                  <div className="card-kicker">EVV prototype labels</div>
+                  <p className="fld-evv-disclaimer">
+                    Not production EVV. Labels declare what this prototype does <em>not</em> capture — no
+                    fake complete punches, geo verify, or aggregator export.
+                  </p>
+                  <ul className="fld-evv-list">
+                    {evvPrototypeLabels(selected).map(item => (
+                      <li key={item.label} className={'fld-evv-item is-' + item.tone}>
+                        <strong>{item.label}</strong>
+                        <span>{item.detail}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
                 <div className="fld-section">
@@ -452,7 +630,7 @@ export default function FieldVisitsScreen() {
               <EmptyState
                 icon={<MapPin size={26} strokeWidth={1.5} />}
                 title="Select a visit"
-                sub="Inspect timing, clinician, location, and related workspaces."
+                sub="Inspect timing, clinician, location, EVV prototype labels, and related workspaces."
               />
             </div>
           )}

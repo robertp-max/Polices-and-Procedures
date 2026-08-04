@@ -276,17 +276,19 @@ export default function MigrationScreen() {
                       <span className="mig-meta">Evidence · {s.evidence}</span>
                     </span>
                     <span className="mig-meter">
-                      <span className="mig-meter-label">{s.progress}%</span>
+                      <span className="mig-meter-label" title="Evidence readiness · not cutover ready">{s.progress}%</span>
                       <ProgressBar
                         pct={s.progress}
                         color={
                           s.status === 'blocked'
                             ? 'var(--status-bad)'
-                            : s.progress >= 60
+                            : s.status === 'complete'
                               ? 'var(--status-good)'
-                              : 'var(--teal-400)'
+                              : s.risk === 'high'
+                                ? 'var(--status-warn)'
+                                : 'var(--teal-400)'
                         }
-                        label={`${s.id} readiness ${s.progress} percent`}
+                        label={`${s.id} evidence readiness ${s.progress} percent · not cutover authorization`}
                       />
                     </span>
                     <ArrowRight className="mig-row-go" size={14} strokeWidth={2} aria-hidden />

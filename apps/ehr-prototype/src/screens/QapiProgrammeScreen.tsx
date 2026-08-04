@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Activity,
+  AlertCircle,
   ArrowRight,
   CheckCircle2,
+  Circle,
   ClipboardList,
   FlaskConical,
   Link2,
@@ -80,13 +82,31 @@ function closeDisabledReason(pip: QapiPip): string | null {
   return null
 }
 
+/** Prefer status=active; fall back to first PIP if none are active. */
+function findActivePipId(): string | null {
+  const active = QAPI_PIPS.find(p => p.status === 'active')
+  return active?.id ?? QAPI_PIPS[0]?.id ?? null
+}
+
+type CheckTone = 'good' | 'warn' | 'neutral'
+
+function EffectivenessIcon({ tone }: { tone: CheckTone }) {
+  if (tone === 'good') {
+    return <CheckCircle2 size={15} strokeWidth={2} aria-hidden className="qapi-check-icon is-good" />
+  }
+  if (tone === 'warn') {
+    return <AlertCircle size={15} strokeWidth={2} aria-hidden className="qapi-check-icon is-warn" />
+  }
+  return <Circle size={15} strokeWidth={2} aria-hidden className="qapi-check-icon is-neutral" />
+}
+
 export default function QapiProgrammeScreen() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [selectedId, setSelectedId] = useState<string | null>(QAPI_PIPS[0]?.id ?? null)
   const [detailTab, setDetailTab] = useState<DetailTab>('overview')
-  const [openPipDrawer, setOpenPipDrawer] = useState(false)
+  const [draftPipDrawer, setDraftPipDrawer] = useState(false)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -121,7 +141,40 @@ export default function QapiProgrammeScreen() {
     setDetailTab('overview')
   }
 
+  const openActivePip = () => {
+    const id = findActivePipId()
+    if (!id) return
+    // Clear status filter so the active PIP is visible in the list, then select it.
+    setStatusFilter('all')
+    setQuery('')
+    selectPip(id)
+  }
+
   const closeBlock = selected ? closeDisabledReason(selected) : null
+
+  // Effectiveness checklist tones: green only when sustained/closed; warn/neutral until then.
+  const isSustained = selected?.status === 'sustained' || selected?.status === 'closed'
+  const effectivenessItems: { label: string; tone: CheckTone }[] = selected
+    ? [
+        {
+          label: `Return date scheduled · ${selected.returnDate}`,
+          tone: isSustained ? 'good' : selected.returnDate && selected.returnDate !== 'Closed' ? 'neutral' : 'neutral',
+        },
+        {
+          label: `Countermeasure documented · ${selected.countermeasure}`,
+          tone: isSustained ? 'good' : 'neutral',
+        },
+        {
+          label:
+            selected.status === 'sustained'
+              ? `Status · ${STATUS_META[selected.status].label} · proof on file (sample)`
+              : selected.status === 'effectiveness-due'
+                ? `Status · ${STATUS_META[selected.status].label} · return evidence due (not sustained)`
+                : `Status · ${STATUS_META[selected.status].label} · not sustained yet`,
+          tone: isSustained ? 'good' : selected.status === 'effectiveness-due' ? 'warn' : 'neutral',
+        },
+      ]
+    : []
 
   return (
     <div className="screen">
@@ -140,7 +193,10 @@ export default function QapiProgrammeScreen() {
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/legal-evidence')}>
             Incident packages
           </button>
-          <button type="button" className="btn btn-primary" onClick={() => setOpenPipDrawer(true)}>
+          <button type="button" className="btn btn-secondary" onClick={() => setDraftPipDrawer(true)}>
+            Draft new PIP
+          </button>
+          <button type="button" className="btn btn-primary" onClick={openActivePip}>
             <Target size={15} strokeWidth={2} aria-hidden />
             Open active PIP
           </button>
@@ -395,24 +451,16 @@ export default function QapiProgrammeScreen() {
                   <div className="qapi-panel">
                     <p className="qapi-drawer-copy">
                       Effectiveness requires a planned return, numerator/denominator, and decision to sustain,
-                      adapt, or abandon — never “done because tasks finished.”
+                      adapt, or abandon — never “done because tasks finished.” Green checkmarks appear only
+                      after sustained proof.
                     </p>
                     <ul className="qapi-check-list">
-                      <li>
-                        <CheckCircle2 size={15} strokeWidth={2} aria-hidden />
-                        <span>Return date scheduled · {selected.returnDate}</span>
-                      </li>
-                      <li>
-                        <CheckCircle2 size={15} strokeWidth={2} aria-hidden />
-                        <span>Countermeasure documented · {selected.countermeasure}</span>
-                      </li>
-                      <li>
-                        <CheckCircle2 size={15} strokeWidth={2} aria-hidden />
-                        <span>
-                          Status · {STATUS_META[selected.status].label}
-                          {selected.status === 'sustained' ? ' · proof on file (sample)' : ' · not sustained yet'}
-                        </span>
-                      </li>
+                      {effectivenessItems.map(item => (
+                        <li key={item.label}>
+                          <EffectivenessIcon tone={item.tone} />
+                          <span>{item.label}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 ) : null}
@@ -482,18 +530,18 @@ export default function QapiProgrammeScreen() {
       </div>
 
       <Drawer
-        open={openPipDrawer}
-        onClose={() => setOpenPipDrawer(false)}
-        title="Open active PIP"
-        sub="Review-only · nothing is opened or filed"
+        open={draftPipDrawer}
+        onClose={() => setDraftPipDrawer(false)}
+        title="Draft new PIP"
+        sub="Visual only · nothing is created or filed"
       >
         <div className="qapi-panel">
           <p className="qapi-drawer-copy">
-            Opening a PIP in production requires problem statement, baseline measure, owner, and planned
-            effectiveness return. This drawer is layout only.
+            Drafting a PIP in production requires problem statement, baseline measure, owner, and planned
+            effectiveness return. This drawer is layout only — it does not open or create a PIP record.
           </p>
           <div className="qapi-drawer-actions">
-            <button type="button" className="btn btn-secondary" onClick={() => setOpenPipDrawer(false)}>
+            <button type="button" className="btn btn-secondary" onClick={() => setDraftPipDrawer(false)}>
               Close
             </button>
             <button type="button" className="btn btn-primary" disabled title="Visual only · no PIP is created">

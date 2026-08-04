@@ -7,7 +7,7 @@ import {
 import { orders } from '../data/clinical'
 import { getPatient } from '../data/patients'
 import type { Order } from '../data/types'
-import { WORK_QUEUE } from '../data/workspace'
+import { ROUTE_RELATED, WORK_QUEUE, type RelatedLink } from '../data/workspace'
 import { RelatedNav } from '../components/RelatedNav'
 import { Drawer, PatientAvatar, StatCard, StatusChip, Tabs } from '../ui'
 import type { StatusTone } from '../ui'
@@ -102,6 +102,36 @@ const PHYSICIAN_CONTACTS: Record<string, { phone: string; fax: string }> = {
   'Dr. Marcus Oh': { phone: '(408) 555-0190', fax: '(408) 555-0191' },
 }
 
+/**
+ * Patient-scoped Continue-in links. Never hard-code wq-2 (Walter) for every order.
+ * Prefer a work-queue item for this patient; otherwise chart + ROUTE_RELATED + signature surfaces.
+ */
+function relatedForOrder(patientId: string): RelatedLink[] {
+  const forPatient = WORK_QUEUE.filter(w => w.patientId === patientId)
+  const preferred =
+    forPatient.find(w => w.domain === 'CLN' || w.href === '/orders' || w.href === '/documents' || w.href === '/legal-evidence')
+    ?? forPatient[0]
+  if (preferred?.related?.length) {
+    return preferred.related
+  }
+  const routeLinks = ROUTE_RELATED['/orders'] ?? []
+  const built: RelatedLink[] = [
+    { to: `/patients/${patientId}`, label: 'Chart' },
+    { to: '/documents', label: 'Signature queue' },
+    { to: '/legal-evidence', label: 'Order packages' },
+    ...routeLinks,
+  ]
+  // Dedupe by destination so ROUTE_RELATED does not double Signatures / packages.
+  const seen = new Set<string>()
+  return built.filter(link => {
+    const key = link.to + '|' + link.label
+    if (seen.has(key) || seen.has(link.to)) return false
+    seen.add(key)
+    seen.add(link.to)
+    return true
+  })
+}
+
 export default function OrdersScreen() {
   const navigate = useNavigate()
   const [tab, setTab] = useState<TabKey>('all')
@@ -131,11 +161,24 @@ export default function OrdersScreen() {
         <div className="screen-actions">
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/documents')}>Signature queue</button>
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/legal-evidence')}>Legal evidence</button>
-          <button className="btn btn-primary">
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled
+            title="Visual only · no order is created"
+          >
             <Plus size={15} strokeWidth={2.25} aria-hidden />
             New order
           </button>
         </div>
+      </div>
+
+      <div className="ord-banner" role="status">
+        <FlaskConical size={15} strokeWidth={2} aria-hidden />
+        <span>
+          Synthetic design prototype · new, edit, file, and reminder actions are visual only.
+          Nothing is ordered, signed, or filed to a chart in this prototype.
+        </span>
       </div>
 
       <RelatedNav route="/orders" />
@@ -292,6 +335,8 @@ export default function OrdersScreen() {
           const patient = getPatient(selected.patientId)
           const timeline = ORDER_TIMELINES[selected.id] ?? []
           const contact = PHYSICIAN_CONTACTS[selected.orderedBy]
+          const related = relatedForOrder(selected.patientId)
+          const relatedTos = new Set(related.map(r => r.to))
           return (
             <>
               {patient ? (
@@ -380,29 +425,48 @@ export default function OrdersScreen() {
               <section className="ord-drawer-section">
                 <div className="card-kicker">Continue in</div>
                 <div className="ord-related-actions">
-                  {(WORK_QUEUE.find(w => w.id === 'wq-2')?.related ?? [
-                    { to: '/documents', label: 'Signature queue' },
-                    { to: '/legal-evidence', label: 'Order packages' },
-                  ]).map(r => (
-                    <button key={r.to + r.label} type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate(r.to) }}>{r.label}</button>
+                  {related.map(r => (
+                    <button
+                      key={r.to + r.label}
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => { setSelected(null); navigate(r.to) }}
+                    >
+                      {r.label}
+                    </button>
                   ))}
-                  {selected.category === 'medication' ? (
+                  {selected.category === 'medication' && !relatedTos.has('/medications') ? (
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate('/medications') }}>Medications</button>
                   ) : null}
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate('/documents') }}>Documents</button>
+                  {!relatedTos.has('/documents') ? (
+                    <button type="button" className="btn btn-secondary btn-sm" onClick={() => { setSelected(null); navigate('/documents') }}>Documents</button>
+                  ) : null}
                 </div>
               </section>
 
               <div className="ord-drawer-actions">
-                <button className="btn btn-primary">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  disabled
+                  title="Visual only · no reminder is sent"
+                >
                   <Bell size={15} strokeWidth={2} aria-hidden />
                   Send reminder
                 </button>
-                <button className="btn btn-secondary">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  disabled
+                  title="Visual only · order is not edited"
+                >
                   <Pencil size={15} strokeWidth={2} aria-hidden />
                   Edit order
                 </button>
               </div>
+              <p className="ord-drawer-footnote">
+                New / edit / send-reminder controls are visual only. No order is filed, signed, or messaged in this prototype.
+              </p>
             </>
           )
         })() : null}

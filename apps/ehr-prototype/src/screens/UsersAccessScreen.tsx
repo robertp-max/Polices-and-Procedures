@@ -59,7 +59,7 @@ const DETAIL_TABS: { key: DetailTab; label: string }[] = [
 function revokeBlocked(p: AccessPrincipal): string | null {
   if (p.status === 'disabled') return 'Already disabled in this sample.'
   if (p.kind === 'service' && p.status === 'active') {
-    return 'Service account revoke requires dual owner approval in production design.'
+    return 'Service account revoke requires dual owner approval in production design. Prototype does not demonstrate a maker/checker workflow.'
   }
   return null
 }
@@ -140,7 +140,7 @@ export default function UsersAccessScreen() {
         <FlaskConical size={15} strokeWidth={2} aria-hidden />
         <span>
           Synthetic design prototype · no directory write, privilege grant, or break-glass elevation
-          is recorded. Production requires authorized IAM requirements and dual-control for privileged roles.
+          is recorded. Production requires authorized IAM requirements and dual-control for privileged roles. This prototype does not demonstrate a maker/checker workflow — revoke / invite look like single approve.
         </span>
       </div>
 
@@ -471,15 +471,15 @@ export default function UsersAccessScreen() {
                     type="button"
                     className="btn btn-primary"
                     disabled={!!revokeBlock}
-                    title={revokeBlock ?? 'Visual only · no revoke is written'}
+                    title={revokeBlock ?? 'Visual only · single-button revoke is not maker/checker · no revoke is written'}
                   >
                     Revoke access
                   </button>
                 </div>
                 <p className="iam-footnote">
                   {revokeBlock
-                    ? `Revoke disabled · ${revokeBlock} No directory write occurs.`
-                    : 'Invite / revoke / break-glass controls are visual only. No access change is recorded.'}
+                    ? `Revoke disabled · ${revokeBlock} No directory write occurs. Prototype does not demonstrate a maker/checker workflow.`
+                    : 'Invite / revoke / break-glass look like single-person actions. Prototype does not demonstrate a maker/checker workflow — no second approver is captured and no access change is recorded.'}
                 </p>
               </div>
             </div>
