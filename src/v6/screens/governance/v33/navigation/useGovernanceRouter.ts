@@ -71,6 +71,7 @@ export function useGovernanceRouter(): GovernanceRouter {
     if (typeof window === 'undefined') return { view: 'home' };
     return parseGovernanceRoute(window.location.hash, window.location.pathname).state;
   });
+  const [isApplyingPop, setIsApplyingPop] = useState(false);
 
   const applyingPop = useRef(false);
   // Depth of entries this portal pushed — lets closeTopmost prefer real
@@ -85,7 +86,6 @@ export function useGovernanceRouter(): GovernanceRouter {
   // updaters twice in development; doing pushState in there produced duplicate
   // history entries and made the second Back appear to do nothing.
   const routeRef = useRef(route);
-  routeRef.current = route;
 
   // One-time: take manual control of scroll and normalize the entry URL.
   useEffect(() => {
@@ -192,6 +192,7 @@ export function useGovernanceRouter(): GovernanceRouter {
     if (typeof window === 'undefined') return;
     const onPop = (event: PopStateEvent) => {
       applyingPop.current = true;
+      setIsApplyingPop(true);
       const historyState = event.state as GovernanceHistoryState | null;
       const parsedLocation = parseGovernanceRoute(window.location.hash, window.location.pathname);
       const incoming = historyState?.gbRoute ?? parsedLocation.state;
@@ -215,6 +216,7 @@ export function useGovernanceRouter(): GovernanceRouter {
       // rendered destination are not swallowed.
       window.setTimeout(() => {
         applyingPop.current = false;
+        setIsApplyingPop(false);
       }, 0);
     };
     window.addEventListener('popstate', onPop);
@@ -254,5 +256,5 @@ export function useGovernanceRouter(): GovernanceRouter {
     if (collapsed) navigate(collapsed, { replace: true });
   }, [navigate, route]);
 
-  return { route, navigate, patch, closeTopmost, isApplyingPop: applyingPop.current };
+  return { route, navigate, patch, closeTopmost, isApplyingPop };
 }

@@ -144,6 +144,7 @@ describe('LEGACY_ALLOWLIST freeze (must not grow silently)', () => {
       'src/v6/screens/evidence/StudioLanding.tsx',
       'src/v6/screens/evidence/SignatureTracker.tsx',
       'src/v6/screens/evidence/Defensible2StudioLanding.tsx',
+      'server/assets/governance-references/patient-admission-packet-letter-form.html',
     ]);
   });
 });

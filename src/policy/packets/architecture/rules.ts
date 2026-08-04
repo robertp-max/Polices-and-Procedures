@@ -39,6 +39,8 @@ export const LEGACY_ALLOWLIST = [
   'src/v6/screens/evidence/StudioLanding.tsx',
   'src/v6/screens/evidence/SignatureTracker.tsx',
   'src/v6/screens/evidence/Defensible2StudioLanding.tsx',
+  // Imported governance V3 reference artifact; served verbatim, not a packet renderer.
+  'server/assets/governance-references/patient-admission-packet-letter-form.html',
 ] as const;
 
 export type LegacyAllowlistEntry = (typeof LEGACY_ALLOWLIST)[number];
